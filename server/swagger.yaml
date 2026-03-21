@@ -1,0 +1,387 @@
+openapi: 3.0.0
+info:
+    title: Real-Time College Communication and Collaboration Platform API
+    description: API documentation for the Real-Time College Communication and Collaboration Platform
+    version: 1.0.0
+
+tags:
+    - name: Authentication
+      description: User authentication endpoints
+
+paths:
+    /auth/resgiter:
+        post:
+            tags:
+                - Authentication
+            summary: Register a new user
+            description: Register a new user account with name, email, and password
+            operationId: registerUser
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - name
+                                - email
+                                - password
+                            properties:
+                                name:
+                                    type: string
+                                    description: Full name of the user
+                                    example: "John Doe"
+                                email:
+                                    type: string
+                                    format: email
+                                    description: Email address of the user
+                                    example: "john.doe@example.com"
+                                password:
+                                    type: string
+                                    format: password
+                                    minLength: 6
+                                    description: Password for the user account (minimum 6 characters)
+                                    example: "password123"
+                        examples:
+                            validRequest:
+                                summary: Valid registration request
+                                value:
+                                    name: "John Doe"
+                                    email: "john.doe@example.com"
+                                    password: "password123"
+            responses:
+                "201":
+                    description: User registered successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                        example: true
+                                    message:
+                                        type: string
+                                        example: "User registered successfully"
+                                    data:
+                                        type: object
+                                        properties:
+                                            _id:
+                                                type: string
+                                                example: "507f1f77bcf86cd799439011"
+                                            name:
+                                                type: string
+                                                example: "John Doe"
+                                            email:
+                                                type: string
+                                                example: "john.doe@example.com"
+                                            createdAt:
+                                                type: string
+                                                format: date-time
+                                                example: "2024-01-15T10:30:00.000Z"
+                                            updatedAt:
+                                                type: string
+                                                format: date-time
+                                                example: "2024-01-15T10:30:00.000Z"
+                            examples:
+                                successResponse:
+                                    summary: Successful registration
+                                    value:
+                                        success: true
+                                        message: "User registered successfully"
+                                        data:
+                                            _id: "507f1f77bcf86cd799439011"
+                                            name: "John Doe"
+                                            email: "john.doe@example.com"
+                                            createdAt: "2024-01-15T10:30:00.000Z"
+                                            updatedAt: "2024-01-15T10:30:00.000Z"
+                "400":
+                    description: Bad request - Validation error or missing required fields
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                        example: false
+                                    message:
+                                        type: string
+                                        example: "All fields are required"
+                            examples:
+                                missingFields:
+                                    summary: Missing required fields
+                                    value:
+                                        success: false
+                                        message: "All fields are required"
+                                validationError:
+                                    summary: Validation error
+                                    value:
+                                        success: false
+                                        message: "Validation error"
+                                        errors:
+                                            email: "Email must be a valid email address"
+                                            password: "Password must be at least 6 characters"
+                "500":
+                    description: Internal server error
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                        example: false
+                                    message:
+                                        type: string
+                                        example: "Internal Server Error"
+                                    error:
+                                        type: string
+                                        example: "Error message details"
+                            examples:
+                                serverError:
+                                    summary: Server error
+                                    value:
+                                        success: false
+                                        message: "Internal Server Error"
+                                        error: "Database connection failed"
+    /auth/login:
+        post:
+            tags:
+                - Authentication
+            summary: Login a user
+            description: Authenticate user with email and password, returns JWT token
+            operationId: loginUser
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - email
+                                - password
+                            properties:
+                                email:
+                                    type: string
+                                    format: email
+                                    description: Email address of the user
+                                    example: "john.doe@example.com"
+                                password:
+                                    type: string
+                                    format: password
+                                    description: Password for the user account
+                                    example: "password123"
+                        examples:
+                            validRequest:
+                                summary: Valid login request
+                                value:
+                                    email: "john.doe@example.com"
+                                    password: "password123"
+            responses:
+                "200":
+                    description: Login successful
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                        example: true
+                                    message:
+                                        type: string
+                                        example: "Login successful"
+                                    data:
+                                        type: object
+                                        properties:
+                                            user:
+                                                type: object
+                                                properties:
+                                                    _id:
+                                                        type: string
+                                                        example: "507f1f77bcf86cd799439011"
+                                                    name:
+                                                        type: string
+                                                        example: "John Doe"
+                                                    email:
+                                                        type: string
+                                                        example: "john.doe@example.com"
+                                                    createdAt:
+                                                        type: string
+                                                        format: date-time
+                                                        example: "2024-01-15T10:30:00.000Z"
+                                                    updatedAt:
+                                                        type: string
+                                                        format: date-time
+                                                        example: "2024-01-15T10:30:00.000Z"
+                                            token:
+                                                type: string
+                                                description: JWT authentication token
+                                                example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                            examples:
+                                successResponse:
+                                    summary: Successful login
+                                    value:
+                                        success: true
+                                        message: "Login successful"
+                                        data:
+                                            user:
+                                                _id: "507f1f77bcf86cd799439011"
+                                                name: "John Doe"
+                                                email: "john.doe@example.com"
+                                                createdAt: "2024-01-15T10:30:00.000Z"
+                                                updatedAt: "2024-01-15T10:30:00.000Z"
+                                            token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjUwN2YxZjc3YmNmODZjZDc5OTQzOTAxMSIsImVtYWlsIjoiam9obi5kb2VAZXhhbXBsZS5jb20iLCJuYW1lIjoiSm9obiBEb2UiLCJpYXQiOjE3MDUzMjE2MDAsImV4cCI6MTcwNTkyNjQwMH0.example"
+                "400":
+                    description: Bad request - Missing required fields
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                        example: false
+                                    message:
+                                        type: string
+                                        example: "Email and password are required"
+                            examples:
+                                missingFields:
+                                    summary: Missing required fields
+                                    value:
+                                        success: false
+                                        message: "Email and password are required"
+                "401":
+                    description: Unauthorized - Invalid credentials
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                        example: false
+                                    message:
+                                        type: string
+                                        example: "Invalid email or password"
+                            examples:
+                                invalidCredentials:
+                                    summary: Invalid credentials
+                                    value:
+                                        success: false
+                                        message: "Invalid email or password"
+                "500":
+                    description: Internal server error
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                        example: false
+                                    message:
+                                        type: string
+                                        example: "Internal Server Error"
+                                    error:
+                                        type: string
+                                        example: "Error message details"
+                            examples:
+                                serverError:
+                                    summary: Server error
+                                    value:
+                                        success: false
+                                        message: "Internal Server Error"
+                                        error: "Database connection failed"
+
+components:
+    schemas:
+        User:
+            type: object
+            properties:
+                _id:
+                    type: string
+                    description: Unique identifier for the user
+                name:
+                    type: string
+                    description: Full name of the user
+                email:
+                    type: string
+                    format: email
+                    description: Email address of the user
+                createdAt:
+                    type: string
+                    format: date-time
+                    description: User creation timestamp
+                updatedAt:
+                    type: string
+                    format: date-time
+                    description: User last update timestamp
+        RegisterRequest:
+            type: object
+            required:
+                - name
+                - email
+                - password
+            properties:
+                name:
+                    type: string
+                    description: Full name of the user
+                email:
+                    type: string
+                    format: email
+                    description: Email address of the user
+                password:
+                    type: string
+                    format: password
+                    minLength: 6
+                    description: Password for the user account (minimum 6 characters)
+        LoginRequest:
+            type: object
+            required:
+                - email
+                - password
+            properties:
+                email:
+                    type: string
+                    format: email
+                    description: Email address of the user
+                password:
+                    type: string
+                    format: password
+                    description: Password for the user account
+        LoginResponse:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                message:
+                    type: string
+                data:
+                    type: object
+                    properties:
+                        user:
+                            $ref: "#/components/schemas/User"
+                        token:
+                            type: string
+                            description: JWT authentication token
+        SuccessResponse:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                message:
+                    type: string
+                data:
+                    $ref: "#/components/schemas/User"
+        ErrorResponse:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                message:
+                    type: string
+                error:
+                    type: string
+                    description: Error details (optional)

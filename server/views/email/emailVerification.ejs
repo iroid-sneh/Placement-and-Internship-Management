@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Verify Your Email - Hesap</title>
+        <style>
+            body {
+                font-family: "Segoe UI", Roboto, sans-serif;
+                background-color: #f5fafe;
+                margin: 0;
+                padding: 0;
+                color: #1a2f4f;
+            }
+
+            .container {
+                max-width: 480px;
+                margin: 50px auto;
+                background: #fff;
+                border-radius: 12px;
+                box-shadow: 0 0 20px rgba(0, 100, 164, 0.1);
+                overflow: hidden;
+                text-align: center;
+                padding: 40px 30px;
+            }
+
+            .header {
+                background: linear-gradient(to right, #0064a4, #88d1ff);
+                padding: 30px 0 20px;
+                border-top-left-radius: 12px;
+                border-top-right-radius: 12px;
+            }
+
+            .logo-icon {
+                width: 50px;
+                height: 50px;
+                margin: 0 auto 12px;
+            }
+
+            .app-name {
+                font-size: 28px;
+                font-weight: 700;
+                color: #ffffff;
+                margin-bottom: 6px;
+            }
+
+            .subtitle {
+                font-size: 13px;
+                font-weight: 400;
+                color: white;
+                opacity: 0.9;
+            }
+
+            .title {
+                font-size: 20px;
+                margin: 30px 0 10px;
+                font-weight: 600;
+            }
+
+            .text {
+                font-size: 14px;
+                color: #4a4a4a;
+                margin-bottom: 25px;
+            }
+
+            .footer-text {
+                font-size: 14px;
+                color: #4a4a4a;
+                margin: 20px 0 5px;
+            }
+
+            .footer-note {
+                font-size: 13px;
+                color: #4a4a4a;
+                line-height: 1;
+                margin: 0 auto 20px;
+            }
+
+            .footer {
+                font-size: 13px;
+                color: #4a4a4a;
+                border-top: 1px solid #e1e1e1;
+                padding-top: 15px;
+                margin-top: 20px;
+            }
+
+            @media (max-width: 500px) {
+                .container {
+                    margin: 20px;
+                    padding: 30px 20px;
+                }
+
+                .otp-digit {
+                    width: 40px;
+                    height: 40px;
+                    font-size: 20px;
+                }
+            }
+            .otp-box {
+                display: inline-block;
+                background: #cfedff;
+                color: #0064a4;
+                font-size: 24px;
+                font-weight: 600;
+                padding: 12px 20px;
+                border-radius: 8px;
+                margin: 20px 0;
+                letter-spacing: 2px;
+            }
+        </style>
+    </head>
+    <body>
+        <body style="margin: 0; padding: 0; background-color: #f5fafe">
+            <div style="width: 100%; background-color: #f5fafe; padding: 40px 0">
+                <div class="container">
+                    <div class="header">
+                        <img src="<%= logo %>" alt="Hesap Logo" class="logo-icon" />
+                        <div class="app-name">Hesap</div>
+                        <div class="subtitle">Real prices. Real reviews. Right choices.</div>
+                    </div>
+
+                    <div class="title">
+                        <% if (type == 1) { %> Verify your Email <% } else if (type === 2) { %>
+                        Reset your Password <% } else { %> Your OTP Code <% } %>
+                    </div>
+
+                    <div class="text">
+                        Please enter the 4-digit code for <% if (type == 1) { %> registration. <% }
+                        else { %> reset your password. <% } %>
+                        <div style="margin-top: 6px; font-size: 13px; color: #777">
+                            This OTP is valid for 5 minutes.
+                        </div>
+                    </div>
+
+                    <div class="otp-box"><%= otp %></div>
+                    <div class="footer-note">
+                        <p>Please do not share this OTP with anyone for security reasons.</p>
+                        <p>If you did not request this, please ignore this email.</p>
+                    </div>
+
+                    <div class="footer">© Hesap All rights reserved.</div>
+                </div>
+            </div>
+        </body>
+    </body>
+</html>

@@ -1,0 +1,35 @@
+/* URL IMPORTS (SUCH AS FONT IMPORTS) SHOULD BE KEPT ABOVE TAILWIND IMPORTS - DO NOT DELETE THIS COMMENT */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+/* PLEASE NOTE: THESE TAILWIND IMPORTS SHOULD NEVER BE DELETED - DO NOT DELETE THIS COMMENT */
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+/* DO NOT DELETE THESE TAILWIND IMPORTS, OTHERWISE THE STYLING WILL NOT RENDER AT ALL - DO NOT DELETE THIS COMMENT */
+
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+@layer base {
+  :where(input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file'])) {
+    @apply h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm;
+  }
+  :where(select) {
+    @apply h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm;
+  }
+  :where(textarea) {
+    @apply min-h-[96px] w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm;
+  }
+  :where(input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file'])):focus,
+  :where(select):focus,
+  :where(textarea):focus {
+    @apply border-teal-500 ring-2 ring-teal-500/20 outline-none;
+  }
+  :where(input):-webkit-autofill,
+  :where(input):-webkit-autofill:hover,
+  :where(input):-webkit-autofill:focus {
+    -webkit-text-fill-color: #0f172a;
+    transition: background-color 9999s ease-in-out 0s;
+  }
+}
