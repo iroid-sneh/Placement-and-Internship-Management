@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//d/Projects/College Projects/**)"
+    ],
+    "additionalDirectories": [
+      "d:\\Projects\\College Projects\\Neel''''s Group"
+    ]
+  }
+}
