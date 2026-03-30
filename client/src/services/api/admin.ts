@@ -17,6 +17,15 @@ export interface AdminStudent {
   } | null;
 }
 
+export interface ReportStudent {
+  id: string;
+  name: string;
+  email: string;
+  department: string;
+  cgpa: number;
+  skills: string[];
+}
+
 export interface ReportSummary {
   totalStudents: number;
   totalCompanies: number;
@@ -24,6 +33,8 @@ export interface ReportSummary {
   totalApplications: number;
   selectedCount: number;
   openJobs: number;
+  scheduledInterviews: number;
+  students: ReportStudent[];
 }
 
 export const getAdminStudents = async (): Promise<AdminStudent[]> => {

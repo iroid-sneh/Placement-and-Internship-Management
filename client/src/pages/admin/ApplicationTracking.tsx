@@ -93,6 +93,8 @@ export function ApplicationTracking({
       'success' :
       item.status === 'Interview Scheduled' ?
       'info' :
+      item.status === 'Pending Decision' ?
+      'warning' :
       item.status === 'Shortlisted' ?
       'warning' :
       item.status === 'Rejected' ?
@@ -104,6 +106,8 @@ export function ApplicationTracking({
       'Selected' :
       item.status === 'Interview Scheduled' ?
       'Interview Scheduled' :
+      item.status === 'Pending Decision' ?
+      'Pending Decision' :
       item.status === 'Shortlisted' ?
       'Shortlisted' :
       item.status === 'Rejected' ?
@@ -292,6 +296,7 @@ export function ApplicationTracking({
                 <option value="Applied">Applied</option>
                 <option value="Shortlisted">Shortlisted</option>
                 <option value="Interview Scheduled">Interview Scheduled</option>
+                <option value="Pending Decision">Pending Decision</option>
                 <option value="Selected">Selected</option>
                 <option value="Rejected">Rejected</option>
               </select>

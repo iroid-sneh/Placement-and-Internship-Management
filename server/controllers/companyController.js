@@ -1,6 +1,14 @@
 import Company from "../models/company.js";
 import Job from "../models/job.js";
 import Application from "../models/application.js";
+import {
+    syncExpiredInterviewsToPendingDecision,
+    validateCompanyApplicantUpdate,
+} from "../services/application.service.js";
+import {
+    closeExpiredJobs,
+    validateFutureDeadline,
+} from "../services/job.service.js";
 
 export const getCompanyJobs = async (req, res) => {
     try {
@@ -11,6 +19,7 @@ export const getCompanyJobs = async (req, res) => {
                 message: "Company profile not found",
             });
         }
+        await closeExpiredJobs({ companyId: company._id });
         const jobs = await Job.find({ companyId: company._id }).sort({
             createdAt: -1,
         });
@@ -29,6 +38,7 @@ export const getCompanyJobs = async (req, res) => {
 
 export const getCompanyApplicants = async (req, res) => {
     try {
+        await syncExpiredInterviewsToPendingDecision();
         const company = await Company.findOne({ userId: req.user.id });
         if (!company) {
             return res.status(404).json({
@@ -36,6 +46,7 @@ export const getCompanyApplicants = async (req, res) => {
                 message: "Company profile not found",
             });
         }
+        await closeExpiredJobs({ companyId: company._id });
         const jobs = await Job.find({ companyId: company._id }).select("_id");
         const applications = await Application.find({
             jobId: { $in: jobs.map((job) => job._id) },
@@ -87,14 +98,21 @@ export const createCompanyJob = async (req, res) => {
                 message: "All job fields are required",
             });
         }
+        const deadlineValidation = validateFutureDeadline(lastDate);
+        if (!deadlineValidation.valid) {
+            return res.status(400).json({
+                success: false,
+                message: deadlineValidation.message,
+            });
+        }
         const job = await Job.create({
             companyId: company._id,
-            title,
-            description,
+            title: title.trim(),
+            description: description.trim(),
             type,
-            eligibility,
-            packageOrStipend,
-            lastDate,
+            eligibility: eligibility.trim(),
+            packageOrStipend: packageOrStipend.trim(),
+            lastDate: deadlineValidation.deadline,
             status: status || "Open",
         });
         return res.status(201).json({
@@ -127,20 +145,44 @@ export const updateCompanyJob = async (req, res) => {
                 message: "Job not found",
             });
         }
+        if (req.body.lastDate !== undefined) {
+            const deadlineValidation = validateFutureDeadline(req.body.lastDate);
+            if (!deadlineValidation.valid) {
+                return res.status(400).json({
+                    success: false,
+                    message: deadlineValidation.message,
+                });
+            }
+            job.lastDate = deadlineValidation.deadline;
+        }
         const fields = [
             "title",
             "description",
             "type",
             "eligibility",
             "packageOrStipend",
-            "lastDate",
             "status",
         ];
         fields.forEach((field) => {
             if (req.body[field] !== undefined) {
-                job[field] = req.body[field];
+                const value = req.body[field];
+                job[field] =
+                    typeof value === "string" &&
+                    !["type", "status"].includes(field)
+                        ? value.trim()
+                        : value;
             }
         });
+        if (job.status === "Open") {
+            const deadlineValidation = validateFutureDeadline(job.lastDate);
+            if (!deadlineValidation.valid) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Expired jobs cannot be reopened. Please extend the deadline first.",
+                });
+            }
+        }
         await job.save();
         return res.status(200).json({
             success: true,
@@ -189,6 +231,7 @@ export const deleteCompanyJob = async (req, res) => {
 
 export const updateCompanyApplicantStatus = async (req, res) => {
     try {
+        await syncExpiredInterviewsToPendingDecision();
         const company = await Company.findOne({ userId: req.user.id });
         if (!company) {
             return res.status(404).json({
@@ -215,11 +258,28 @@ export const updateCompanyApplicantStatus = async (req, res) => {
                 message: "You are not allowed to update this application",
             });
         }
+        const validation = validateCompanyApplicantUpdate(application, {
+            status,
+            interviewDate,
+        });
+        if (!validation.ok) {
+            return res.status(400).json({
+                success: false,
+                message: validation.message,
+            });
+        }
         if (status) {
             application.status = status;
         }
-        if (interviewDate !== undefined) {
-            application.interviewDate = interviewDate || null;
+        if (validation.interviewDate !== undefined) {
+            application.interviewDate = validation.interviewDate;
+        }
+        if (
+            status &&
+            status !== "Interview Scheduled" &&
+            interviewDate === undefined
+        ) {
+            application.interviewDate = null;
         }
         await application.save();
         return res.status(200).json({

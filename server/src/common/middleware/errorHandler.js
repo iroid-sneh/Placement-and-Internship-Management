@@ -20,6 +20,22 @@ export default (err, req, res, next) => {
         });
     }
 
+    if (err?.code === "LIMIT_FILE_SIZE") {
+        return res.status(HttpStatus.BAD_REQUEST).json({
+            success: false,
+            message: "Resume file size must be 5MB or less",
+            errorCode: "FILE_TOO_LARGE",
+        });
+    }
+
+    if (err?.message === "Only PDF resumes are allowed") {
+        return res.status(HttpStatus.BAD_REQUEST).json({
+            success: false,
+            message: err.message,
+            errorCode: "INVALID_FILE_TYPE",
+        });
+    }
+
     // Our custom Exceptions
     if (err instanceof Exception) {
         return res.status(err.statusCode).json({

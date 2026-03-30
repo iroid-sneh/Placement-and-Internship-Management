@@ -242,6 +242,8 @@ export function StudentDetail({
                     'success' :
                     app.status === 'Interview Scheduled' ?
                     'info' :
+                    app.status === 'Pending Decision' ?
+                    'warning' :
                     app.status === 'Rejected' ?
                     'error' :
                     app.status === 'Shortlisted' ?
@@ -251,6 +253,8 @@ export function StudentDetail({
                     label={
                     app.status === 'Interview Scheduled' ?
                     'Interview' :
+                    app.status === 'Pending Decision' ?
+                    'Pending Decision' :
                     app.status === 'Rejected' ?
                     'Rejected' :
                     app.status === 'Selected' ?

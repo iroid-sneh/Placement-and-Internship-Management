@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
+import { Modal } from '../../components/ui/Modal';
 import { User, Mail, Phone, BookOpen, Award, Save, X } from 'lucide-react';
 import { getStudentProfile, updateStudentProfile } from '../../services/api/student';
 import { useAuth } from '../../context/AuthContext';
@@ -15,9 +16,12 @@ export function StudentProfile({ onNavigate, onLogout }: StudentProfileProps) {
   const { user } = useAuth();
   const [profile, setProfile] = useState<StudentProfileType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [skills, setSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState('');
+  const [showUnsavedModal, setShowUnsavedModal] = useState(false);
+  const [pendingFormEvent, setPendingFormEvent] = useState<React.FormEvent | null>(null);
   const [formData, setFormData] = useState({
     enrollmentNumber: '',
     department: '',
@@ -74,9 +78,10 @@ export function StudentProfile({ onNavigate, onLogout }: StudentProfileProps) {
   const removeSkill = (skillToRemove: string) => {
     setSkills(skills.filter((skill) => skill !== skillToRemove));
   };
-  const handleSaveProfile = async (e: React.FormEvent): Promise<void> => {
-    e.preventDefault();
+
+  const executeSave = async (): Promise<void> => {
     try {
+      setIsSaving(true);
       setErrorMessage('');
       const updated = await updateStudentProfile({
         ...formData,
@@ -84,13 +89,51 @@ export function StudentProfile({ onNavigate, onLogout }: StudentProfileProps) {
       });
       setProfile(updated);
       setIsEditing(false);
+      setNewSkill('');
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Failed to update profile');
+    } finally {
+      setIsSaving(false);
     }
   };
+
+  const handleSaveProfile = async (e: React.FormEvent): Promise<void> => {
+    e.preventDefault();
+    if (newSkill.trim()) {
+      setPendingFormEvent(e);
+      setShowUnsavedModal(true);
+      return;
+    }
+    await executeSave();
+  };
+
+  const handleAddAndSave = async (): Promise<void> => {
+    if (newSkill.trim() && !skills.includes(newSkill.trim())) {
+      setSkills((prev) => [...prev, newSkill.trim()]);
+    }
+    setShowUnsavedModal(false);
+    setPendingFormEvent(null);
+    await executeSave();
+  };
+
+  const handleSaveWithoutAdding = async (): Promise<void> => {
+    setShowUnsavedModal(false);
+    setPendingFormEvent(null);
+    await executeSave();
+  };
+
+  const handleCancelModal = (): void => {
+    setShowUnsavedModal(false);
+    setPendingFormEvent(null);
+  };
+
   if (isLoading) {
     return <div className="p-8">Loading profile...</div>;
   }
+
+  const profileCompletionPercentage = profile?.resumeUrl ? 100 : 80;
+  const isProfileComplete = profileCompletionPercentage === 100;
+
   return (
     <DashboardLayout
       userRole="student"
@@ -123,22 +166,26 @@ export function StudentProfile({ onNavigate, onLogout }: StudentProfileProps) {
           </Button>
         </div>
 
-        {/* Profile Completion Card */}
-        <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="font-semibold text-slate-900">Profile Completion</h3>
-            <span className="text-teal-600 font-bold">{profile?.resumeUrl ? '100%' : '80%'}</span>
-          </div>
-          <div className="w-full bg-slate-100 rounded-full h-2.5">
-            <div
-              className="bg-teal-600 h-2.5 rounded-full"
-              style={{
-                width: profile?.resumeUrl ? '100%' : '80%'
-              }}>
+        {/* Profile Completion Card - hidden when 100% */}
+        {!isProfileComplete && (
+          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-semibold text-slate-900">Profile Completion</h3>
+              <span className="text-teal-600 font-bold">{profileCompletionPercentage}%</span>
             </div>
+            <div className="w-full bg-slate-100 rounded-full h-2.5">
+              <div
+                className="bg-teal-600 h-2.5 rounded-full"
+                style={{
+                  width: `${profileCompletionPercentage}%`
+                }}>
+              </div>
+            </div>
+              <p className="text-sm text-slate-500 mt-2">
+                Upload resume to complete profile.
+              </p>
           </div>
-            <p className="text-sm text-slate-500 mt-2">{profile?.resumeUrl ? 'Profile is complete for placement applications.' : 'Upload resume to complete profile.'}</p>
-        </div>
+        )}
 
         <form className="space-y-6" onSubmit={handleSaveProfile}>
           {errorMessage && (
@@ -169,7 +216,7 @@ export function StudentProfile({ onNavigate, onLogout }: StudentProfileProps) {
               <Input
                 label="Email Address"
                 value={user?.email || ''}
-                disabled={true} // Email usually can't be changed
+                disabled={true}
                 icon={<Mail className="h-4 w-4" />} />
 
               <Input
@@ -206,8 +253,6 @@ export function StudentProfile({ onNavigate, onLogout }: StudentProfileProps) {
                 value={String(formData.cgpa)}
                 onChange={(event) => setFormData((prev) => ({ ...prev, cgpa: Number(event.target.value) || 0 }))}
                 disabled={!isEditing} />
-
-              <Input label="Backlogs" value="0" disabled={true} />
             </div>
 
             <div className="space-y-2">
@@ -221,49 +266,78 @@ export function StudentProfile({ onNavigate, onLogout }: StudentProfileProps) {
                   </p>
                 )}
                 {skills.map((skill) =>
-                <span
-                  key={skill}
-                  className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-teal-50 text-teal-700 border border-teal-100">
+                  <span
+                    key={skill}
+                    className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-teal-50 text-teal-700 border border-teal-100">
 
                     {skill}
                     {isEditing &&
-                  <button
-                    type="button"
-                    onClick={() => removeSkill(skill)}
-                    className="ml-2 text-teal-500 hover:text-teal-700">
+                      <button
+                        type="button"
+                        onClick={() => removeSkill(skill)}
+                        className="ml-2 text-teal-500 hover:text-teal-700">
 
                         <X className="h-3 w-3" />
                       </button>
-                  }
+                    }
                   </span>
                 )}
               </div>
               {isEditing &&
-              <Input
-                placeholder="Type a skill and press Enter..."
-                value={newSkill}
-                onChange={(e) => setNewSkill(e.target.value)}
-                onKeyDown={handleAddSkill} />
-
+                <Input
+                  placeholder="Type a skill and press Enter..."
+                  value={newSkill}
+                  onChange={(e) => setNewSkill(e.target.value)}
+                  onKeyDown={handleAddSkill} />
               }
             </div>
           </div>
 
           {isEditing &&
-          <div className="flex justify-end gap-3">
+            <div className="flex justify-end gap-3">
               <Button
-              type="button"
-              variant="secondary"
-              onClick={() => setIsEditing(false)}>
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  setIsEditing(false);
+                  setNewSkill('');
+                }}>
 
                 Cancel
               </Button>
-              <Button type="submit" icon={<Save className="h-4 w-4" />}>
+              <Button type="submit" icon={<Save className="h-4 w-4" />} isLoading={isSaving}>
                 Save Changes
               </Button>
             </div>
           }
         </form>
+
+        {/* Unsaved Skill Confirmation Modal */}
+        <Modal
+          isOpen={showUnsavedModal}
+          onClose={handleCancelModal}
+          title="Unsaved Input Detected"
+          footer={
+            <>
+              <Button variant="primary" onClick={handleAddAndSave}>
+                Add &amp; Save
+              </Button>
+              <Button variant="outline" onClick={handleSaveWithoutAdding}>
+                Save Without Adding
+              </Button>
+              <Button variant="ghost" onClick={handleCancelModal}>
+                Cancel
+              </Button>
+            </>
+          }
+        >
+          <p className="text-slate-600">
+            You have unsaved input <span className="font-medium text-slate-900">"{newSkill}"</span> that hasn't been added as a skill.
+          </p>
+          <p className="mt-2 text-sm text-slate-500">
+            Would you like to add it before saving?
+          </p>
+        </Modal>
       </div>
     </DashboardLayout>);
 

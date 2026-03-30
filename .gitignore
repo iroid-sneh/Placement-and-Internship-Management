@@ -1,0 +1,18 @@
+# Reference MEAN project (do not commit)
+reference-mean-project.zip
+Angular-Placement-and-Internship-Management-System.zip
+mean-project/
+Angular-Placement-and-Internship-Management-System/
+*.zip
+
+# Uploaded resumes (also listed under server/.gitignore)
+server/public/resumes/
+server/public/resumes/*
+
+# Local / editor
+node_modules
+.env
+.env.*
+!.env.example
+dist
+.DS_Store

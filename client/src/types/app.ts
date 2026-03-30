@@ -18,6 +18,19 @@ export interface StudentProfile {
   cgpa: number;
   skills: string[];
   resumeUrl: string;
+  linkedinUrl?: string;
+  githubUrl?: string;
+  portfolioUrl?: string;
+  notificationPreferences?: {
+    jobAlerts: boolean;
+    applicationUpdates: boolean;
+    interviewNotifications: boolean;
+  };
+  jobPreferences?: {
+    preferredRole: string;
+    preferredLocation: string;
+    expectedSalary: string;
+  };
   createdAt?: string;
   updatedAt?: string;
 }
@@ -29,6 +42,9 @@ export interface Company {
   email: string;
   phone: string;
   location: string;
+  website?: string;
+  industry?: string;
+  description?: string;
 }
 
 export interface Job {
@@ -47,7 +63,13 @@ export interface Application {
   _id: string;
   studentId: AuthUser | string;
   jobId: Job | string;
-  status: "Applied" | "Shortlisted" | "Interview Scheduled" | "Selected" | "Rejected";
+  status:
+    | "Applied"
+    | "Shortlisted"
+    | "Interview Scheduled"
+    | "Pending Decision"
+    | "Selected"
+    | "Rejected";
   interviewDate: string | null;
   createdAt: string;
 }

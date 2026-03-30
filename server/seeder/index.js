@@ -1,7 +1,7 @@
 import Admin from "../models/admin.js";
 import AuthHelper from "../src/common/authHelper.js";
 
-const admin = async () => {
+const seedAdmin = async () => {
     const adminData = {
         email: "admin@gmail.com",
         password: "admin@123", //
@@ -13,15 +13,15 @@ const admin = async () => {
         const hashedPassword = await AuthHelper.hashPassword(
             adminData.password
         );
-        const insert = await Admin.create({
+        await Admin.create({
             email: adminData.email,
             password: hashedPassword,
         });
         console.log("Admin Seeded");
         return true;
     }
+
+    return false;
 };
 
-admin();
-
-export default admin;
+export default seedAdmin;

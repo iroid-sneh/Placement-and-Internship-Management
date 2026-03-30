@@ -81,6 +81,8 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
             ? 'success'
             : application.status === 'Interview Scheduled'
               ? 'info'
+              : application.status === 'Pending Decision'
+                ? 'warning'
               : application.status === 'Shortlisted'
                 ? 'warning'
                 : application.status === 'Rejected'
@@ -105,10 +107,11 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
     applicationsData.filter((application) => application.status === 'Applied').length,
     applicationsData.filter((application) => application.status === 'Shortlisted').length,
     applicationsData.filter((application) => application.status === 'Interview Scheduled').length,
+    applicationsData.filter((application) => application.status === 'Pending Decision').length,
     applicationsData.filter((application) => application.status === 'Selected').length,
     applicationsData.filter((application) => application.status === 'Rejected').length
   ];
-  const chartLabels = ['Applied', 'Shortlisted', 'Interview', 'Selected', 'Rejected'];
+  const chartLabels = ['Applied', 'Shortlisted', 'Interview', 'Pending', 'Selected', 'Rejected'];
   const maxChartValue = Math.max(...chartValues, 1);
 
   const columns: Column<StudentApplication>[] = [

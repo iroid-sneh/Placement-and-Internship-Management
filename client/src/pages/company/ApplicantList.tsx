@@ -33,6 +33,11 @@ export function ApplicantList({ onNavigate, onLogout }: ApplicantListProps) {
   useEffect(() => {
     void loadApplicants();
   }, []);
+  const pendingDecisionCount = useMemo(
+    () => applicants.filter((a) => a.status === 'Pending Decision').length,
+    [applicants]
+  );
+
   const rows = useMemo(
     () =>
       applicants.map((application) => ({
@@ -49,7 +54,7 @@ export function ApplicantList({ onNavigate, onLogout }: ApplicantListProps) {
   );
   const handleOpenStatusModal = (applicationId: string, status: Application['status']): void => {
     setSelectedApplicationId(applicationId);
-    setSelectedStatus(status);
+    setSelectedStatus(status === 'Pending Decision' ? 'Selected' : status);
     setInterviewDate('');
     setModalErrorMessage('');
     setIsStatusModalOpen(true);
@@ -107,6 +112,8 @@ export function ApplicantList({ onNavigate, onLogout }: ApplicantListProps) {
       'success' :
       item.status === 'Interview Scheduled' ?
       'info' :
+      item.status === 'Pending Decision' ?
+      'warning' :
       item.status === 'Shortlisted' ?
       'warning' :
       item.status === 'Rejected' ?
@@ -118,6 +125,8 @@ export function ApplicantList({ onNavigate, onLogout }: ApplicantListProps) {
       'Selected' :
       item.status === 'Interview Scheduled' ?
       'Interview Scheduled' :
+      item.status === 'Pending Decision' ?
+      'Pending Decision' :
       item.status === 'Shortlisted' ?
       'Shortlisted' :
       item.status === 'Rejected' ?
@@ -157,6 +166,14 @@ export function ApplicantList({ onNavigate, onLogout }: ApplicantListProps) {
         {errorMessage && (
           <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
             {errorMessage}
+          </div>
+        )}
+
+        {pendingDecisionCount > 0 && (
+          <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            {pendingDecisionCount} application{pendingDecisionCount === 1 ? '' : 's'} had an interview date that has
+            passed. Please update each to <strong>Selected</strong> or <strong>Rejected</strong> (or reschedule the
+            interview).
           </div>
         )}
 

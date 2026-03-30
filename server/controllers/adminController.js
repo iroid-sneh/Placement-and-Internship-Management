@@ -3,6 +3,19 @@ import StudentProfile from "../models/studentProfile.js";
 import Company from "../models/company.js";
 import Job from "../models/job.js";
 import Application from "../models/application.js";
+import {
+    parseInterviewDate,
+    syncExpiredInterviewsToPendingDecision,
+    isValidApplicationStatus,
+} from "../services/application.service.js";
+import {
+    deleteCompanyCascade,
+    deleteStudentCascade,
+} from "../services/cascade.service.js";
+import {
+    closeExpiredJobs,
+    validateFutureDeadline,
+} from "../services/job.service.js";
 
 export const getStudents = async (_req, res) => {
     try {
@@ -51,16 +64,13 @@ export const getStudents = async (_req, res) => {
 export const deleteStudent = async (req, res) => {
     try {
         const { id } = req.params;
-        const student = await User.findOne({ _id: id, role: "student" });
+        const student = await deleteStudentCascade(id);
         if (!student) {
             return res.status(404).json({
                 success: false,
                 message: "Student not found",
             });
         }
-        await StudentProfile.deleteOne({ userId: student._id });
-        await Application.deleteMany({ studentId: student._id });
-        await User.deleteOne({ _id: student._id });
         return res.status(200).json({
             success: true,
             message: "Student deleted successfully",
@@ -91,11 +101,11 @@ export const createCompany = async (req, res) => {
             });
         }
         const company = await Company.create({
-            name,
-            hrName,
+            name: name.trim(),
+            hrName: hrName.trim(),
             email: email.toLowerCase(),
-            phone,
-            location,
+            phone: phone.trim(),
+            location: location.trim(),
         });
         return res.status(201).json({
             success: true,
@@ -137,12 +147,40 @@ export const updateCompany = async (req, res) => {
                 message: "Company not found",
             });
         }
-        if (name !== undefined) company.name = name;
-        if (hrName !== undefined) company.hrName = hrName;
+        if (
+            email !== undefined &&
+            email.toLowerCase() !== company.email.toLowerCase()
+        ) {
+            const existingEmail = await Company.findOne({
+                email: email.toLowerCase(),
+                _id: { $ne: company._id },
+            }).select("_id");
+
+            if (existingEmail) {
+                return res.status(409).json({
+                    success: false,
+                    message: "Company email already exists",
+                });
+            }
+        }
+        if (name !== undefined) company.name = name.trim();
+        if (hrName !== undefined) company.hrName = hrName.trim();
         if (email !== undefined) company.email = email.toLowerCase();
-        if (phone !== undefined) company.phone = phone;
-        if (location !== undefined) company.location = location;
+        if (phone !== undefined) company.phone = phone.trim();
+        if (location !== undefined) company.location = location.trim();
         await company.save();
+        if (company.userId) {
+            const userUpdates = {};
+            if (name !== undefined) userUpdates.name = company.name;
+            if (email !== undefined) userUpdates.email = company.email;
+
+            if (Object.keys(userUpdates).length > 0) {
+                await User.updateOne(
+                    { _id: company.userId, role: "company" },
+                    { $set: userUpdates }
+                );
+            }
+        }
         return res.status(200).json({
             success: true,
             data: company,
@@ -159,17 +197,13 @@ export const updateCompany = async (req, res) => {
 export const deleteCompany = async (req, res) => {
     try {
         const { id } = req.params;
-        const company = await Company.findById(id);
+        const company = await deleteCompanyCascade(id);
         if (!company) {
             return res.status(404).json({
                 success: false,
                 message: "Company not found",
             });
         }
-        const jobs = await Job.find({ companyId: company._id });
-        await Application.deleteMany({ jobId: { $in: jobs.map((job) => job._id) } });
-        await Job.deleteMany({ companyId: company._id });
-        await Company.deleteOne({ _id: company._id });
         return res.status(200).json({
             success: true,
             message: "Company deleted successfully",
@@ -216,14 +250,21 @@ export const createJob = async (req, res) => {
                 message: "Company not found",
             });
         }
+        const deadlineValidation = validateFutureDeadline(lastDate);
+        if (!deadlineValidation.valid) {
+            return res.status(400).json({
+                success: false,
+                message: deadlineValidation.message,
+            });
+        }
         const job = await Job.create({
             companyId,
-            title,
-            description,
+            title: title.trim(),
+            description: description.trim(),
             type,
-            eligibility,
-            packageOrStipend,
-            lastDate,
+            eligibility: eligibility.trim(),
+            packageOrStipend: packageOrStipend.trim(),
+            lastDate: deadlineValidation.deadline,
             status: status || "Open",
         });
         return res.status(201).json({
@@ -241,6 +282,7 @@ export const createJob = async (req, res) => {
 
 export const getJobs = async (_req, res) => {
     try {
+        await closeExpiredJobs();
         const jobs = await Job.find({})
             .populate("companyId", "name")
             .sort({ createdAt: -1 });
@@ -267,6 +309,25 @@ export const updateJob = async (req, res) => {
                 message: "Job not found",
             });
         }
+        if (req.body.companyId !== undefined) {
+            const company = await Company.findById(req.body.companyId);
+            if (!company) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Company not found",
+                });
+            }
+        }
+        if (req.body.lastDate !== undefined) {
+            const deadlineValidation = validateFutureDeadline(req.body.lastDate);
+            if (!deadlineValidation.valid) {
+                return res.status(400).json({
+                    success: false,
+                    message: deadlineValidation.message,
+                });
+            }
+            job.lastDate = deadlineValidation.deadline;
+        }
         const fields = [
             "companyId",
             "title",
@@ -274,14 +335,28 @@ export const updateJob = async (req, res) => {
             "type",
             "eligibility",
             "packageOrStipend",
-            "lastDate",
             "status",
         ];
         fields.forEach((field) => {
             if (req.body[field] !== undefined) {
-                job[field] = req.body[field];
+                const value = req.body[field];
+                job[field] =
+                    typeof value === "string" &&
+                    !["type", "status", "companyId"].includes(field)
+                        ? value.trim()
+                        : value;
             }
         });
+        if (job.status === "Open") {
+            const deadlineValidation = validateFutureDeadline(job.lastDate);
+            if (!deadlineValidation.valid) {
+                return res.status(400).json({
+                    success: false,
+                    message:
+                        "Expired jobs cannot be reopened. Please extend the deadline first.",
+                });
+            }
+        }
         await job.save();
         return res.status(200).json({
             success: true,
@@ -323,6 +398,8 @@ export const deleteJob = async (req, res) => {
 
 export const getApplications = async (_req, res) => {
     try {
+        await closeExpiredJobs();
+        await syncExpiredInterviewsToPendingDecision();
         const applications = await Application.find({})
             .populate("studentId", "name email")
             .populate({
@@ -345,6 +422,8 @@ export const getApplications = async (_req, res) => {
 
 export const updateApplicationStatus = async (req, res) => {
     try {
+        await closeExpiredJobs();
+        await syncExpiredInterviewsToPendingDecision();
         const { id } = req.params;
         const { status, interviewDate } = req.body;
         const application = await Application.findById(id);
@@ -354,11 +433,37 @@ export const updateApplicationStatus = async (req, res) => {
                 message: "Application not found",
             });
         }
-        if (status) {
+        if (status !== undefined && status !== null && status !== "") {
+            if (!isValidApplicationStatus(status)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Invalid application status",
+                });
+            }
+            if (status === "Interview Scheduled" && !interviewDate) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Interview date is required when status is Interview Scheduled",
+                });
+            }
             application.status = status;
         }
-        if (interviewDate !== undefined) {
-            application.interviewDate = interviewDate || null;
+        const parsedInterviewDate = parseInterviewDate(interviewDate);
+        if (!parsedInterviewDate.ok) {
+            return res.status(400).json({
+                success: false,
+                message: parsedInterviewDate.message,
+            });
+        }
+        if (parsedInterviewDate.value !== undefined) {
+            application.interviewDate = parsedInterviewDate.value;
+        }
+        if (
+            status &&
+            status !== "Interview Scheduled" &&
+            interviewDate === undefined
+        ) {
+            application.interviewDate = null;
         }
         await application.save();
         return res.status(200).json({
@@ -377,6 +482,8 @@ export const updateApplicationStatus = async (req, res) => {
 
 export const getReportSummary = async (_req, res) => {
     try {
+        await closeExpiredJobs();
+        await syncExpiredInterviewsToPendingDecision();
         const totalStudents = await User.countDocuments({ role: "student" });
         const totalCompanies = await Company.countDocuments({});
         const totalJobs = await Job.countDocuments({});
@@ -385,6 +492,29 @@ export const getReportSummary = async (_req, res) => {
             status: "Selected",
         });
         const openJobs = await Job.countDocuments({ status: "Open" });
+
+        const students = await User.find({ role: "student" })
+            .select("-password")
+            .sort({ createdAt: -1 });
+        const profiles = await StudentProfile.find({
+            userId: { $in: students.map((student) => student._id) },
+        });
+        const profileMap = new Map(
+            profiles.map((profile) => [profile.userId.toString(), profile])
+        );
+        const studentsWithSkills = students.map((student) => ({
+            id: student._id,
+            name: student.name,
+            email: student.email,
+            department: profileMap.get(student._id.toString())?.department || "-",
+            cgpa: profileMap.get(student._id.toString())?.cgpa || 0,
+            skills: profileMap.get(student._id.toString())?.skills || [],
+        }));
+
+        const scheduledInterviews = await Application.countDocuments({
+            status: "Interview Scheduled",
+        });
+
         return res.status(200).json({
             success: true,
             data: {
@@ -394,6 +524,8 @@ export const getReportSummary = async (_req, res) => {
                 totalApplications,
                 selectedCount,
                 openJobs,
+                scheduledInterviews,
+                students: studentsWithSkills,
             },
         });
     } catch (error) {

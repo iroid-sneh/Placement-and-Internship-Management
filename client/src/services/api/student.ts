@@ -60,3 +60,56 @@ export const getStudentApplications = async (): Promise<Application[]> => {
   const response = await apiRequest<Application[]>("/student/applications");
   return response.data;
 };
+
+export const changePassword = async (
+  currentPassword: string,
+  newPassword: string,
+  confirmNewPassword: string
+): Promise<void> => {
+  await apiRequest("/student/settings/change-password", {
+    method: "POST",
+    body: JSON.stringify({ currentPassword, newPassword, confirmNewPassword }),
+  });
+};
+
+export const updateEmail = async (
+  newEmail: string,
+  password: string
+): Promise<{ email: string }> => {
+  const response = await apiRequest<{ email: string }>(
+    "/student/settings/update-email",
+    {
+      method: "POST",
+      body: JSON.stringify({ newEmail, password }),
+    }
+  );
+  return response.data;
+};
+
+export const deleteAccount = async (): Promise<void> => {
+  await apiRequest("/student/settings/delete-account", {
+    method: "DELETE",
+  });
+};
+
+export const saveNotificationPreferences = async (prefs: {
+  jobAlerts: boolean;
+  applicationUpdates: boolean;
+  interviewNotifications: boolean;
+}): Promise<void> => {
+  await apiRequest("/student/settings/notification-preferences", {
+    method: "POST",
+    body: JSON.stringify(prefs),
+  });
+};
+
+export const saveJobPreferences = async (prefs: {
+  preferredRole: string;
+  preferredLocation: string;
+  expectedSalary: string;
+}): Promise<void> => {
+  await apiRequest("/student/settings/job-preferences", {
+    method: "POST",
+    body: JSON.stringify(prefs),
+  });
+};

@@ -73,7 +73,7 @@ export function CompanyDashboard({
             ? 'new'
             : application.status === 'Shortlisted'
               ? 'screening'
-              : application.status === 'Interview Scheduled'
+              : application.status === 'Interview Scheduled' || application.status === 'Pending Decision'
                 ? 'interview'
                 : application.status === 'Selected'
                   ? 'hired'

@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 
-export function mongoConnection() {
-    // Only connect if not already connected
+export async function mongoConnection() {
     if (mongoose.connection.readyState === 1) {
         console.log("MongoDB already connected");
         return;
@@ -9,15 +8,10 @@ export function mongoConnection() {
 
     try {
         mongoose.set("strictQuery", false);
-        mongoose
-            .connect(process.env.MONGO_DB_URL, {})
-            .then(() => {
-                console.log("Connected to MongoDB");
-            })
-            .catch((error) => {
-                console.log("Error In MongoDBConnection", error);
-            });
+        await mongoose.connect(process.env.MONGO_DB_URL, {});
+        console.log("Connected to MongoDB");
     } catch (error) {
         console.log("Error In Connection Function", error);
+        throw error;
     }
 }

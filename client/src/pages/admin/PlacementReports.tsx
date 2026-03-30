@@ -10,7 +10,7 @@ import {
   TrendingUp } from
 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { getAdminReportSummary, type ReportSummary } from '../../services/api/admin';
+import { getAdminReportSummary, type ReportSummary, type ReportStudent } from '../../services/api/admin';
 interface PlacementReportsProps {
   onNavigate: (path: string) => void;
   onLogout: () => void;
@@ -26,14 +26,18 @@ export function PlacementReports({
     totalJobs: 0,
     totalApplications: 0,
     selectedCount: 0,
-    openJobs: 0
+    openJobs: 0,
+    scheduledInterviews: 0,
+    students: []
   });
+  const [students, setStudents] = useState<ReportStudent[]>([]);
   const [errorMessage, setErrorMessage] = useState('');
   useEffect(() => {
     const loadSummary = async (): Promise<void> => {
       try {
         const response = await getAdminReportSummary();
         setSummary(response);
+        setStudents(response.students || []);
       } catch (error) {
         setErrorMessage(error instanceof Error ? error.message : 'Failed to load report');
       }
@@ -213,7 +217,65 @@ export function PlacementReports({
               <tbody className="divide-y divide-slate-200">
                 <tr className="hover:bg-slate-50"><td className="px-4 py-3 font-medium text-slate-900">Total Jobs</td><td className="px-4 py-3">{summary.totalJobs}</td></tr>
                 <tr className="hover:bg-slate-50"><td className="px-4 py-3 font-medium text-slate-900">Total Applications</td><td className="px-4 py-3">{summary.totalApplications}</td></tr>
+                <tr className="hover:bg-slate-50"><td className="px-4 py-3 font-medium text-slate-900">Scheduled Interviews</td><td className="px-4 py-3">{summary.scheduledInterviews}</td></tr>
                 <tr className="hover:bg-slate-50"><td className="px-4 py-3 font-medium text-slate-900">Placement Percentage</td><td className="px-4 py-3">{placementPercentage}%</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Students Table with Skills */}
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
+          <div className="p-4 border-b border-slate-200">
+            <h3 className="font-bold text-slate-900">
+              Students Overview
+            </h3>
+            <p className="text-sm text-slate-500 mt-1">
+              All registered students with their skills.
+            </p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+                <tr>
+                  <th className="px-4 py-3">Name</th>
+                  <th className="px-4 py-3">Department</th>
+                  <th className="px-4 py-3">CGPA</th>
+                  <th className="px-4 py-3">Skills</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200">
+                {students.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="px-4 py-6 text-center text-slate-500">
+                      No students found.
+                    </td>
+                  </tr>
+                ) : (
+                  students.map((student) => (
+                    <tr key={student.id} className="hover:bg-slate-50">
+                      <td className="px-4 py-3 font-medium text-slate-900">{student.name}</td>
+                      <td className="px-4 py-3 text-slate-600">{student.department}</td>
+                      <td className="px-4 py-3 text-slate-600">{student.cgpa}</td>
+                      <td className="px-4 py-3">
+                        {student.skills.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {student.skills.map((skill, idx) => (
+                              <span
+                                key={idx}
+                                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-700"
+                              >
+                                {skill}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-slate-400">No skills listed</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

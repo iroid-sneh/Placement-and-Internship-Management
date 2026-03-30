@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
-import { AdminLoginPage } from './pages/AdminLoginPage';
+import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
 import { useAuth } from './context/AuthContext';
 // Student Pages
 import { StudentDashboard } from './pages/student/StudentDashboard';
@@ -10,6 +10,7 @@ import { ResumeManagement } from './pages/student/ResumeManagement';
 import { BrowseJobs } from './pages/student/BrowseJobs';
 import { JobDetails } from './pages/student/JobDetails';
 import { MyApplications } from './pages/student/MyApplications';
+import { StudentSettings } from './pages/student/StudentSettings';
 // Admin Pages
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { StudentManagement } from './pages/admin/StudentManagement';
@@ -69,7 +70,7 @@ export function App() {
     setCurrentPath('dashboard');
   }, [isAuthenticated, user?.role, publicPath]);
 
-  const navigatePublic = (path: '/' | '/register' | '/admin/login'): void => {
+  const navigatePublic = (path: '/' | '/register' | '/forgot-password'): void => {
     window.history.pushState({}, '', path);
     setPublicPath(path);
   };
@@ -83,17 +84,15 @@ export function App() {
   const handleUserLogin = async (
     email: string,
     password: string,
-    role: 'student' | 'company'
+    role: 'student' | 'company' | 'admin'
   ): Promise<void> => {
-    await loginUser(email, password, role);
-    navigateProtected(role, 'dashboard', true);
-  };
-  const handleAdminLogin = async (
-    email: string,
-    password: string
-  ): Promise<void> => {
-    await loginAdmin(email, password);
-    navigateProtected('admin', 'dashboard', true);
+    if (role === 'admin') {
+      await loginAdmin(email, password);
+      navigateProtected('admin', 'dashboard', true);
+    } else {
+      await loginUser(email, password, role);
+      navigateProtected(role, 'dashboard', true);
+    }
   };
   const handleLogout = (): void => {
     logout();
@@ -113,19 +112,14 @@ export function App() {
     if (publicPath === '/register') {
       return <RegisterPage onGoLogin={() => navigatePublic('/')} />;
     }
-    if (publicPath === '/admin/login') {
-      return (
-        <AdminLoginPage
-          onLogin={handleAdminLogin}
-          onGoUserLogin={() => navigatePublic('/')}
-        />
-      );
+    if (publicPath === '/forgot-password') {
+      return <ForgotPasswordPage onGoLogin={() => navigatePublic('/')} />;
     }
     return (
       <LoginPage
         onLogin={handleUserLogin}
         onGoRegister={() => navigatePublic('/register')}
-        onGoAdminLogin={() => navigatePublic('/admin/login')}
+        onGoForgotPassword={() => navigatePublic('/forgot-password')}
       />
     );
   }
@@ -157,6 +151,10 @@ export function App() {
     if (currentPath === 'applications')
     return (
       <MyApplications onNavigate={handleNavigate} onLogout={handleLogout} />);
+
+    if (currentPath === 'settings')
+    return (
+      <StudentSettings onNavigate={handleNavigate} onLogout={handleLogout} />);
 
     return (
       <StudentDashboard onNavigate={handleNavigate} onLogout={handleLogout} />);
@@ -239,7 +237,7 @@ export function App() {
     <LoginPage
       onLogin={handleUserLogin}
       onGoRegister={() => navigatePublic('/register')}
-      onGoAdminLogin={() => navigatePublic('/admin/login')}
+      onGoForgotPassword={() => navigatePublic('/forgot-password')}
     />
   );
 }

@@ -11,7 +11,6 @@ const studentProfileSchema = new mongoose.Schema(
         enrollmentNumber: {
             type: String,
             required: true,
-            unique: true,
             trim: true,
         },
         department: {
@@ -43,6 +42,52 @@ const studentProfileSchema = new mongoose.Schema(
         resumeUrl: {
             type: String,
             default: "",
+        },
+        linkedinUrl: {
+            type: String,
+            default: "",
+            trim: true,
+        },
+        githubUrl: {
+            type: String,
+            default: "",
+            trim: true,
+        },
+        portfolioUrl: {
+            type: String,
+            default: "",
+            trim: true,
+        },
+        notificationPreferences: {
+            jobAlerts: {
+                type: Boolean,
+                default: true,
+            },
+            applicationUpdates: {
+                type: Boolean,
+                default: true,
+            },
+            interviewNotifications: {
+                type: Boolean,
+                default: true,
+            },
+        },
+        jobPreferences: {
+            preferredRole: {
+                type: String,
+                default: "",
+                trim: true,
+            },
+            preferredLocation: {
+                type: String,
+                default: "",
+                trim: true,
+            },
+            expectedSalary: {
+                type: String,
+                default: "",
+                trim: true,
+            },
         },
     },
     {

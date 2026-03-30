@@ -29,10 +29,27 @@ const companySchema = new mongoose.Schema(
             required: true,
             trim: true,
         },
+        website: {
+            type: String,
+            default: "",
+            trim: true,
+        },
+        industry: {
+            type: String,
+            default: "",
+            trim: true,
+        },
+        description: {
+            type: String,
+            default: "",
+            trim: true,
+        },
         userId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             default: null,
+            unique: true,
+            sparse: true,
         },
     },
     {

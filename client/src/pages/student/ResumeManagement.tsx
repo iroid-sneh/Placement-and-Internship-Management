@@ -83,6 +83,35 @@ export function ResumeManagement({ onNavigate, onLogout }: ResumeManagementProps
     ? `http://localhost:5001${resumeUrl}`
     : resumeUrl;
 
+  const downloadLink = resumeUrl.startsWith('/resumes/')
+    ? `http://localhost:5001/api/student/resume/download`
+    : resumeUrl;
+
+  const handleDownloadResume = (): void => {
+    const token = localStorage.getItem('token') || '';
+    const link = document.createElement('a');
+    link.href = downloadLink;
+    if (token) {
+      fetch(downloadLink, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then((response) => response.blob())
+        .then((blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = resumeUrl.split('/').pop() || 'resume.pdf';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          window.URL.revokeObjectURL(url);
+        })
+        .catch(() => {
+          setErrorMessage('Failed to download resume');
+        });
+    }
+  };
+
   const handleDeleteResume = async (): Promise<void> => {
     try {
       const profile = await deleteStudentResume();
@@ -147,7 +176,7 @@ export function ResumeManagement({ onNavigate, onLogout }: ResumeManagementProps
                       variant="ghost"
                       size="sm"
                       icon={<Download className="h-4 w-4" />}
-                      onClick={() => window.open(resumeLink, '_blank')}>
+                      onClick={handleDownloadResume}>
                       Download
                     </Button>
                   </div>
@@ -202,10 +231,10 @@ export function ResumeManagement({ onNavigate, onLogout }: ResumeManagementProps
                 Resume Tips
               </h3>
               <ul className="space-y-3 text-sm text-teal-800">
-                <li className="flex gap-2"><span className="font-bold">•</span> Keep it under 2 pages</li>
-                <li className="flex gap-2"><span className="font-bold">•</span> Use PDF format</li>
-                <li className="flex gap-2"><span className="font-bold">•</span> Highlight key projects and skills</li>
-                <li className="flex gap-2"><span className="font-bold">•</span> Check grammar and typos</li>
+                <li className="flex gap-2"><span className="font-bold">-</span> Keep it under 2 pages</li>
+                <li className="flex gap-2"><span className="font-bold">-</span> Use PDF format</li>
+                <li className="flex gap-2"><span className="font-bold">-</span> Highlight key projects and skills</li>
+                <li className="flex gap-2"><span className="font-bold">-</span> Check grammar and typos</li>
               </ul>
             </div>
           </div>

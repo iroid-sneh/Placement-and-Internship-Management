@@ -46,7 +46,10 @@ export function InterviewManagement({
   const interviews = useMemo(
     () =>
       applications
-        .filter((application) => application.interviewDate || application.status === 'Interview Scheduled')
+        .filter(
+          (application) =>
+            application.status === 'Interview Scheduled' && application.interviewDate
+        )
         .map((application) => {
           const student = typeof application.studentId === 'string' ? null : application.studentId;
           const job = typeof application.jobId === 'string' ? null : application.jobId;
