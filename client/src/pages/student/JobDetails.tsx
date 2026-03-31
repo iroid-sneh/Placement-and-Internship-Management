@@ -91,7 +91,11 @@ export function JobDetails({ onNavigate, onLogout, jobId }: JobDetailsProps) {
   const companyName = typeof job.companyId === 'string' ? '-' : job.companyId.name;
   const companyLocation = typeof job.companyId === 'string' ? '-' : job.companyId.location;
   const descriptionText = job.description;
-  const requirements = job.eligibility.split(',').map((item) => item.trim()).filter(Boolean);
+  const requirements = job.requiredSkills && job.requiredSkills.length > 0
+    ? job.requiredSkills
+    : job.eligibility
+      ? job.eligibility.split(',').map((item) => item.trim()).filter(Boolean)
+      : [];
   const inrCompensationText =
     job.packageOrStipend.toLowerCase().includes('inr') || job.packageOrStipend.includes('₹')
       ? job.packageOrStipend
@@ -149,6 +153,11 @@ export function JobDetails({ onNavigate, onLogout, jobId }: JobDetailsProps) {
                     <div className="flex items-center gap-1">
                       <MapPin className="h-4 w-4" />
                       {companyLocation}
+                      {job.jobMode && (
+                        <span className="ml-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                          {job.jobMode}
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center gap-1">
                       <IndianRupee className="h-4 w-4" />
@@ -185,7 +194,7 @@ export function JobDetails({ onNavigate, onLogout, jobId }: JobDetailsProps) {
 
             <section>
               <h3 className="text-lg font-bold text-slate-900 mb-3">
-                Requirements
+                {job.requiredSkills && job.requiredSkills.length > 0 ? 'Required Skills' : 'Requirements'}
               </h3>
               <ul className="space-y-2">
                 {requirements.map((req, i) =>

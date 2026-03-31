@@ -3,7 +3,9 @@ import User from "../models/user.js";
 import Application from "../models/application.js";
 import Job from "../models/job.js";
 import Company from "../models/company.js";
+import Notification from "../models/notification.js";
 import { syncExpiredInterviewsToPendingDecision } from "../services/application.service.js";
+import { createNotificationForCompany, createNotification } from "../services/notification.service.js";
 import AuthHelper from "../src/common/authHelper.js";
 import fs from "fs";
 import path from "path";
@@ -260,6 +262,17 @@ export const applyToJob = async (req, res) => {
             studentId: req.user.id,
             jobId,
         });
+
+        const student = await User.findById(req.user.id);
+        await createNotificationForCompany(job.companyId, {
+            type: "new_application",
+            title: "New Application Received",
+            message: `${student?.name || "A student"} has applied for ${job.title}`,
+            link: "applicants",
+            relatedApplicationId: application._id,
+            relatedJobId: job._id,
+        });
+
         return res.status(201).json({
             success: true,
             message: "Application submitted successfully",
@@ -471,6 +484,67 @@ export const saveJobPreferences = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Failed to save job preferences",
+            error: error.message,
+        });
+    }
+};
+
+export const getStudentNotifications = async (req, res) => {
+    try {
+        const notifications = await Notification.find({ userId: req.user.id })
+            .sort({ createdAt: -1 })
+            .limit(50);
+        const unreadCount = await Notification.countDocuments({
+            userId: req.user.id,
+            isRead: false,
+        });
+        return res.status(200).json({
+            success: true,
+            data: { notifications, unreadCount },
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch notifications",
+            error: error.message,
+        });
+    }
+};
+
+export const markStudentNotificationRead = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await Notification.findOneAndUpdate(
+            { _id: id, userId: req.user.id },
+            { isRead: true }
+        );
+        return res.status(200).json({
+            success: true,
+            message: "Notification marked as read",
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to mark notification as read",
+            error: error.message,
+        });
+    }
+};
+
+export const markAllStudentNotificationsRead = async (req, res) => {
+    try {
+        await Notification.updateMany(
+            { userId: req.user.id, isRead: false },
+            { isRead: true }
+        );
+        return res.status(200).json({
+            success: true,
+            message: "All notifications marked as read",
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to mark notifications as read",
             error: error.message,
         });
     }

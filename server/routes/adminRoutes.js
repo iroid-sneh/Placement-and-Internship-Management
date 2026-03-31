@@ -5,11 +5,14 @@ import {
     deleteCompany,
     deleteJob,
     deleteStudent,
+    getAdminNotifications,
     getApplications,
     getCompanies,
     getJobs,
     getReportSummary,
     getStudents,
+    markAllAdminNotificationsRead,
+    markAdminNotificationRead,
     updateApplicationStatus,
     updateCompany,
     updateJob,
@@ -49,5 +52,10 @@ adminRoutes.put(
 );
 
 adminRoutes.get("/reports/summary", getReportSummary);
+
+// Notifications
+adminRoutes.get("/notifications", getAdminNotifications);
+adminRoutes.put("/notifications/:id/read", markAdminNotificationRead);
+adminRoutes.put("/notifications/read-all", markAllAdminNotificationsRead);
 
 export default adminRoutes;

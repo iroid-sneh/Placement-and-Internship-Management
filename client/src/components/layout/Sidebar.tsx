@@ -117,6 +117,16 @@ export function Sidebar({
           id: 'applicants',
           label: 'Applicants',
           icon: <Users className="h-5 w-5" />
+        },
+        {
+          id: 'interviews',
+          label: 'Upcoming Interviews',
+          icon: <Calendar className="h-5 w-5" />
+        },
+        {
+          id: 'profile',
+          label: 'Company Profile',
+          icon: <Building2 className="h-5 w-5" />
         }];
 
       default:

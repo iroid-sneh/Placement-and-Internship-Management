@@ -24,6 +24,9 @@ import { PlacementReports } from './pages/admin/PlacementReports';
 import { CompanyDashboard } from './pages/company/CompanyDashboard';
 import { CompanyJobPostings } from './pages/company/CompanyJobPostings';
 import { ApplicantList } from './pages/company/ApplicantList';
+import { CompanyProfile } from './pages/company/CompanyProfile';
+import { UpcomingInterviews } from './pages/company/UpcomingInterviews';
+import { CompanySettings } from './pages/company/CompanySettings';
 
 type UserRole = 'student' | 'admin' | 'company';
 
@@ -228,6 +231,18 @@ export function App() {
     if (currentPath === 'applicants')
     return (
       <ApplicantList onNavigate={handleNavigate} onLogout={handleLogout} />);
+
+    if (currentPath === 'profile')
+    return (
+      <CompanyProfile onNavigate={handleNavigate} onLogout={handleLogout} />);
+
+    if (currentPath === 'interviews')
+    return (
+      <UpcomingInterviews onNavigate={handleNavigate} onLogout={handleLogout} />);
+
+    if (currentPath === 'settings')
+    return (
+      <CompanySettings onNavigate={handleNavigate} onLogout={handleLogout} />);
 
     return (
       <CompanyDashboard onNavigate={handleNavigate} onLogout={handleLogout} />);

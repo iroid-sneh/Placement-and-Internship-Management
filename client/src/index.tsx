@@ -1,12 +1,14 @@
 import './index.css';
-import React from "react";
-import { render } from "react-dom";
+import { createRoot } from "react-dom/client";
 import { App } from "./App";
+import { AppErrorBoundary } from "./components/app/AppErrorBoundary";
 import { AuthProvider } from "./context/AuthContext";
 
-render(
-  <AuthProvider>
-    <App />
-  </AuthProvider>,
-  document.getElementById("root")
+const root = createRoot(document.getElementById("root")!);
+root.render(
+  <AppErrorBoundary>
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+  </AppErrorBoundary>
 );

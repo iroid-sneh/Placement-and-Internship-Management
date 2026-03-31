@@ -61,8 +61,14 @@ export function StudentDetail({
   const mappedApplications = useMemo(
     () =>
       applications.map((application) => {
-        const job = typeof application.jobId === 'string' ? null : application.jobId;
-        const company = job && typeof job.companyId !== 'string' ? job.companyId.name : '-';
+        const job =
+          application.jobId && typeof application.jobId !== 'string'
+            ? application.jobId
+            : null;
+        const company =
+          job?.companyId && typeof job.companyId !== 'string'
+            ? job.companyId.name
+            : '-';
         return {
           company,
           role: job?.title || '-',

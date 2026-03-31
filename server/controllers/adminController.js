@@ -3,6 +3,7 @@ import StudentProfile from "../models/studentProfile.js";
 import Company from "../models/company.js";
 import Job from "../models/job.js";
 import Application from "../models/application.js";
+import Notification from "../models/notification.js";
 import {
     parseInterviewDate,
     syncExpiredInterviewsToPendingDecision,
@@ -532,6 +533,67 @@ export const getReportSummary = async (_req, res) => {
         return res.status(500).json({
             success: false,
             message: "Failed to fetch report summary",
+            error: error.message,
+        });
+    }
+};
+
+export const getAdminNotifications = async (req, res) => {
+    try {
+        const notifications = await Notification.find({ userId: req.user.id })
+            .sort({ createdAt: -1 })
+            .limit(50);
+        const unreadCount = await Notification.countDocuments({
+            userId: req.user.id,
+            isRead: false,
+        });
+        return res.status(200).json({
+            success: true,
+            data: { notifications, unreadCount },
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch notifications",
+            error: error.message,
+        });
+    }
+};
+
+export const markAdminNotificationRead = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await Notification.findOneAndUpdate(
+            { _id: id, userId: req.user.id },
+            { isRead: true }
+        );
+        return res.status(200).json({
+            success: true,
+            message: "Notification marked as read",
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to mark notification as read",
+            error: error.message,
+        });
+    }
+};
+
+export const markAllAdminNotificationsRead = async (req, res) => {
+    try {
+        await Notification.updateMany(
+            { userId: req.user.id, isRead: false },
+            { isRead: true }
+        );
+        return res.status(200).json({
+            success: true,
+            message: "All notifications marked as read",
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to mark notifications as read",
             error: error.message,
         });
     }

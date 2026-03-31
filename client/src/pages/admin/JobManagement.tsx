@@ -57,7 +57,10 @@ export function JobManagement({ onNavigate, onLogout }: JobManagementProps) {
     key: 'companyId',
     header: 'Company',
     sortable: true,
-    render: (item: Job) => (typeof item.companyId === 'string' ? '-' : item.companyId.name)
+    render: (item: Job) =>
+      item.companyId && typeof item.companyId !== 'string'
+        ? item.companyId.name
+        : '-'
   },
   {
     key: 'title',
@@ -116,7 +119,12 @@ export function JobManagement({ onNavigate, onLogout }: JobManagementProps) {
     setSelectedJob(job);
     setModalErrorMessage('');
     setFormData({
-      companyId: typeof job.companyId === 'string' ? job.companyId : job.companyId._id,
+      companyId:
+        job.companyId && typeof job.companyId !== 'string'
+          ? job.companyId._id
+          : typeof job.companyId === 'string'
+            ? job.companyId
+            : '',
       title: job.title,
       description: job.description,
       type: job.type,

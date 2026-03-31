@@ -3,16 +3,18 @@ import {
   ChevronDown,
   ChevronUp,
   Search,
-  Filter,
-  Download,
-  MoreHorizontal } from
+  Filter } from
 'lucide-react';
-import { DropdownMenu } from './DropdownMenu';
 export interface Column<T> {
   key: keyof T | string;
   header: string;
   render?: (item: T) => React.ReactNode;
   sortable?: boolean;
+}
+export interface FilterOption {
+  key: string;
+  label: string;
+  options: { label: string; value: string }[];
 }
 interface DataTableProps<T> {
   data: T[];
@@ -25,6 +27,10 @@ interface DataTableProps<T> {
     label: string;
     onClick: (selectedIds: string[]) => void;
   }[];
+  filterOptions?: FilterOption[];
+  onFilterChange?: (filters: Record<string, string>) => void;
+  externalSearch?: string;
+  onSearchChange?: (term: string) => void;
 }
 export function DataTable<
   T extends {
@@ -37,7 +43,11 @@ export function DataTable<
   title,
   actions,
   onSelectionChange,
-  bulkActions
+  bulkActions,
+  filterOptions,
+  onFilterChange,
+  externalSearch,
+  onSearchChange
 }: DataTableProps<T>) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [sortConfig, setSortConfig] = useState<{
@@ -46,7 +56,27 @@ export function DataTable<
   } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [filters, setFilters] = useState<Record<string, string>>({});
   const itemsPerPage = 10;
+
+  const activeSearch = externalSearch !== undefined ? externalSearch : searchTerm;
+  const handleSearch = onSearchChange || setSearchTerm;
+
+  const handleFilterChange = (key: string, value: string) => {
+    const newFilters = { ...filters };
+    if (value) {
+      newFilters[key] = value;
+    } else {
+      delete newFilters[key];
+    }
+    setFilters(newFilters);
+    setCurrentPage(1);
+    onFilterChange?.(newFilters);
+  };
+
+  const activeFilterCount = Object.keys(filters).length;
+
   // Handle Selection
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
@@ -83,7 +113,7 @@ export function DataTable<
   // Filter & Sort Data
   const filteredData = data.filter((item) =>
   Object.values(item).some((val) =>
-  String(val).toLowerCase().includes(searchTerm.toLowerCase())
+  String(val).toLowerCase().includes(activeSearch.toLowerCase())
   )
   );
   const sortedData = [...filteredData].sort((a, b) => {
@@ -114,17 +144,61 @@ export function DataTable<
             <input
               type="text"
               placeholder="Search..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={activeSearch}
+              onChange={(e) => handleSearch(e.target.value)}
               className="h-9 w-full rounded-md border border-slate-300 pl-9 pr-4 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 sm:w-64" />
 
           </div>
-          <button className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white p-2 text-slate-700 hover:bg-slate-50">
-            <Filter className="h-4 w-4" />
-          </button>
-          <button className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white p-2 text-slate-700 hover:bg-slate-50">
-            <Download className="h-4 w-4" />
-          </button>
+          {filterOptions && filterOptions.length > 0 && (
+            <div className="relative">
+              <button
+                onClick={() => setShowFilterPanel(!showFilterPanel)}
+                className={`inline-flex items-center justify-center rounded-md border p-2 transition-colors ${
+                  showFilterPanel || activeFilterCount > 0
+                    ? 'border-teal-500 bg-teal-50 text-teal-700'
+                    : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <Filter className="h-4 w-4" />
+              </button>
+              {showFilterPanel && (
+                <div className="absolute right-0 top-full z-50 mt-2 w-72 rounded-lg border border-slate-200 bg-white p-4 shadow-xl">
+                  <div className="space-y-4">
+                    {filterOptions.map((filter) => (
+                      <div key={filter.key}>
+                        <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-500">
+                          {filter.label}
+                        </label>
+                        <select
+                          value={filters[filter.key] || ''}
+                          onChange={(e) => handleFilterChange(filter.key, e.target.value)}
+                          className="h-9 w-full rounded-md border border-slate-300 bg-white px-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                        >
+                          <option value="">All</option>
+                          {filter.options.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    ))}
+                    {activeFilterCount > 0 && (
+                      <button
+                        onClick={() => {
+                          setFilters({});
+                          onFilterChange?.({});
+                        }}
+                        className="w-full text-sm font-medium text-teal-600 hover:text-teal-700"
+                      >
+                        Clear all filters
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

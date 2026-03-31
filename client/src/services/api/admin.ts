@@ -1,5 +1,5 @@
 import { apiRequest } from "./client";
-import type { Application, Company, Job } from "../../types/app";
+import type { Application, Company, Job, Notification } from "../../types/app";
 
 export interface AdminStudent {
   id: string;
@@ -133,4 +133,24 @@ export const updateAdminApplicationStatus = async (
 export const getAdminReportSummary = async (): Promise<ReportSummary> => {
   const response = await apiRequest<ReportSummary>("/admin/reports/summary");
   return response.data;
+};
+
+// Notifications
+export const getAdminNotifications = async (): Promise<{
+  notifications: Notification[];
+  unreadCount: number;
+}> => {
+  const response = await apiRequest<{
+    notifications: Notification[];
+    unreadCount: number;
+  }>("/admin/notifications");
+  return response.data;
+};
+
+export const markAdminNotificationRead = async (id: string): Promise<void> => {
+  await apiRequest(`/admin/notifications/${id}/read`, { method: "PUT" });
+};
+
+export const markAllAdminNotificationsRead = async (): Promise<void> => {
+  await apiRequest("/admin/notifications/read-all", { method: "PUT" });
 };

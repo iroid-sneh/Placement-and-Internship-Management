@@ -22,10 +22,19 @@ const jobSchema = new mongoose.Schema(
             enum: ["Job", "Internship"],
             required: true,
         },
+        jobMode: {
+            type: String,
+            enum: ["Remote", "Hybrid", "Onsite"],
+            default: "Onsite",
+        },
         eligibility: {
             type: String,
-            required: true,
             trim: true,
+            default: "",
+        },
+        requiredSkills: {
+            type: [String],
+            default: [],
         },
         packageOrStipend: {
             type: String,

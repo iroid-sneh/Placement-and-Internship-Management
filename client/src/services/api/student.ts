@@ -1,5 +1,5 @@
 import { apiRequest } from "./client";
-import type { Application, Job, StudentProfile } from "../../types/app";
+import type { Application, Job, Notification, StudentProfile } from "../../types/app";
 
 export const getStudentProfile = async (): Promise<StudentProfile> => {
   const response = await apiRequest<StudentProfile>("/student/profile");
@@ -112,4 +112,23 @@ export const saveJobPreferences = async (prefs: {
     method: "POST",
     body: JSON.stringify(prefs),
   });
+};
+
+export const getStudentNotifications = async (): Promise<{
+  notifications: Notification[];
+  unreadCount: number;
+}> => {
+  const response = await apiRequest<{
+    notifications: Notification[];
+    unreadCount: number;
+  }>("/student/notifications");
+  return response.data;
+};
+
+export const markStudentNotificationRead = async (id: string): Promise<void> => {
+  await apiRequest(`/student/notifications/${id}/read`, { method: "PUT" });
+};
+
+export const markAllStudentNotificationsRead = async (): Promise<void> => {
+  await apiRequest("/student/notifications/read-all", { method: "PUT" });
 };

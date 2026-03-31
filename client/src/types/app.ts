@@ -45,6 +45,9 @@ export interface Company {
   website?: string;
   industry?: string;
   description?: string;
+  userId?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Job {
@@ -53,7 +56,9 @@ export interface Job {
   title: string;
   description: string;
   type: "Job" | "Internship";
+  jobMode?: "Remote" | "Hybrid" | "Onsite";
   eligibility: string;
+  requiredSkills?: string[];
   packageOrStipend: string;
   lastDate: string;
   status: "Open" | "Closed";
@@ -72,4 +77,45 @@ export interface Application {
     | "Rejected";
   interviewDate: string | null;
   createdAt: string;
+}
+
+export interface StudentProfileDetail {
+  user: AuthUser;
+  profile: StudentProfile | null;
+}
+
+export interface Notification {
+  _id: string;
+  userId: string;
+  type:
+    | "new_application"
+    | "application_status_updated"
+    | "interview_scheduled"
+    | "interview_reminder"
+    | "interview_result_pending"
+    | "job_deadline_expired";
+  title: string;
+  message: string;
+  link: string;
+  isRead: boolean;
+  relatedApplicationId?: string;
+  relatedJobId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CompanySettings {
+  _id: string;
+  companyId: string;
+  notifications: {
+    applicationNotifications: boolean;
+    statusUpdateNotifications: boolean;
+  };
+  interview: {
+    defaultReminder: "1h" | "24h";
+    allowRescheduling: boolean;
+    enableNotes: boolean;
+  };
+  createdAt?: string;
+  updatedAt?: string;
 }

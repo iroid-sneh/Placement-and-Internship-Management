@@ -31,8 +31,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const storedToken = localStorage.getItem(TOKEN_KEY) || "";
     const storedUser = localStorage.getItem(USER_KEY);
     if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser) as AuthUser);
+      try {
+        const parsedUser = JSON.parse(storedUser) as Partial<AuthUser>;
+        const hasValidUser =
+          typeof parsedUser?.id === "string" &&
+          typeof parsedUser?.name === "string" &&
+          typeof parsedUser?.email === "string" &&
+          (parsedUser?.role === "student" ||
+            parsedUser?.role === "admin" ||
+            parsedUser?.role === "company");
+
+        if (hasValidUser) {
+          setToken(storedToken);
+          setUser(parsedUser as AuthUser);
+        } else {
+          localStorage.removeItem(TOKEN_KEY);
+          localStorage.removeItem(USER_KEY);
+        }
+      } catch {
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(USER_KEY);
+      }
     }
     setIsLoading(false);
   }, []);

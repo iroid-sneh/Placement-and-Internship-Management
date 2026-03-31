@@ -186,7 +186,12 @@ export const companyJobSchema = Joi.object({
     title: Joi.string().trim().min(2).max(160).required(),
     description: Joi.string().trim().min(10).max(4000).required(),
     type: Joi.string().valid("Job", "Internship").required(),
-    eligibility: Joi.string().trim().min(2).max(300).required(),
+    jobMode: Joi.string().valid("Remote", "Hybrid", "Onsite").default("Onsite"),
+    eligibility: Joi.string().trim().max(300).allow("", null),
+    requiredSkills: Joi.alternatives().try(
+        Joi.array().items(Joi.string().trim().min(1).max(60)).max(30),
+        Joi.string().trim().max(2000)
+    ).default([]),
     packageOrStipend: Joi.string().trim().min(2).max(120).required(),
     lastDate: Joi.date().iso().required(),
     status: Joi.string().valid("Open", "Closed").default("Open"),
@@ -196,10 +201,25 @@ export const companyJobUpdateSchema = Joi.object({
     title: Joi.string().trim().min(2).max(160),
     description: Joi.string().trim().min(10).max(4000),
     type: Joi.string().valid("Job", "Internship"),
-    eligibility: Joi.string().trim().min(2).max(300),
+    jobMode: Joi.string().valid("Remote", "Hybrid", "Onsite"),
+    eligibility: Joi.string().trim().max(300).allow("", null),
+    requiredSkills: Joi.alternatives().try(
+        Joi.array().items(Joi.string().trim().min(1).max(60)).max(30),
+        Joi.string().trim().max(2000)
+    ),
     packageOrStipend: Joi.string().trim().min(2).max(120),
     lastDate: Joi.date().iso(),
     status: Joi.string().valid("Open", "Closed"),
+}).min(1);
+
+export const companyProfileUpdateSchema = Joi.object({
+    name: nameSchema,
+    hrName: nameSchema,
+    phone: phoneSchema,
+    location: Joi.string().trim().min(2).max(160),
+    website: urlSchema,
+    industry: Joi.string().trim().max(120).allow("", null),
+    description: Joi.string().trim().max(1000).allow("", null),
 }).min(1);
 
 export const adminJobSchema = companyJobSchema.keys({
@@ -255,3 +275,15 @@ export const jobPreferencesSchema = Joi.object({
     preferredLocation: Joi.string().trim().max(120).allow("", null),
     expectedSalary: Joi.string().trim().max(50).allow("", null),
 });
+
+export const companySettingsUpdateSchema = Joi.object({
+    notifications: Joi.object({
+        applicationNotifications: Joi.boolean(),
+        statusUpdateNotifications: Joi.boolean(),
+    }),
+    interview: Joi.object({
+        defaultReminder: Joi.string().valid("1h", "24h"),
+        allowRescheduling: Joi.boolean(),
+        enableNotes: Joi.boolean(),
+    }),
+}).min(1);

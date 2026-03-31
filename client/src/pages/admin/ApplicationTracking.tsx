@@ -49,12 +49,20 @@ export function ApplicationTracking({
   const rows = applications.map((item) => ({
     id: item._id,
     student:
-      typeof item.studentId === 'string' ? '-' : item.studentId.name,
+      item.studentId && typeof item.studentId !== 'string'
+        ? item.studentId.name
+        : '-',
     company:
-      typeof item.jobId === 'string' || typeof item.jobId.companyId === 'string'
+      !item.jobId ||
+      typeof item.jobId === 'string' ||
+      !item.jobId.companyId ||
+      typeof item.jobId.companyId === 'string'
         ? '-'
         : item.jobId.companyId.name,
-    role: typeof item.jobId === 'string' ? '-' : item.jobId.title,
+    role:
+      item.jobId && typeof item.jobId !== 'string'
+        ? item.jobId.title
+        : '-',
     date: new Date(item.createdAt).toLocaleDateString(),
     status: item.status,
     interviewDate: item.interviewDate

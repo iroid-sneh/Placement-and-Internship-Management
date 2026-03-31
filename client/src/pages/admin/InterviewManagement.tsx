@@ -3,7 +3,8 @@ import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { DataTable } from '../../components/ui/DataTable';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
-import { Input } from '../../components/ui/Input';
+import { ScheduleInterviewModal } from '../../components/ui/ScheduleInterviewModal';
+import type { ScheduleInterviewData } from '../../components/ui/ScheduleInterviewModal';
 import { StatusDot } from '../../components/ui/StatusDot';
 import { DropdownMenu } from '../../components/ui/DropdownMenu';
 import { useAuth } from '../../context/AuthContext';
@@ -28,10 +29,7 @@ export function InterviewManagement({
   const [viewMode, setViewMode] = useState<'table' | 'calendar'>('table');
   const [applications, setApplications] = useState<Application[]>([]);
   const [selectedApplicationId, setSelectedApplicationId] = useState('');
-  const [interviewDate, setInterviewDate] = useState('');
-  const [interviewTime, setInterviewTime] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [modalErrorMessage, setModalErrorMessage] = useState('');
   const loadApplications = async (): Promise<void> => {
     try {
       const response = await getAdminApplications();
@@ -51,9 +49,18 @@ export function InterviewManagement({
             application.status === 'Interview Scheduled' && application.interviewDate
         )
         .map((application) => {
-          const student = typeof application.studentId === 'string' ? null : application.studentId;
-          const job = typeof application.jobId === 'string' ? null : application.jobId;
-          const company = job && typeof job.companyId !== 'string' ? job.companyId.name : '-';
+          const student =
+            application.studentId && typeof application.studentId !== 'string'
+              ? application.studentId
+              : null;
+          const job =
+            application.jobId && typeof application.jobId !== 'string'
+              ? application.jobId
+              : null;
+          const company =
+            job?.companyId && typeof job.companyId !== 'string'
+              ? job.companyId.name
+              : '-';
           const dateObject = application.interviewDate ? new Date(application.interviewDate) : null;
           return {
             id: application._id,
@@ -156,29 +163,22 @@ export function InterviewManagement({
       return hour === parsedSlotHour;
     });
   };
-  const scheduleInterview = async (): Promise<void> => {
-    if (!selectedApplicationId || !interviewDate) {
-      setModalErrorMessage('Select application and interview date');
-      return;
+
+  const handleScheduleInterview = async (data: ScheduleInterviewData) => {
+    if (!selectedApplicationId) {
+      throw new Error('Please select an application');
     }
-    try {
-      const combinedDate = interviewTime
-        ? new Date(`${interviewDate}T${interviewTime}`).toISOString()
-        : new Date(interviewDate).toISOString();
-      await updateAdminApplicationStatus(
-        selectedApplicationId,
-        'Interview Scheduled',
-        combinedDate
-      );
-      setModalErrorMessage('');
-      setIsAddModalOpen(false);
-      setSelectedApplicationId('');
-      setInterviewDate('');
-      setInterviewTime('');
-      await loadApplications();
-    } catch (error) {
-      setModalErrorMessage(error instanceof Error ? error.message : 'Failed to schedule interview');
-    }
+    const combinedDate = data.time
+      ? new Date(`${data.date}T${data.time}`).toISOString()
+      : new Date(data.date).toISOString();
+    await updateAdminApplicationStatus(
+      selectedApplicationId,
+      'Interview Scheduled',
+      combinedDate
+    );
+    setIsAddModalOpen(false);
+    setSelectedApplicationId('');
+    await loadApplications();
   };
 
   return (
@@ -223,7 +223,7 @@ export function InterviewManagement({
             <Button
               icon={<Calendar className="h-4 w-4" />}
               onClick={() => {
-                setModalErrorMessage('');
+                setSelectedApplicationId('');
                 setIsAddModalOpen(true);
               }}>
 
@@ -323,73 +323,62 @@ export function InterviewManagement({
           </div>
         }
 
-        {/* Add/Edit Modal */}
+        {/* Application Selection Modal (step 1) */}
         <Modal
-          isOpen={isAddModalOpen}
-          onClose={() => {
-            setIsAddModalOpen(false);
-            setModalErrorMessage('');
-          }}
-          title="Schedule Interview"
+          isOpen={isAddModalOpen && !selectedApplicationId}
+          onClose={() => setIsAddModalOpen(false)}
+          title="Select Application"
+          preventCloseOnBackdrop
           footer={
-          <>
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setIsAddModalOpen(false);
-                  setModalErrorMessage('');
-                }}>
+            <>
+              <Button variant="ghost" onClick={() => setIsAddModalOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={scheduleInterview}>Schedule</Button>
             </>
-          }>
-
-          <div className="space-y-4">
-            {modalErrorMessage && (
-              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                {modalErrorMessage}
-              </div>
-            )}
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">
-                Application
-              </label>
-              <select
-                value={selectedApplicationId}
-                onChange={(event) => setSelectedApplicationId(event.target.value)}
-                className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none">
-                <option value="">Select Application</option>
-                {applications.map((application) => {
-                  const student = typeof application.studentId === 'string' ? '-' : application.studentId.name;
-                  const job = typeof application.jobId === 'string' ? '-' : application.jobId.title;
-                  return (
-                    <option key={application._id} value={application._id}>
-                      {student} - {job}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <Input
-                label="Date"
-                type="date"
-                value={interviewDate}
-                onChange={(event) => setInterviewDate(event.target.value)}
-                icon={<Calendar className="h-4 w-4" />} />
-
-              <Input
-                label="Time"
-                type="time"
-                value={interviewTime}
-                onChange={(event) => setInterviewTime(event.target.value)}
-                icon={<Clock className="h-4 w-4" />} />
-
-            </div>
+          }
+        >
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-slate-700">
+              Select the application to schedule an interview for:
+            </label>
+            <select
+              value={selectedApplicationId}
+              onChange={(event) => setSelectedApplicationId(event.target.value)}
+              className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none">
+              <option value="">Select Application</option>
+              {applications.map((application) => {
+                const student =
+                  application.studentId && typeof application.studentId !== 'string'
+                    ? application.studentId.name
+                    : '-';
+                const job =
+                  application.jobId && typeof application.jobId !== 'string'
+                    ? application.jobId.title
+                    : '-';
+                return (
+                  <option key={application._id} value={application._id}>
+                    {student} - {job}
+                  </option>
+                );
+              })}
+            </select>
           </div>
         </Modal>
+
+        {/* Schedule Interview Modal (step 2) - Reusable */}
+        <ScheduleInterviewModal
+          isOpen={isAddModalOpen && !!selectedApplicationId}
+          onClose={() => { setIsAddModalOpen(false); setSelectedApplicationId(''); }}
+          onSchedule={handleScheduleInterview}
+          applicantName={
+            (() => {
+              const app = applications.find(a => a._id === selectedApplicationId);
+              return app?.studentId && typeof app.studentId !== 'string'
+                ? app.studentId.name
+                : '';
+            })()
+          }
+        />
       </div>
     </DashboardLayout>);
-
 }

@@ -330,6 +330,12 @@ export function BrowseJobs({ onNavigate, onLogout }: BrowseJobsProps) {
                       {location}
                       <span className="mx-1.5 text-slate-300">|</span>
                       {job.type}
+                      {job.jobMode && (
+                        <>
+                          <span className="mx-1.5 text-slate-300">|</span>
+                          {job.jobMode}
+                        </>
+                      )}
                     </p>
                   </div>
 

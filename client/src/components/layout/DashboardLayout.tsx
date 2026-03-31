@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { Breadcrumb } from '../ui/Breadcrumb';
+import { NotificationBell } from '../ui/NotificationBell';
 import { Menu, X } from 'lucide-react';
+import { getStudentNotifications, markStudentNotificationRead, markAllStudentNotificationsRead } from '../../services/api/student';
+import { getCompanyNotifications, markCompanyNotificationRead, markAllCompanyNotificationsRead } from '../../services/api/company';
+import { getAdminNotifications, markAdminNotificationRead, markAllAdminNotificationsRead } from '../../services/api/admin';
+
 interface DashboardLayoutProps {
   children: React.ReactNode;
   userRole: 'student' | 'admin' | 'company';
@@ -18,6 +23,25 @@ interface DashboardLayoutProps {
     href?: string;
   }[];
 }
+
+function getNotifFetch(userRole: string) {
+  if (userRole === 'company') return getCompanyNotifications;
+  if (userRole === 'admin') return getAdminNotifications;
+  return getStudentNotifications;
+}
+
+function getNotifMarkRead(userRole: string) {
+  if (userRole === 'company') return markCompanyNotificationRead;
+  if (userRole === 'admin') return markAdminNotificationRead;
+  return markStudentNotificationRead;
+}
+
+function getNotifMarkAllRead(userRole: string) {
+  if (userRole === 'company') return markAllCompanyNotificationsRead;
+  if (userRole === 'admin') return markAllAdminNotificationsRead;
+  return markAllStudentNotificationsRead;
+}
+
 export function DashboardLayout({
   children,
   userRole,
@@ -28,6 +52,7 @@ export function DashboardLayout({
   breadcrumbs = []
 }: DashboardLayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   const computedBreadcrumbs =
     breadcrumbs.length > 0
       ? breadcrumbs
@@ -44,6 +69,11 @@ export function DashboardLayout({
               .join(' / ')
           }
         ];
+
+  const notifFetchFn = getNotifFetch(userRole);
+  const notifMarkReadFn = getNotifMarkRead(userRole);
+  const notifMarkAllReadFn = getNotifMarkAllRead(userRole);
+
   return (
     <div className="flex h-screen w-full bg-slate-50 overflow-hidden">
       {/* Desktop Sidebar */}
@@ -54,7 +84,6 @@ export function DashboardLayout({
           onNavigate={onNavigate}
           onLogout={onLogout}
           user={user} />
-
       </div>
 
       {/* Mobile Sidebar Overlay */}
@@ -69,7 +98,6 @@ export function DashboardLayout({
               <button
               className="ml-1 flex h-10 w-10 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
               onClick={() => setIsMobileMenuOpen(false)}>
-
                 <X className="h-6 w-6 text-white" />
               </button>
             </div>
@@ -82,7 +110,6 @@ export function DashboardLayout({
             }}
             onLogout={onLogout}
             user={user} />
-
           </div>
         </div>
       }
@@ -92,12 +119,19 @@ export function DashboardLayout({
         {/* Mobile Header */}
         <div className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-4 shadow-sm md:hidden">
           <div className="font-bold text-lg text-slate-900">PlaceMate</div>
-          <button
-            onClick={() => setIsMobileMenuOpen(true)}
-            className="-mr-2 inline-flex items-center justify-center rounded-md p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-500">
-
-            <Menu className="h-6 w-6" />
-          </button>
+          <div className="flex items-center gap-2">
+            <NotificationBell
+              fetchNotifications={notifFetchFn}
+              markRead={notifMarkReadFn}
+              markAllRead={notifMarkAllReadFn}
+              onNavigate={onNavigate}
+            />
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="-mr-2 inline-flex items-center justify-center rounded-md p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-500">
+              <Menu className="h-6 w-6" />
+            </button>
+          </div>
         </div>
 
         {/* Desktop Header / Breadcrumbs */}
@@ -106,10 +140,12 @@ export function DashboardLayout({
             <Breadcrumb items={computedBreadcrumbs} onNavigate={onNavigate} />
           </div>
           <div className="flex items-center space-x-4">
-            {/* Could add notifications or other header items here */}
-            <span className="text-sm text-slate-500">
-              Academic Year 2025-2026
-            </span>
+            <NotificationBell
+              fetchNotifications={notifFetchFn}
+              markRead={notifMarkReadFn}
+              markAllRead={notifMarkAllReadFn}
+              onNavigate={onNavigate}
+            />
           </div>
         </header>
 
@@ -118,6 +154,6 @@ export function DashboardLayout({
           <div className="mx-auto max-w-7xl">{children}</div>
         </main>
       </div>
-    </div>);
-
+    </div>
+  );
 }

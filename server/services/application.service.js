@@ -1,9 +1,13 @@
 import Application from "../models/application.js";
+import Company from "../models/company.js";
+import Job from "../models/job.js";
+import User from "../models/user.js";
 import {
     APPLICATION_STATUSES,
     COMPANY_SETTABLE_STATUSES,
 } from "../constants/applicationStatus.js";
 import { startOfToday } from "./job.service.js";
+import { createNotification, createNotificationForCompany } from "./notification.service.js";
 
 /**
  * True when the current UTC calendar day is strictly after the interview day's UTC calendar day.
@@ -40,6 +44,112 @@ export async function syncExpiredInterviewsToPendingDecision() {
     );
 
     return { updated: result.modifiedCount || 0 };
+}
+
+/**
+ * Send reminder notifications to companies for interviews that have passed
+ * but are still in "Interview Scheduled" or "Pending Decision" status.
+ */
+export async function sendInterviewResultReminders() {
+    const now = new Date();
+    const expiredInterviews = await Application.find({
+        status: { $in: ["Interview Scheduled", "Pending Decision"] },
+        interviewDate: { $ne: null, $lt: now },
+    })
+        .populate("studentId", "name")
+        .populate("jobId", "title companyId");
+
+    let sentCount = 0;
+    for (const app of expiredInterviews) {
+        const studentName =
+            typeof app.studentId === "string"
+                ? "A student"
+                : app.studentId?.name || "A student";
+        const jobTitle =
+            typeof app.jobId === "string"
+                ? "a position"
+                : app.jobId?.title || "a position";
+        const companyId =
+            typeof app.jobId === "string"
+                ? null
+                : app.jobId?.companyId;
+
+        if (companyId) {
+            await createNotificationForCompany(companyId, {
+                type: "interview_result_pending",
+                title: "Interview Result Pending",
+                message: `Interview time for ${studentName} (${jobTitle}) has passed. Please update the application status.`,
+                link: "applicants",
+                relatedApplicationId: app._id,
+            });
+            sentCount++;
+        }
+    }
+
+    return { sent: sentCount };
+}
+
+/**
+ * Auto-select applications where interview was > 24h ago and status is still
+ * "Interview Scheduled" or "Pending Decision".
+ */
+export async function autoSelectExpiredInterviews() {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+    const expiredApps = await Application.find({
+        status: { $in: ["Interview Scheduled", "Pending Decision"] },
+        interviewDate: { $ne: null, $lt: twentyFourHoursAgo },
+    })
+        .populate("studentId", "name")
+        .populate("jobId", "title companyId");
+
+    let updatedCount = 0;
+    for (const app of expiredApps) {
+        app.status = "Selected";
+        app.interviewDate = null;
+        await app.save();
+
+        const studentUserId =
+            typeof app.studentId === "string"
+                ? app.studentId
+                : app.studentId?._id?.toString() || app.studentId?.toString();
+        const jobTitle =
+            typeof app.jobId === "string"
+                ? "the position"
+                : app.jobId?.title || "the position";
+        const companyId =
+            typeof app.jobId === "string" ? null : app.jobId?.companyId;
+        const companyName = "the company";
+
+        if (companyId) {
+            const company = await Company.findById(companyId);
+            const cName = company?.name || companyName;
+
+            await createNotification({
+                userId: studentUserId,
+                type: "application_status_updated",
+                title: "Application Auto-Selected",
+                message: `Your application for ${jobTitle} at ${cName} has been automatically selected (interview result was not updated within 24 hours).`,
+                link: "applications",
+                relatedApplicationId: app._id,
+            });
+
+            if (company?.userId) {
+                await createNotification({
+                    userId: company.userId,
+                    type: "application_status_updated",
+                    title: "Application Auto-Selected",
+                    message: `Application for ${app.studentId?.name || "a student"} (${jobTitle}) was automatically marked as Selected because the interview result was not updated within 24 hours.`,
+                    link: "applicants",
+                    relatedApplicationId: app._id,
+                });
+            }
+        }
+
+        updatedCount++;
+    }
+
+    return { updated: updatedCount };
 }
 
 export function isValidApplicationStatus(status) {

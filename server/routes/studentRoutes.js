@@ -7,7 +7,10 @@ import {
     deleteResume,
     downloadResume,
     getMyApplications,
+    getStudentNotifications,
     getStudentProfile,
+    markAllStudentNotificationsRead,
+    markStudentNotificationRead,
     saveJobPreferences,
     saveNotificationPreferences,
     updateEmail,
@@ -62,5 +65,10 @@ studentRoutes.post(
     validate(jobPreferencesSchema),
     saveJobPreferences
 );
+
+// Notifications
+studentRoutes.get("/notifications", getStudentNotifications);
+studentRoutes.put("/notifications/:id/read", markStudentNotificationRead);
+studentRoutes.put("/notifications/read-all", markAllStudentNotificationsRead);
 
 export default studentRoutes;
