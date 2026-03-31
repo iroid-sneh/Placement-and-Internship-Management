@@ -7,6 +7,8 @@ import {
   Users,
   Building2,
   CheckCircle,
+  FileSpreadsheet,
+  Sparkles,
   TrendingUp } from
 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -47,6 +49,50 @@ export function PlacementReports({
 
   const placementPercentage =
     summary.totalStudents > 0 ? Math.round((summary.selectedCount / summary.totalStudents) * 100) : 0;
+  const unplacedCount = Math.max(summary.totalStudents - summary.selectedCount, 0);
+
+  const handleExportReport = (): void => {
+    const summaryRows = [
+      ['Metric', 'Value'],
+      ['Total Students', String(summary.totalStudents)],
+      ['Students Placed', String(summary.selectedCount)],
+      ['Placement Percentage', `${placementPercentage}%`],
+      ['Companies Visited', String(summary.totalCompanies)],
+      ['Total Jobs', String(summary.totalJobs)],
+      ['Open Jobs', String(summary.openJobs)],
+      ['Total Applications', String(summary.totalApplications)],
+      ['Scheduled Interviews', String(summary.scheduledInterviews)]
+    ];
+
+    const studentRows = [
+      ['Name', 'Email', 'Department', 'CGPA', 'Skills'],
+      ...students.map((student) => [
+        student.name,
+        student.email,
+        student.department,
+        String(student.cgpa),
+        student.skills.join(', ')
+      ])
+    ];
+
+    const sections = [
+      'Placement Summary',
+      ...summaryRows.map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(',')),
+      '',
+      'Students Overview',
+      ...studentRows.map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(','))
+    ];
+
+    const blob = new Blob([sections.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const downloadUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = 'placement-report.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(downloadUrl);
+  };
 
   return (
     <DashboardLayout
@@ -65,22 +111,69 @@ export function PlacementReports({
       }>
 
       <div className="space-y-8">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">
-              Placement Reports
-            </h1>
-            <p className="text-slate-600">
-              Academic Year 2025-2026 placement statistics.
-            </p>
+        <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-900 p-6 text-white shadow-xl sm:p-8">
+          <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+            <div className="max-w-2xl space-y-3">
+              <span className="inline-flex w-fit rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-100">
+                Placement Reports
+              </span>
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight">Performance Insights</h1>
+                <p className="mt-2 text-sm text-slate-200 sm:text-base">
+                  Track placement outcomes, monitor active hiring, and export a clean report snapshot for the current academic cycle.
+                </p>
+              </div>
+            </div>
+            <Button
+              className="h-12 rounded-2xl border border-white/15 bg-white/10 px-5 text-white shadow-none backdrop-blur hover:bg-white/15"
+              icon={<Download className="h-4 w-4" />}
+              onClick={handleExportReport}
+            >
+              Export Report
+            </Button>
           </div>
-          <Button icon={<Download className="h-4 w-4" />}>Export Report</Button>
         </div>
         {errorMessage && (
           <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
             {errorMessage}
           </div>
         )}
+
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-emerald-50 p-3 text-emerald-600">
+                <CheckCircle className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm text-slate-500">Placement Rate</p>
+                <p className="text-2xl font-bold text-slate-900">{placementPercentage}%</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-sky-50 p-3 text-sky-600">
+                <FileSpreadsheet className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm text-slate-500">Applications</p>
+                <p className="text-2xl font-bold text-slate-900">{summary.totalApplications}</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-amber-50 p-3 text-amber-600">
+                <Sparkles className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm text-slate-500">Unplaced Students</p>
+                <p className="text-2xl font-bold text-slate-900">{unplacedCount}</p>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Summary Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -194,7 +287,7 @@ export function PlacementReports({
               </div>
               <div className="flex items-center gap-2">
                 <span className="h-3 w-3 rounded-full bg-slate-200"></span>
-                <span className="text-slate-600">Unplaced ({Math.max(summary.totalStudents - summary.selectedCount, 0)})</span>
+                <span className="text-slate-600">Unplaced ({unplacedCount})</span>
               </div>
             </div>
           </div>

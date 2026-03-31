@@ -87,7 +87,16 @@ export const deleteStudent = async (req, res) => {
 
 export const createCompany = async (req, res) => {
     try {
-        const { name, hrName, email, phone, location } = req.body;
+        const {
+            name,
+            hrName,
+            email,
+            phone,
+            location,
+            website,
+            industry,
+            description,
+        } = req.body;
         if (!name || !hrName || !email || !phone || !location) {
             return res.status(400).json({
                 success: false,
@@ -107,6 +116,10 @@ export const createCompany = async (req, res) => {
             email: email.toLowerCase(),
             phone: phone.trim(),
             location: location.trim(),
+            website: typeof website === "string" ? website.trim() : "",
+            industry: typeof industry === "string" ? industry.trim() : "",
+            description:
+                typeof description === "string" ? description.trim() : "",
         });
         return res.status(201).json({
             success: true,
@@ -140,7 +153,15 @@ export const getCompanies = async (_req, res) => {
 export const updateCompany = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, hrName, email, phone, location } = req.body;
+        const {
+            name,
+            hrName,
+            phone,
+            location,
+            website,
+            industry,
+            description,
+        } = req.body;
         const company = await Company.findById(id);
         if (!company) {
             return res.status(404).json({
@@ -148,32 +169,17 @@ export const updateCompany = async (req, res) => {
                 message: "Company not found",
             });
         }
-        if (
-            email !== undefined &&
-            email.toLowerCase() !== company.email.toLowerCase()
-        ) {
-            const existingEmail = await Company.findOne({
-                email: email.toLowerCase(),
-                _id: { $ne: company._id },
-            }).select("_id");
-
-            if (existingEmail) {
-                return res.status(409).json({
-                    success: false,
-                    message: "Company email already exists",
-                });
-            }
-        }
         if (name !== undefined) company.name = name.trim();
         if (hrName !== undefined) company.hrName = hrName.trim();
-        if (email !== undefined) company.email = email.toLowerCase();
         if (phone !== undefined) company.phone = phone.trim();
         if (location !== undefined) company.location = location.trim();
+        if (website !== undefined) company.website = website.trim();
+        if (industry !== undefined) company.industry = industry.trim();
+        if (description !== undefined) company.description = description.trim();
         await company.save();
         if (company.userId) {
             const userUpdates = {};
             if (name !== undefined) userUpdates.name = company.name;
-            if (email !== undefined) userUpdates.email = company.email;
 
             if (Object.keys(userUpdates).length > 0) {
                 await User.updateOne(
@@ -225,7 +231,9 @@ export const createJob = async (req, res) => {
             title,
             description,
             type,
+            jobMode,
             eligibility,
+            requiredSkills,
             packageOrStipend,
             lastDate,
             status,
@@ -263,7 +271,13 @@ export const createJob = async (req, res) => {
             title: title.trim(),
             description: description.trim(),
             type,
+            jobMode: jobMode || "Onsite",
             eligibility: eligibility.trim(),
+            requiredSkills: Array.isArray(requiredSkills)
+                ? requiredSkills.map((s) => String(s).trim()).filter(Boolean)
+                : typeof requiredSkills === "string"
+                  ? requiredSkills.split(",").map((s) => s.trim()).filter(Boolean)
+                  : [],
             packageOrStipend: packageOrStipend.trim(),
             lastDate: deadlineValidation.deadline,
             status: status || "Open",
@@ -334,18 +348,34 @@ export const updateJob = async (req, res) => {
             "title",
             "description",
             "type",
+            "jobMode",
             "eligibility",
+            "requiredSkills",
             "packageOrStipend",
             "status",
         ];
         fields.forEach((field) => {
             if (req.body[field] !== undefined) {
                 const value = req.body[field];
-                job[field] =
-                    typeof value === "string" &&
-                    !["type", "status", "companyId"].includes(field)
-                        ? value.trim()
-                        : value;
+                if (field === "requiredSkills" && Array.isArray(value)) {
+                    job.requiredSkills = value
+                        .map((s) => String(s).trim())
+                        .filter(Boolean);
+                } else if (
+                    field === "requiredSkills" &&
+                    typeof value === "string"
+                ) {
+                    job.requiredSkills = value
+                        .split(",")
+                        .map((s) => s.trim())
+                        .filter(Boolean);
+                } else {
+                    job[field] =
+                        typeof value === "string" &&
+                        !["type", "status", "companyId", "jobMode"].includes(field)
+                            ? value.trim()
+                            : value;
+                }
             }
         });
         if (job.status === "Open") {

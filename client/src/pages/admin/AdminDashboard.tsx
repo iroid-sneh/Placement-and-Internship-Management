@@ -10,8 +10,7 @@ import {
   getAdminApplications,
   getAdminCompanies,
   getAdminJobs,
-  getAdminReportSummary,
-  getAdminStudents
+  getAdminReportSummary
 } from '../../services/api/admin';
 import type { Application } from '../../types/app';
 import {
@@ -19,7 +18,6 @@ import {
   Building2,
   Briefcase,
   FileText,
-  Download,
   MoreHorizontal,
   Eye,
   Edit,
@@ -27,9 +25,7 @@ import {
   CheckCircle,
   Calendar,
   Clock,
-  ArrowRight,
   Loader2,
-  GraduationCap,
   BarChart3
 } from 'lucide-react';
 
@@ -46,12 +42,6 @@ interface StudentApplication {
   date: string;
   status: 'success' | 'warning' | 'info' | 'error' | 'pending';
   gpa: string;
-}
-
-interface DepartmentStat {
-  department: string;
-  students: number;
-  placed: number;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -71,6 +61,15 @@ const STATUS_LABELS: Record<string, string> = {
   Selected: 'Selected',
   Rejected: 'Rejected'
 };
+
+const STATUS_ORDER = [
+  'Applied',
+  'Shortlisted',
+  'Interview Scheduled',
+  'Pending Decision',
+  'Selected',
+  'Rejected'
+] as const;
 
 function mapStatusToDot(status: Application['status']): 'success' | 'warning' | 'info' | 'error' | 'pending' {
   switch (status) {
@@ -103,20 +102,19 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
   });
   const [companiesCount, setCompaniesCount] = useState(0);
   const [jobsCount, setJobsCount] = useState(0);
-  const [departmentStats, setDepartmentStats] = useState<DepartmentStat[]>([]);
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     const loadDashboardData = async (): Promise<void> => {
       try {
         setIsLoading(true);
-        const [applicationsResponse, reportResponse, companiesResponse, jobsResponse, studentsResponse] =
+        setErrorMessage('');
+        const [applicationsResponse, reportResponse, companiesResponse, jobsResponse] =
           await Promise.all([
             getAdminApplications(),
             getAdminReportSummary(),
             getAdminCompanies(),
-            getAdminJobs(),
-            getAdminStudents()
+            getAdminJobs()
           ]);
 
         setApplicationsData(applicationsResponse);
@@ -128,36 +126,6 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
         });
         setCompaniesCount(companiesResponse.length);
         setJobsCount(jobsResponse.length);
-
-        // Compute department-wise stats from students
-        const deptMap = new Map<string, { students: number; placed: number }>();
-        for (const s of studentsResponse) {
-          const dept = s.profile?.department || 'Unknown';
-          const entry = deptMap.get(dept) || { students: 0, placed: 0 };
-          entry.students += 1;
-          deptMap.set(dept, entry);
-        }
-        // Count placed per department by cross-referencing selected applications
-        const placedStudentIds = new Set(
-          applicationsResponse
-            .filter((a) => a.status === 'Selected')
-            .map((a) => (typeof a.studentId === 'string' ? a.studentId : a.studentId.id))
-        );
-        for (const s of studentsResponse) {
-          if (placedStudentIds.has(s.id)) {
-            const dept = s.profile?.department || 'Unknown';
-            const entry = deptMap.get(dept);
-            if (entry) entry.placed += 1;
-          }
-        }
-        const deptStats: DepartmentStat[] = Array.from(deptMap.entries())
-          .map(([department, data]) => ({
-            department,
-            students: data.students,
-            placed: data.placed
-          }))
-          .sort((a, b) => b.students - a.students);
-        setDepartmentStats(deptStats);
       } catch (error) {
         setErrorMessage(error instanceof Error ? error.message : 'Failed to load dashboard');
       } finally {
@@ -195,46 +163,28 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
     [applicationsData]
   );
 
-  // Enrich GPA from student profiles
-  useEffect(() => {
-    if (isLoading) return;
-    const enrichGpa = async (): Promise<void> => {
-      try {
-        const students = await getAdminStudents();
-        const gpaMap = new Map<string, string>();
-        for (const s of students) {
-          gpaMap.set(s.name, s.profile?.cgpa?.toFixed(1) ?? '-');
-        }
-        // We won't re-set applications since we already have them;
-        // GPA enrichment is best-effort in the table render
-      } catch {
-        // silently ignore GPA enrichment failure
-      }
-    };
-    void enrichGpa();
-  }, [isLoading]);
-
   const placementRate = reportSummary.totalStudents
     ? Math.round((reportSummary.selectedCount / reportSummary.totalStudents) * 100)
     : 0;
 
   const statusCounts = useMemo(() => {
-    const counts: Record<string, number> = {
-      Applied: 0,
-      Shortlisted: 0,
-      'Interview Scheduled': 0,
-      'Pending Decision': 0,
-      Selected: 0,
-      Rejected: 0
-    };
+    const counts: Record<string, number> = Object.fromEntries(
+      STATUS_ORDER.map((status) => [status, 0])
+    ) as Record<string, number>;
     for (const a of applicationsData) {
       counts[a.status] = (counts[a.status] || 0) + 1;
     }
     return counts;
   }, [applicationsData]);
 
-  const chartEntries = Object.entries(statusCounts).filter(([, count]) => count > 0);
-  const maxChartValue = Math.max(...Object.values(statusCounts), 1);
+  const totalStatusCount = applicationsData.length;
+  const chartEntries = STATUS_ORDER
+    .map((status) => ({
+      status,
+      count: statusCounts[status] || 0,
+      percentage: totalStatusCount ? Math.round(((statusCounts[status] || 0) / totalStatusCount) * 100) : 0
+    }))
+    .filter((entry) => entry.count > 0);
 
   // Recent activity timeline (last 5 applications)
   const recentActivity = useMemo(
@@ -262,6 +212,16 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
         };
       }),
     [applicationsData]
+  );
+
+  const topStatus = chartEntries.reduce<{ status: string; count: number; percentage: number } | null>(
+    (currentTop, entry) => {
+      if (!currentTop || entry.count > currentTop.count) {
+        return entry;
+      }
+      return currentTop;
+    },
+    null
   );
 
   // SVG donut chart data
@@ -322,7 +282,7 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
         breadcrumbs={[{ label: 'Dashboard' }]}
       >
         <div className="flex h-96 items-center justify-center">
-          <div className="flex flex-col items-center gap-3">
+          <div className="flex flex-col items-center gap-3 rounded-3xl border border-slate-200 bg-white/90 px-8 py-10 shadow-sm">
             <Loader2 className="h-8 w-8 animate-spin text-teal-600" />
             <p className="text-sm text-slate-500">Loading dashboard...</p>
           </div>
@@ -342,23 +302,46 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
     >
       <div className="space-y-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">Placement Overview</h1>
-            <p className="text-slate-600">
-              Track placement progress, manage students and companies.
-            </p>
+        <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-teal-900 px-6 py-7 text-white shadow-xl sm:px-8">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-2xl space-y-3">
+              <span className="inline-flex w-fit items-center rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-teal-100">
+                Admin Dashboard
+              </span>
+              <div className="space-y-2">
+                <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Placement Overview</h1>
+                <p className="max-w-xl text-sm text-slate-200 sm:text-base">
+                  Monitor applications, interviews, placements, and hiring momentum from one
+                  well-structured workspace.
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:w-auto">
+              <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur">
+                <p className="text-xs uppercase tracking-wide text-slate-300">Placement Rate</p>
+                <p className="mt-1 text-2xl font-semibold">{placementRate}%</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur">
+                <p className="text-xs uppercase tracking-wide text-slate-300">Applications</p>
+                <p className="mt-1 text-2xl font-semibold">{reportSummary.totalApplications}</p>
+              </div>
+            </div>
           </div>
-          <div className="flex gap-2">
+          <div className="mt-6 flex flex-wrap gap-3">
             <Button
-              variant="outline"
-              icon={<Download className="h-4 w-4" />}
+              className="bg-teal-500 text-white shadow-sm hover:bg-teal-400 focus:ring-teal-300"
+              icon={<BarChart3 className="h-4 w-4" />}
               onClick={() => onNavigate('reports')}
             >
-              Export Report
-            </Button>
-            <Button icon={<BarChart3 className="h-4 w-4" />} onClick={() => onNavigate('reports')}>
               View Reports
+            </Button>
+            <Button
+              variant="ghost"
+              className="border border-white/15 bg-white/10 text-white hover:bg-white/20 hover:text-white"
+              icon={<Users className="h-4 w-4" />}
+              onClick={() => onNavigate('students')}
+            >
+              Review Students
             </Button>
           </div>
         </div>
@@ -370,7 +353,7 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
         )}
 
         {/* Quick Actions */}
-        <div className="flex gap-2 overflow-x-auto pb-2">
+        <div className="flex gap-2 overflow-x-auto rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
           <Button
             variant="secondary"
             size="sm"
@@ -414,7 +397,7 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
         </div>
 
         {/* Stats Row */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
           <StatCard
             title="Total Students"
             value={String(reportSummary.totalStudents)}
@@ -448,6 +431,7 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
               value: `${placementRate}%`,
               direction: placementRate > 0 ? 'up' : 'neutral'
             }}
+            trendLabel="overall placement rate"
           />
           <StatCard
             title="Interviews"
@@ -457,41 +441,81 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
           />
         </div>
 
-        {/* Charts Row */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {/* Bar Chart - Application Status Breakdown */}
-          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h3 className="mb-6 font-bold text-slate-900">Application Status Breakdown</h3>
+        {/* Insights Row */}
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+          <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex flex-col gap-5 border-b border-slate-100 pb-5 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-slate-900">Application Status Breakdown</p>
+                <p className="mt-1 text-sm text-slate-500">
+                  Share of all applications by current stage.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3 sm:min-w-[260px]">
+                <div className="rounded-2xl bg-slate-50 px-4 py-3">
+                  <p className="text-xs uppercase tracking-wide text-slate-500">Top Status</p>
+                  <p className="mt-1 text-base font-semibold text-slate-900">
+                    {topStatus ? STATUS_LABELS[topStatus.status] : 'No Data'}
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-slate-50 px-4 py-3">
+                  <p className="text-xs uppercase tracking-wide text-slate-500">Live Records</p>
+                  <p className="mt-1 text-base font-semibold text-slate-900">{totalStatusCount}</p>
+                </div>
+              </div>
+            </div>
             <div className="space-y-3">
-              {chartEntries.map(([status, count]) => (
-                <div key={status}>
-                  <div className="mb-1 flex items-center justify-between text-sm">
-                    <span className="font-medium text-slate-700">{STATUS_LABELS[status]}</span>
-                    <span className="text-slate-500">{count}</span>
+              {chartEntries.map((entry) => (
+                <div key={entry.status} className="rounded-2xl bg-slate-50/80 px-4 py-3">
+                  <div className="mb-2 flex items-center justify-between gap-3 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="h-2.5 w-2.5 rounded-full"
+                        style={{ backgroundColor: STATUS_COLORS[entry.status] }}
+                      />
+                      <span className="font-medium text-slate-700">
+                        {STATUS_LABELS[entry.status]}
+                      </span>
+                    </div>
+                    <span className="text-slate-500">
+                      {entry.count} ({entry.percentage}%)
+                    </span>
                   </div>
-                  <div className="h-3 w-full rounded-full bg-slate-100">
+                  <div className="h-2.5 w-full rounded-full bg-slate-200">
                     <div
-                      className="h-3 rounded-full transition-all duration-500"
+                      className="h-2.5 rounded-full transition-all duration-500"
                       style={{
-                        width: `${Math.max((count / maxChartValue) * 100, 4)}%`,
-                        backgroundColor: STATUS_COLORS[status]
+                        width: `${Math.max(entry.percentage, 6)}%`,
+                        backgroundColor: STATUS_COLORS[entry.status]
                       }}
                     />
                   </div>
                 </div>
               ))}
               {chartEntries.length === 0 && (
-                <p className="py-8 text-center text-sm text-slate-400">No application data yet</p>
+                <p className="py-10 text-center text-sm text-slate-400">No application data yet</p>
               )}
             </div>
           </div>
 
-          {/* Donut Chart - Application Distribution */}
-          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h3 className="mb-6 font-bold text-slate-900">Application Distribution</h3>
+          <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="mb-6 flex items-start justify-between gap-4">
+              <div>
+                <h3 className="font-bold text-slate-900">Application Distribution</h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  Visual snapshot of application flow across statuses.
+                </p>
+              </div>
+              <div className="rounded-2xl bg-teal-50 px-4 py-3 text-right">
+                <p className="text-xs uppercase tracking-wide text-teal-700">Interviews</p>
+                <p className="mt-1 text-lg font-semibold text-teal-900">
+                  {reportSummary.scheduledInterviews}
+                </p>
+              </div>
+            </div>
             <div className="flex items-center justify-center">
               {applicationsData.length > 0 ? (
-                <div className="flex flex-col items-center gap-6 sm:flex-row">
+                <div className="flex flex-col items-center gap-6 lg:flex-row">
                   <div className="relative h-44 w-44">
                     <svg viewBox="0 0 36 36" className="h-full w-full -rotate-90">
                       {donutSegments.map((seg) => (
@@ -516,15 +540,21 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
                       <span className="text-xs text-slate-500">Total</span>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-2">
-                    {chartEntries.map(([status, count]) => (
-                      <div key={status} className="flex items-center gap-2 text-sm">
-                        <span
-                          className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
-                          style={{ backgroundColor: STATUS_COLORS[status] }}
-                        />
-                        <span className="text-slate-600">
-                          {STATUS_LABELS[status]} ({count})
+                  <div className="grid w-full gap-3">
+                    {chartEntries.map((entry) => (
+                      <div
+                        key={entry.status}
+                        className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-sm"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
+                            style={{ backgroundColor: STATUS_COLORS[entry.status] }}
+                          />
+                          <span className="text-slate-700">{STATUS_LABELS[entry.status]}</span>
+                        </div>
+                        <span className="font-medium text-slate-500">
+                          {entry.count} apps
                         </span>
                       </div>
                     ))}
@@ -537,82 +567,62 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
           </div>
         </div>
 
-        {/* Department Stats + Recent Activity */}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {/* Department-wise Statistics */}
-          <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-200 p-4">
-              <h3 className="font-bold text-slate-900">Department Statistics</h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                icon={<ArrowRight className="h-4 w-4" />}
-                onClick={() => onNavigate('students')}
-              >
-                View All
-              </Button>
+        {/* Activity + Navigation Row */}
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+          <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-slate-900">Performance Snapshot</h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  A quick, user-friendly summary of current platform activity.
+                </p>
+              </div>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 text-xs uppercase text-slate-500">
-                  <tr>
-                    <th className="px-4 py-3">Department</th>
-                    <th className="px-4 py-3 text-center">Students</th>
-                    <th className="px-4 py-3 text-center">Placed</th>
-                    <th className="px-4 py-3 text-center">Rate</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200">
-                  {departmentStats.length > 0 ? (
-                    departmentStats.map((dept) => {
-                      const rate =
-                        dept.students > 0
-                          ? Math.round((dept.placed / dept.students) * 100)
-                          : 0;
-                      return (
-                        <tr key={dept.department} className="hover:bg-slate-50">
-                          <td className="px-4 py-3 font-medium text-slate-900">
-                            <div className="flex items-center gap-2">
-                              <GraduationCap className="h-4 w-4 text-slate-400" />
-                              {dept.department}
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-center text-slate-600">
-                            {dept.students}
-                          </td>
-                          <td className="px-4 py-3 text-center text-slate-600">
-                            {dept.placed}
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                            <div className="flex items-center justify-center gap-2">
-                              <div className="h-2 w-16 rounded-full bg-slate-100">
-                                <div
-                                  className="h-2 rounded-full bg-teal-500 transition-all"
-                                  style={{ width: `${rate}%` }}
-                                />
-                              </div>
-                              <span className="text-xs text-slate-500">{rate}%</span>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  ) : (
-                    <tr>
-                      <td colSpan={4} className="px-4 py-6 text-center text-slate-500">
-                        No department data available
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                <p className="text-sm font-medium text-slate-500">Active Companies</p>
+                <p className="mt-2 text-3xl font-bold text-slate-900">{companiesCount}</p>
+                <p className="mt-2 text-sm text-slate-500">
+                  Companies currently available in the recruitment ecosystem.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                <p className="text-sm font-medium text-slate-500">Published Jobs</p>
+                <p className="mt-2 text-3xl font-bold text-slate-900">{jobsCount}</p>
+                <p className="mt-2 text-sm text-slate-500">
+                  Open and recently managed opportunities visible to students.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                <p className="text-sm font-medium text-slate-500">Successful Placements</p>
+                <p className="mt-2 text-3xl font-bold text-slate-900">
+                  {reportSummary.selectedCount}
+                </p>
+                <p className="mt-2 text-sm text-slate-500">
+                  Confirmed selections contributing to overall placement success.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                <p className="text-sm font-medium text-slate-500">Upcoming Interviews</p>
+                <p className="mt-2 text-3xl font-bold text-slate-900">
+                  {reportSummary.scheduledInterviews}
+                </p>
+                <p className="mt-2 text-sm text-slate-500">
+                  Students waiting for the next step in the hiring pipeline.
+                </p>
+              </div>
             </div>
           </div>
 
           {/* Recent Activity Timeline */}
-          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-slate-900">Recent Activity</h3>
+          <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-slate-900">Recent Activity</h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  Latest updates from student applications and hiring progress.
+                </p>
+              </div>
               <Button
                 variant="ghost"
                 size="sm"
@@ -622,7 +632,7 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
               </Button>
             </div>
             {recentActivity.length > 0 ? (
-              <div className="relative border-l border-slate-200 ml-3 space-y-0">
+              <div className="relative ml-3 space-y-0 border-l border-slate-200">
                 {recentActivity.map((item) => {
                   const dotColor =
                     item.status === 'Selected'
@@ -645,7 +655,7 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
                             ? 'bg-purple-100 text-purple-600'
                             : 'bg-yellow-100 text-yellow-600';
                   return (
-                    <div key={item.id} className="ml-6 relative pb-6">
+                    <div key={item.id} className="relative ml-6 pb-6">
                       <span
                         className={`absolute -left-[31px] flex h-6 w-6 items-center justify-center rounded-full ring-4 ring-white ${bgColor}`}
                       >

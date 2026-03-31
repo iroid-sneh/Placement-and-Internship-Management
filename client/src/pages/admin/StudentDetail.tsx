@@ -12,8 +12,11 @@ import {
   BookOpen,
   Award,
   FileText,
+  ExternalLink,
   Trash } from
 'lucide-react';
+
+const SERVER_BASE_URL = 'http://localhost:5001';
 interface StudentDetailProps {
   onNavigate: (path: string) => void;
   onLogout: () => void;
@@ -286,9 +289,20 @@ export function StudentDetail({
                   <div className="aspect-[3/4] w-full rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center mb-4">
                     <FileText className="h-12 w-12 text-slate-300" />
                   </div>
-                  <Button variant="outline" className="w-full">
-                    {student.profile.resumeUrl}
-                  </Button>
+                  <a
+                    href={
+                      student.profile.resumeUrl.startsWith('http')
+                        ? student.profile.resumeUrl
+                        : `${SERVER_BASE_URL}${student.profile.resumeUrl}`
+                    }
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+                  >
+                    <FileText className="h-4 w-4" />
+                    View Uploaded Resume
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
                 </> :
 
               <div className="text-center py-8 text-slate-500">

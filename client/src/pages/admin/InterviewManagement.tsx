@@ -11,10 +11,14 @@ import { useAuth } from '../../context/AuthContext';
 import { getAdminApplications, updateAdminApplicationStatus } from '../../services/api/admin';
 import type { Application } from '../../types/app';
 import {
+  CalendarDays,
+  CheckCircle2,
   MoreHorizontal,
   Trash,
   Calendar,
-  Clock } from
+  Clock,
+  TimerReset,
+  Users } from
 'lucide-react';
 interface InterviewManagementProps {
   onNavigate: (path: string) => void;
@@ -70,11 +74,20 @@ export function InterviewManagement({
             date: dateObject ? dateObject.toLocaleDateString() : '-',
             time: dateObject ? dateObject.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-',
             type: 'Interview',
-            status: application.status === 'Selected' ? 'success' : application.status === 'Rejected' ? 'error' : 'pending'
+            status: application.status === 'Selected' ? 'success' : application.status === 'Rejected' ? 'error' : 'pending',
+            rawStatus: application.status
           };
         }),
     [applications]
   );
+
+  const totalInterviews = interviews.length;
+  const todayDateKey = new Date().toDateString();
+  const todaysInterviews = applications.filter((application) => {
+    if (!application.interviewDate || application.status !== 'Interview Scheduled') return false;
+    return new Date(application.interviewDate).toDateString() === todayDateKey;
+  }).length;
+  const pendingResults = applications.filter((application) => application.status === 'Pending Decision').length;
 
   const columns = [
   {
@@ -198,37 +211,45 @@ export function InterviewManagement({
       }>
 
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">Interviews</h1>
-            <p className="text-slate-600">
-              Schedule and manage placement interviews.
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <div className="flex rounded-lg border border-slate-200 p-1 bg-white">
-              <button
-                onClick={() => setViewMode('table')}
-                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${viewMode === 'table' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:text-slate-900'}`}>
-
-                Table
-              </button>
-              <button
-                onClick={() => setViewMode('calendar')}
-                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${viewMode === 'calendar' ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:text-slate-900'}`}>
-
-                Calendar
-              </button>
+        <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-violet-900 p-6 text-white shadow-xl sm:p-8">
+          <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+            <div className="max-w-2xl space-y-3">
+              <span className="inline-flex w-fit rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-violet-100">
+                Interview Management
+              </span>
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight">Interview Schedule Hub</h1>
+                <p className="mt-2 text-sm text-slate-200 sm:text-base">
+                  Coordinate upcoming interviews, switch between table and calendar views, and keep hiring timelines visible at a glance.
+                </p>
+              </div>
             </div>
-            <Button
-              icon={<Calendar className="h-4 w-4" />}
-              onClick={() => {
-                setSelectedApplicationId('');
-                setIsAddModalOpen(true);
-              }}>
-
-              Schedule Interview
-            </Button>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex rounded-2xl border border-white/10 bg-white/10 p-1 backdrop-blur">
+                <button
+                  onClick={() => setViewMode('table')}
+                  className={`rounded-xl px-4 py-2 text-sm font-medium transition-colors ${viewMode === 'table' ? 'bg-white text-slate-900' : 'text-slate-200 hover:text-white'}`}
+                >
+                  Table
+                </button>
+                <button
+                  onClick={() => setViewMode('calendar')}
+                  className={`rounded-xl px-4 py-2 text-sm font-medium transition-colors ${viewMode === 'calendar' ? 'bg-white text-slate-900' : 'text-slate-200 hover:text-white'}`}
+                >
+                  Calendar
+                </button>
+              </div>
+              <Button
+                className="h-12 rounded-2xl border border-white/15 bg-white/10 px-5 text-white shadow-none backdrop-blur hover:bg-white/15"
+                icon={<Calendar className="h-4 w-4" />}
+                onClick={() => {
+                  setSelectedApplicationId('');
+                  setIsAddModalOpen(true);
+                }}
+              >
+                Schedule Interview
+              </Button>
+            </div>
           </div>
         </div>
         {errorMessage && (
@@ -237,8 +258,45 @@ export function InterviewManagement({
           </div>
         )}
 
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-violet-50 p-3 text-violet-600">
+                <CalendarDays className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm text-slate-500">Scheduled Interviews</p>
+                <p className="text-2xl font-bold text-slate-900">{totalInterviews}</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-sky-50 p-3 text-sky-600">
+                <Users className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm text-slate-500">Today</p>
+                <p className="text-2xl font-bold text-slate-900">{todaysInterviews}</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-amber-50 p-3 text-amber-600">
+                <TimerReset className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm text-slate-500">Pending Results</p>
+                <p className="text-2xl font-bold text-slate-900">{pendingResults}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {viewMode === 'table' ?
         <DataTable
+          title="Interview Schedule"
           data={interviews}
           columns={columns}
           keyField="id"
@@ -246,11 +304,19 @@ export function InterviewManagement({
           <DropdownMenu
             items={[
             {
-              label: 'Cancel',
+              label: 'Mark Result Pending',
+              icon: <CheckCircle2 className="h-4 w-4" />,
+              onClick: async () => {
+                await updateAdminApplicationStatus(item.id, 'Pending Decision');
+                await loadApplications();
+              }
+            },
+            {
+              label: 'Cancel Interview',
               icon: <Trash className="h-4 w-4" />,
               variant: 'danger',
               onClick: async () => {
-                await updateAdminApplicationStatus(item.id, 'Rejected');
+                await updateAdminApplicationStatus(item.id, 'Shortlisted');
                 await loadApplications();
               }
             }]
@@ -346,7 +412,11 @@ export function InterviewManagement({
               onChange={(event) => setSelectedApplicationId(event.target.value)}
               className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none">
               <option value="">Select Application</option>
-              {applications.map((application) => {
+              {applications
+                .filter((application) =>
+                  ['Applied', 'Shortlisted', 'Pending Decision', 'Interview Scheduled'].includes(application.status)
+                )
+                .map((application) => {
                 const student =
                   application.studentId && typeof application.studentId !== 'string'
                     ? application.studentId.name
@@ -357,7 +427,7 @@ export function InterviewManagement({
                     : '-';
                 return (
                   <option key={application._id} value={application._id}>
-                    {student} - {job}
+                    {student} - {job} ({application.status})
                   </option>
                 );
               })}

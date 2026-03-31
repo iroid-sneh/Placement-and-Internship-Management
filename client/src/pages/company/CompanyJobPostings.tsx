@@ -6,7 +6,14 @@ import { DropdownMenu } from '../../components/ui/DropdownMenu';
 import { StatusDot } from '../../components/ui/StatusDot';
 import { Input } from '../../components/ui/Input';
 import { Modal } from '../../components/ui/Modal';
-import { MoreHorizontal, Plus, Users } from 'lucide-react';
+import {
+  BriefcaseBusiness,
+  CircleDollarSign,
+  MoreHorizontal,
+  Plus,
+  Sparkles,
+  Users
+} from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import {
   createCompanyJob,
@@ -250,6 +257,10 @@ export function CompanyJobPostings({
     }
   ];
 
+  const totalJobs = jobs.length;
+  const openJobs = jobs.filter((job) => job.status === 'Open').length;
+  const totalApplications = jobs.reduce((count, job) => count + (applicantsByJobId[job._id] || 0), 0);
+
   return (
     <DashboardLayout
       userRole="company"
@@ -263,14 +274,27 @@ export function CompanyJobPostings({
       breadcrumbs={[{ label: 'My Job Postings' }]}
     >
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">My Job Postings</h1>
-            <p className="text-slate-600">Manage your job listings and view applicants.</p>
+        <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-900 p-6 text-white shadow-xl sm:p-8">
+          <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+            <div className="max-w-2xl space-y-3">
+              <span className="inline-flex w-fit rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100">
+                Job Postings
+              </span>
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight">Hiring Pipeline</h1>
+                <p className="mt-2 text-sm text-slate-200 sm:text-base">
+                  Launch polished job posts, track candidate demand, and keep every opening aligned with your hiring goals.
+                </p>
+              </div>
+            </div>
+            <Button
+              className="h-12 rounded-2xl border border-white/15 bg-white/10 px-5 text-white shadow-none backdrop-blur hover:bg-white/15"
+              icon={<Plus className="h-4 w-4" />}
+              onClick={openCreateModal}
+            >
+              Post New Job
+            </Button>
           </div>
-          <Button icon={<Plus className="h-4 w-4" />} onClick={openCreateModal}>
-            Post New Job
-          </Button>
         </div>
 
         {errorMessage && (
@@ -279,7 +303,44 @@ export function CompanyJobPostings({
           </div>
         )}
 
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-cyan-50 p-3 text-cyan-600">
+                <BriefcaseBusiness className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm text-slate-500">Total Postings</p>
+                <p className="text-2xl font-bold text-slate-900">{totalJobs}</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-emerald-50 p-3 text-emerald-600">
+                <Sparkles className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm text-slate-500">Open Roles</p>
+                <p className="text-2xl font-bold text-slate-900">{openJobs}</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-amber-50 p-3 text-amber-600">
+                <CircleDollarSign className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm text-slate-500">Applications Received</p>
+                <p className="text-2xl font-bold text-slate-900">{totalApplications}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <DataTable
+          title="Active Job Listings"
           data={filteredRows}
           columns={columns}
           keyField="id"
@@ -336,6 +397,19 @@ export function CompanyJobPostings({
                 {modalErrorMessage}
               </div>
             )}
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <div className="flex items-center gap-4">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 text-xl font-bold text-white">
+                  {(formData.title || 'J').charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <p className="text-base font-semibold text-slate-900">{formData.title || 'Job Title'}</p>
+                  <p className="text-sm text-slate-500">
+                    {formData.type} • {formData.jobMode}
+                  </p>
+                </div>
+              </div>
+            </div>
             <Input
               label="Job Title"
               value={formData.title}

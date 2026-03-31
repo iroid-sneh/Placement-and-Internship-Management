@@ -4,9 +4,19 @@ import { DataTable } from '../../components/ui/DataTable';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { DropdownMenu } from '../../components/ui/DropdownMenu';
-import { MoreHorizontal, Eye, Trash } from 'lucide-react';
+import {
+  MoreHorizontal,
+  Eye,
+  Trash,
+  ExternalLink,
+  FileText,
+  GraduationCap,
+  Users
+} from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { deleteAdminStudent, getAdminStudents, type AdminStudent } from '../../services/api/admin';
+
+const SERVER_BASE_URL = 'http://localhost:5001';
 interface StudentManagementProps {
   onNavigate: (path: string) => void;
   onLogout: () => void;
@@ -31,6 +41,14 @@ export function StudentManagement({
   useEffect(() => {
     void loadStudents();
   }, []);
+
+  const totalStudents = students.length;
+  const resumeCount = students.filter((student) => Boolean(student.profile?.resumeUrl)).length;
+  const activeDepartments = new Set(
+    students
+      .map((student) => student.profile?.department)
+      .filter((department): department is string => Boolean(department))
+  ).size;
 
   const columns = [
   {
@@ -61,12 +79,23 @@ export function StudentManagement({
     header: 'Resume',
     render: (item: AdminStudent) =>
     item.profile?.resumeUrl ?
-    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-            Uploaded
-          </span> :
+    <a
+          href={
+            item.profile.resumeUrl.startsWith('http')
+              ? item.profile.resumeUrl
+              : `${SERVER_BASE_URL}${item.profile.resumeUrl}`
+          }
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-3 py-1 text-xs font-medium text-teal-700 transition-colors hover:bg-teal-100"
+        >
+          <FileText className="h-3.5 w-3.5" />
+          View Resume
+          <ExternalLink className="h-3.5 w-3.5" />
+        </a> :
 
-    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
-            Missing
+    <span className="inline-flex items-center rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-700">
+            Not Uploaded
           </span>
 
   }];
@@ -98,14 +127,34 @@ export function StudentManagement({
       }>
 
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">Students</h1>
-            <p className="text-slate-600">
-              Manage student records and profiles.
-            </p>
+        <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-900 p-6 text-white shadow-xl sm:p-8">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-2xl space-y-3">
+              <span className="inline-flex w-fit rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-100">
+                Student Management
+              </span>
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight">Student Records</h1>
+                <p className="mt-2 text-sm text-slate-200 sm:text-base">
+                  Review profiles, verify resumes, and manage student placement records from one clean admin workspace.
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur">
+                <p className="text-xs uppercase tracking-wide text-slate-300">Students</p>
+                <p className="mt-1 text-2xl font-semibold">{totalStudents}</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur">
+                <p className="text-xs uppercase tracking-wide text-slate-300">Resumes</p>
+                <p className="mt-1 text-2xl font-semibold">{resumeCount}</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur">
+                <p className="text-xs uppercase tracking-wide text-slate-300">Departments</p>
+                <p className="mt-1 text-2xl font-semibold">{activeDepartments}</p>
+              </div>
+            </div>
           </div>
-          <div />
         </div>
         {errorMessage && (
           <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -113,7 +162,44 @@ export function StudentManagement({
           </div>
         )}
 
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-teal-50 p-3 text-teal-600">
+                <Users className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm text-slate-500">Total Students</p>
+                <p className="text-2xl font-bold text-slate-900">{totalStudents}</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-blue-50 p-3 text-blue-600">
+                <FileText className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm text-slate-500">Resume Uploaded</p>
+                <p className="text-2xl font-bold text-slate-900">{resumeCount}</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-amber-50 p-3 text-amber-600">
+                <GraduationCap className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-sm text-slate-500">Departments</p>
+                <p className="text-2xl font-bold text-slate-900">{activeDepartments}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <DataTable
+          title="Student Directory"
           data={students}
           columns={columns}
           keyField="id"

@@ -8,6 +8,7 @@ interface StatCardProps {
     value: string;
     direction: 'up' | 'down' | 'neutral';
   };
+  trendLabel?: string;
   gradient?: 'teal' | 'purple' | 'orange' | 'blue';
   className?: string;
 }
@@ -16,6 +17,7 @@ export function StatCard({
   value,
   icon,
   trend,
+  trendLabel,
   gradient = 'teal',
   className = ''
 }: StatCardProps) {
@@ -55,7 +57,7 @@ export function StatCard({
           }
             {trend.value}
           </span>
-          <span className="ml-2 text-white/70">vs last month</span>
+          {trendLabel ? <span className="ml-2 text-white/70">{trendLabel}</span> : null}
         </div>
       }
     </div>);

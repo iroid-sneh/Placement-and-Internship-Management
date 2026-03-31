@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ChevronDown,
   ChevronUp,
@@ -130,6 +130,21 @@ export function DataTable<
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeSearch]);
+
+  useEffect(() => {
+    const safeTotalPages = Math.max(totalPages, 1);
+    if (currentPage > safeTotalPages) {
+      setCurrentPage(safeTotalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const showingFrom = sortedData.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+  const showingTo = sortedData.length === 0 ? 0 : Math.min(currentPage * itemsPerPage, sortedData.length);
+
   return (
     <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
       {/* Header */}
@@ -187,6 +202,7 @@ export function DataTable<
                       <button
                         onClick={() => {
                           setFilters({});
+                          setCurrentPage(1);
                           onFilterChange?.({});
                         }}
                         className="w-full text-sm font-medium text-teal-600 hover:text-teal-700"
@@ -294,13 +310,9 @@ export function DataTable<
       <div className="flex items-center justify-between border-t border-slate-200 px-4 py-3">
         <div className="text-sm text-slate-500">
           Showing{' '}
-          <span className="font-medium">
-            {(currentPage - 1) * itemsPerPage + 1}
-          </span>{' '}
+          <span className="font-medium">{showingFrom}</span>{' '}
           to{' '}
-          <span className="font-medium">
-            {Math.min(currentPage * itemsPerPage, sortedData.length)}
-          </span>{' '}
+          <span className="font-medium">{showingTo}</span>{' '}
           of <span className="font-medium">{sortedData.length}</span> results
         </div>
         <div className="flex gap-1">
