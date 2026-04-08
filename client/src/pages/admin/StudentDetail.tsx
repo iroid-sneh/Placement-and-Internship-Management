@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { Button } from '../../components/ui/Button';
 import { StatusDot } from '../../components/ui/StatusDot';
@@ -112,7 +112,7 @@ export function StudentDetail({
           }
         ]}
       >
-        <div className="rounded-md border border-slate-200 bg-white px-4 py-6 text-slate-600">
+        <div className="admin-panel">
           {errorMessage || 'Loading student details...'}
         </div>
       </DashboardLayout>
@@ -138,10 +138,10 @@ export function StudentDetail({
       }]
       }>
 
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="admin-page admin-page__narrow">
         <Button
           variant="ghost"
-          className="pl-0 hover:bg-transparent hover:text-teal-600"
+          className="admin-page__back"
           onClick={() => onNavigate('students')}
           icon={<ArrowLeft className="h-4 w-4" />}>
 
@@ -149,31 +149,29 @@ export function StudentDetail({
         </Button>
 
         {/* Profile Header */}
-        <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-          <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-            <div className="flex items-start gap-4">
-              <div className="h-20 w-20 rounded-xl bg-teal-100 flex items-center justify-center text-teal-700 text-2xl font-bold">
+        <div className="admin-profile">
+          <div className="admin-profile__header">
+            <div className="admin-profile__identity">
+              <div className="admin-profile__avatar">
                 {student.name.charAt(0).toUpperCase()}
               </div>
 
               <div>
-                <h1 className="text-2xl font-bold text-slate-900">
-                  {student.name}
-                </h1>
-                <p className="text-slate-600">{student.profile?.enrollmentNumber || '-'}</p>
-                <div className="flex flex-wrap gap-4 mt-3 text-sm text-slate-500">
-                  <div className="flex items-center gap-1">
+                <h1 className="admin-profile__name">{student.name}</h1>
+                <p className="admin-profile__subtext">{student.profile?.enrollmentNumber || '-'}</p>
+                <div className="admin-profile__meta">
+                  <div className="admin-profile__meta-item">
                     <Mail className="h-4 w-4" />
                     {student.email}
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="admin-profile__meta-item">
                     <Phone className="h-4 w-4" />
                     {student.profile?.phone || '-'}
                   </div>
                 </div>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="admin-actions-row">
               <Button variant="danger" icon={<Trash className="h-4 w-4" />} onClick={handleDeleteStudent}>
                 Delete
               </Button>
@@ -181,48 +179,47 @@ export function StudentDetail({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Academic Info */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-              <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <div className="admin-detail-layout">
+          <div className="admin-section-stack">
+            <div className="admin-section">
+              <h3 className="admin-section__title">
                 <BookOpen className="h-5 w-5 text-teal-600" />
                 Academic Information
               </h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="admin-info-grid">
                 <div>
-                  <p className="text-sm text-slate-500">Department</p>
-                  <p className="font-medium text-slate-900">
+                  <p className="admin-info-grid__label">Department</p>
+                  <p className="admin-info-grid__value">
                     {student.profile?.department || '-'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-slate-500">Current Semester</p>
-                  <p className="font-medium text-slate-900">
+                  <p className="admin-info-grid__label">Current Semester</p>
+                  <p className="admin-info-grid__value">
                     Year {student.profile?.year || '-'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-slate-500">CGPA</p>
-                  <p className="font-medium text-slate-900">{student.profile?.cgpa || '-'}</p>
+                  <p className="admin-info-grid__label">CGPA</p>
+                  <p className="admin-info-grid__value">{student.profile?.cgpa || '-'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-slate-500">Backlogs</p>
-                  <p className="font-medium text-slate-900">0</p>
+                  <p className="admin-info-grid__label">Backlogs</p>
+                  <p className="admin-info-grid__value">0</p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-              <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <div className="admin-section">
+              <h3 className="admin-section__title">
                 <Award className="h-5 w-5 text-teal-600" />
                 Skills
               </h3>
-              <div className="flex flex-wrap gap-2">
+              <div className="admin-skill-list">
                 {(student.profile?.skills || []).map((skill) =>
                 <span
                   key={skill}
-                  className="px-3 py-1 bg-teal-50 text-teal-700 rounded-full text-sm font-medium border border-teal-100">
+                  className="admin-pill admin-pill--resume">
 
                     {skill}
                   </span>
@@ -230,18 +227,17 @@ export function StudentDetail({
               </div>
             </div>
 
-            {/* Applications */}
-            <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-              <h3 className="font-bold text-slate-900 mb-4">Applied Jobs</h3>
-              <div className="space-y-3">
+            <div className="admin-section">
+              <h3 className="admin-section__title">Applied Jobs</h3>
+              <div className="admin-application-list">
                 {mappedApplications.map((app, i) =>
                 <div
                   key={i}
-                  className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                  className="admin-application-item">
 
                     <div>
-                      <p className="font-medium text-slate-900">{app.role}</p>
-                      <p className="text-sm text-slate-500">
+                      <p className="admin-application-item__title">{app.role}</p>
+                      <p className="admin-application-item__meta">
                         {app.company} • {app.date}
                       </p>
                     </div>
@@ -277,16 +273,15 @@ export function StudentDetail({
             </div>
           </div>
 
-          {/* Resume Sidebar */}
-          <div className="space-y-6">
-            <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-              <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
+          <div>
+            <div className="admin-resume-card">
+              <h3 className="admin-section__title">
                 <FileText className="h-5 w-5 text-teal-600" />
                 Resume
               </h3>
               {student.profile?.resumeUrl ?
               <>
-                  <div className="aspect-[3/4] w-full rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center mb-4">
+                  <div className="admin-resume-preview">
                     <FileText className="h-12 w-12 text-slate-300" />
                   </div>
                   <a
@@ -297,7 +292,7 @@ export function StudentDetail({
                     }
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+                    className="company-secondary-button"
                   >
                     <FileText className="h-4 w-4" />
                     View Uploaded Resume
@@ -305,8 +300,8 @@ export function StudentDetail({
                   </a>
                 </> :
 
-              <div className="text-center py-8 text-slate-500">
-                  <FileText className="h-12 w-12 mx-auto mb-2 text-slate-300" />
+              <div className="admin-empty-state">
+                  <FileText className="h-12 w-12 admin-empty-state__icon" />
                   <p>No resume uploaded</p>
                 </div>
               }

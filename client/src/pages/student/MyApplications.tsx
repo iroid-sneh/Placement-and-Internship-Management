@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { Button } from '../../components/ui/Button';
 import {
@@ -41,17 +41,17 @@ const STATUS_OPTIONS: { label: string; value: StatusFilter }[] = [
 const getStatusBadge = (status: string) => {
   switch (status) {
     case 'Selected':
-      return { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' };
+      return 'student-status-badge--selected';
     case 'Shortlisted':
-      return { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' };
+      return 'student-status-badge--shortlisted';
     case 'Interview Scheduled':
-      return { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' };
+      return 'student-status-badge--interview';
     case 'Pending Decision':
-      return { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' };
+      return 'student-status-badge--pending';
     case 'Rejected':
-      return { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' };
+      return 'student-status-badge--rejected';
     default:
-      return { bg: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-200' };
+      return 'student-status-badge--default';
   }
 };
 
@@ -127,15 +127,15 @@ export function MyApplications({ onNavigate, onLogout }: MyApplicationsProps) {
         { label: 'My Applications' }
       ]}
     >
-      <div className="space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="student-page">
+        <div className="student-page__header">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">My Applications</h1>
-            <p className="text-slate-600">
+            <h1 className="student-page__title">My Applications</h1>
+            <p className="student-page__subtitle">
               Track the status of your job applications.
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="student-page__actions">
             <Button variant="outline" onClick={() => onNavigate('jobs')}>
               Browse Jobs
             </Button>
@@ -143,45 +143,43 @@ export function MyApplications({ onNavigate, onLogout }: MyApplicationsProps) {
         </div>
 
         {pendingDecisionCount > 0 && (
-          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <div className="student-alert student-alert--warning">
             {pendingDecisionCount} of your interview{pendingDecisionCount === 1 ? ' has' : 's have'} passed.
             The company will update the result soon. Awaiting final decision.
           </div>
         )}
 
         {errorMessage && (
-          <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <div className="student-alert student-alert--error">
             {errorMessage}
           </div>
         )}
 
-        {/* Filters */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
-          <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <h2 className="text-sm font-semibold text-slate-700">
+        <div className="student-filter-bar">
+          <div className="student-filter-bar__row">
+            <div className="student-page__actions">
+              <h2 className="student-card__title">
                 {filteredApplications.length} Application{filteredApplications.length !== 1 ? 's' : ''}
               </h2>
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+                className={`student-filter-toggle ${
                   showFilters || activeFilterCount > 0
-                    ? 'border-teal-500 bg-teal-50 text-teal-700'
-                    : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                    ? 'student-filter-toggle--active'
+                    : ''
                 }`}
               >
-                <SlidersHorizontal className="h-3.5 w-3.5" />
+                <SlidersHorizontal />
                 Filters
                 {activeFilterCount > 0 && (
-                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-teal-600 text-[10px] text-white">
+                  <span className="student-badge student-badge--progress">
                     {activeFilterCount}
                   </span>
                 )}
               </button>
             </div>
 
-            {/* Status Quick Filters */}
-            <div className="flex flex-wrap gap-2">
+            <div className="student-page__actions">
               {STATUS_OPTIONS.slice(0, 5).map((opt) => {
                 const count = opt.value
                   ? applications.filter((a) => a.status === opt.value).length
@@ -190,10 +188,10 @@ export function MyApplications({ onNavigate, onLogout }: MyApplicationsProps) {
                   <button
                     key={opt.value}
                     onClick={() => setStatusFilter(statusFilter === opt.value ? '' : opt.value)}
-                    className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                    className={`student-chip ${
                       statusFilter === opt.value
-                        ? 'bg-teal-600 text-white'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        ? 'student-chip--active'
+                        : ''
                     }`}
                   >
                     {opt.label} ({count})
@@ -204,16 +202,16 @@ export function MyApplications({ onNavigate, onLogout }: MyApplicationsProps) {
           </div>
 
           {showFilters && (
-            <div className="border-t border-slate-200 p-4">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="student-form-section">
+              <div className="student-grid student-grid--filters">
                 <div>
-                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  <label className="student-card__section-label">
                     Application Status
                   </label>
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-                    className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+                    className="student-select"
                   >
                     {STATUS_OPTIONS.map((opt) => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -222,13 +220,13 @@ export function MyApplications({ onNavigate, onLogout }: MyApplicationsProps) {
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  <label className="student-card__section-label">
                     Job Type
                   </label>
                   <select
                     value={typeFilter}
                     onChange={(e) => setTypeFilter(e.target.value)}
-                    className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+                    className="student-select"
                   >
                     <option value="">All Types</option>
                     <option value="Internship">Internship</option>
@@ -238,13 +236,12 @@ export function MyApplications({ onNavigate, onLogout }: MyApplicationsProps) {
               </div>
 
               {activeFilterCount > 0 && (
-                <div className="mt-4 flex justify-end">
+                <div className="student-page__actions">
                   <button
                     onClick={clearFilters}
-                    className="inline-flex items-center gap-1 text-sm font-medium text-teal-600 hover:text-teal-700"
+                    className="student-inline-button"
                   >
-                    <X className="h-3.5 w-3.5" />
-                    Clear filters
+                    <span className="student-icon-inline"><X /> Clear filters</span>
                   </button>
                 </div>
               )}
@@ -252,15 +249,14 @@ export function MyApplications({ onNavigate, onLogout }: MyApplicationsProps) {
           )}
         </div>
 
-        {/* Application Cards */}
         {isLoading ? (
-          <div className="rounded-xl border border-slate-200 bg-white px-4 py-12 text-center text-slate-600">
+          <div className="student-card student-results-empty">
             Loading applications...
           </div>
         ) : filteredApplications.length === 0 ? (
-          <div className="rounded-xl border border-slate-200 bg-white px-6 py-12 text-center">
-            <p className="text-lg font-medium text-slate-700">No applications found</p>
-            <p className="mt-1 text-sm text-slate-500">
+          <div className="student-card student-results-empty">
+            <p className="student-card__title">No applications found</p>
+            <p className="student-page__subtitle">
               {activeFilterCount > 0
                 ? 'Try adjusting your filters.'
                 : 'Start applying to jobs to see them here.'}
@@ -277,7 +273,7 @@ export function MyApplications({ onNavigate, onLogout }: MyApplicationsProps) {
             )}
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="student-page">
             {filteredApplications.map((item) => {
               const job = typeof item.jobId === 'string' ? null : item.jobId;
               const company = job && typeof job.companyId !== 'string' ? job.companyId.name : 'Company';
@@ -292,32 +288,31 @@ export function MyApplications({ onNavigate, onLogout }: MyApplicationsProps) {
               return (
                 <div
                   key={item._id}
-                  className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow"
+                  className="student-application-card"
                 >
-                  <div className="flex flex-col md:flex-row md:items-center gap-4">
-                    {/* Company Logo & Info */}
-                    <div className="flex items-start gap-4 flex-1 min-w-0">
-                      <div className="h-12 w-12 rounded-lg flex items-center justify-center font-bold text-lg bg-blue-100 text-blue-600 flex-shrink-0">
+                  <div className="student-application-card__row">
+                    <div className="student-application-card__company">
+                      <div className="student-application-card__logo">
                         {company.charAt(0).toUpperCase()}
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-bold text-slate-900 truncate">
+                      <div className="student-flex-grow">
+                        <h3 className="student-card__title">
                           {job?.title || 'Unknown Position'}
                         </h3>
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm text-slate-500">
-                          <span className="flex items-center gap-1">
+                        <div className="student-application-card__meta">
+                          <span className="student-icon-inline">
                             <Building2 className="h-3.5 w-3.5" />
                             {company}
                           </span>
-                          <span className="flex items-center gap-1">
+                          <span className="student-icon-inline">
                             <MapPin className="h-3.5 w-3.5" />
                             {location}
                           </span>
-                          <span className="flex items-center gap-1">
+                          <span className="student-icon-inline">
                             <Briefcase className="h-3.5 w-3.5" />
                             {job?.type || '-'}
                           </span>
-                          <span className="flex items-center gap-1">
+                          <span className="student-icon-inline">
                             <Calendar className="h-3.5 w-3.5" />
                             Applied {appliedDate}
                           </span>
@@ -325,16 +320,14 @@ export function MyApplications({ onNavigate, onLogout }: MyApplicationsProps) {
                       </div>
                     </div>
 
-                    {/* Status Badge */}
-                    <div className="flex items-center gap-3 md:flex-shrink-0">
+                    <div className="student-page__actions">
                       <span
-                        className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold border ${statusBadge.bg} ${statusBadge.text} ${statusBadge.border}`}
+                        className={`student-badge ${statusBadge}`}
                       >
                         {item.status}
                       </span>
 
-                      {/* Action Buttons */}
-                      <div className="flex items-center gap-2">
+                      <div className="student-page__actions">
                         <Button
                           variant="outline"
                           size="sm"
@@ -347,10 +340,9 @@ export function MyApplications({ onNavigate, onLogout }: MyApplicationsProps) {
                     </div>
                   </div>
 
-                  {/* Interview Date */}
                   {item.interviewDate && item.status === 'Interview Scheduled' && (
-                    <div className="mt-3 ml-0 md:ml-16">
-                      <div className="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-1.5 text-sm text-blue-700 border border-blue-200">
+                    <div className="student-page__subtitle">
+                      <div className="student-badge student-badge--progress">
                         <Calendar className="h-4 w-4" />
                         Interview on {new Date(item.interviewDate).toLocaleDateString('en-US', {
                           year: 'numeric',

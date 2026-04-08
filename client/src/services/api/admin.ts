@@ -37,6 +37,20 @@ export interface ReportSummary {
   students: ReportStudent[];
 }
 
+export interface AdminSettings {
+  email: string;
+  notifications: {
+    newStudentAlerts: boolean;
+    companyApprovals: boolean;
+    reportReadyAlerts: boolean;
+  };
+  preferences: {
+    darkMode: boolean;
+    autoCloseExpiredJobs: boolean;
+    weeklyReportDigest: boolean;
+  };
+}
+
 export const getAdminStudents = async (): Promise<AdminStudent[]> => {
   const response = await apiRequest<AdminStudent[]>("/admin/students");
   return response.data;
@@ -132,6 +146,46 @@ export const updateAdminApplicationStatus = async (
 
 export const getAdminReportSummary = async (): Promise<ReportSummary> => {
   const response = await apiRequest<ReportSummary>("/admin/reports/summary");
+  return response.data;
+};
+
+export const getAdminSettings = async (): Promise<AdminSettings> => {
+  const response = await apiRequest<AdminSettings>("/admin/settings");
+  return response.data;
+};
+
+export const updateAdminSettings = async (
+  payload: Partial<AdminSettings>
+): Promise<AdminSettings> => {
+  const response = await apiRequest<AdminSettings>("/admin/settings", {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+  return response.data;
+};
+
+export const changeAdminPassword = async (
+  currentPassword: string,
+  newPassword: string,
+  confirmPassword: string
+): Promise<void> => {
+  if (newPassword !== confirmPassword) {
+    throw new Error("New passwords do not match");
+  }
+  await apiRequest("/admin/settings/password", {
+    method: "PUT",
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+};
+
+export const updateAdminEmail = async (
+  newEmail: string,
+  password: string
+): Promise<{ email: string }> => {
+  const response = await apiRequest<{ email: string }>("/admin/settings/email", {
+    method: "PUT",
+    body: JSON.stringify({ newEmail, password }),
+  });
   return response.data;
 };
 

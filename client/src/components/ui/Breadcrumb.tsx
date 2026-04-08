@@ -1,4 +1,3 @@
-import React from 'react';
 import { ChevronRight, Home } from 'lucide-react';
 interface BreadcrumbItem {
   label: string;
@@ -10,32 +9,31 @@ interface BreadcrumbProps {
 }
 export function Breadcrumb({ items, onNavigate }: BreadcrumbProps) {
   return (
-    <nav className="flex" aria-label="Breadcrumb">
-      <ol className="flex items-center space-x-2">
-        <li>
+    <nav className="shared-breadcrumb" aria-label="Breadcrumb">
+      <ol className="shared-breadcrumb__list">
+        <li className="shared-breadcrumb__item">
           <button
             onClick={() => onNavigate?.('dashboard')}
-            className="text-slate-400 hover:text-slate-600 transition-colors">
-
+            className="shared-breadcrumb__home"
+          >
             <Home className="h-4 w-4" />
             <span className="sr-only">Home</span>
           </button>
         </li>
         {items.map((item, index) =>
-        <li key={index} className="flex items-center">
-            <ChevronRight className="h-4 w-4 text-slate-300 flex-shrink-0" />
+        <li key={index} className="shared-breadcrumb__item">
+            <ChevronRight className="shared-breadcrumb__icon h-4 w-4" />
             {item.href ?
           <button
             onClick={() => onNavigate?.(item.href!)}
-            className="ml-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors">
-
+            className="shared-breadcrumb__link"
+          >
                 {item.label}
               </button> :
 
           <span
-            className="ml-2 text-sm font-medium text-slate-900"
+            className="shared-breadcrumb__current"
             aria-current="page">
-
                 {item.label}
               </span>
           }

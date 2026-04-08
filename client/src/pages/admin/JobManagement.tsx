@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { DataTable } from '../../components/ui/DataTable';
 import { Button } from '../../components/ui/Button';
@@ -202,22 +202,22 @@ export function JobManagement({ onNavigate, onLogout }: JobManagementProps) {
       user={{ name: user?.name || 'Admin', email: user?.email || '' }}
       breadcrumbs={[{ label: 'Job Management' }]}
     >
-      <div className="space-y-6">
-        <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-900 p-6 text-white shadow-xl sm:p-8">
-          <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
-            <div className="max-w-2xl space-y-3">
-              <span className="inline-flex w-fit rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-indigo-100">
+      <div className="admin-page">
+        <div className="admin-hero admin-hero--indigo">
+          <div className="admin-hero__row">
+            <div className="admin-hero__body">
+              <span className="admin-hero__eyebrow">
                 Job Management
               </span>
               <div>
-                <h1 className="text-3xl font-bold tracking-tight">Job Postings</h1>
-                <p className="mt-2 text-sm text-slate-200 sm:text-base">
+                <h1 className="admin-hero__title">Job Postings</h1>
+                <p className="admin-hero__subtitle">
                   Create and maintain the same job fields students and companies see, including work mode, skills, eligibility, and deadlines.
                 </p>
               </div>
             </div>
             <Button
-              className="bg-white text-slate-900 hover:bg-slate-100"
+              className="student-button student-button--secondary"
               icon={<Plus className="h-4 w-4" />}
               onClick={handleOpenCreate}
             >
@@ -227,54 +227,54 @@ export function JobManagement({ onNavigate, onLogout }: JobManagementProps) {
         </div>
 
         {errorMessage && (
-          <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <div className="admin-alert admin-alert--error">
             {errorMessage}
           </div>
         )}
 
-        <div className="grid gap-4 sm:grid-cols-4">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-indigo-50 p-3 text-indigo-600">
+        <div className="admin-stat-grid admin-grid--four">
+          <div className="admin-stat-card">
+            <div className="admin-stat-card__row">
+              <div className="admin-stat-card__icon admin-stat-card__icon--indigo">
                 <Briefcase className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">Total Jobs</p>
-                <p className="text-2xl font-bold text-slate-900">{jobs.length}</p>
+                <p className="admin-stat-card__label">Total Jobs</p>
+                <p className="admin-stat-card__value">{jobs.length}</p>
               </div>
             </div>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-emerald-50 p-3 text-emerald-600">
+          <div className="admin-stat-card">
+            <div className="admin-stat-card__row">
+              <div className="admin-stat-card__icon admin-stat-card__icon--emerald">
                 <Sparkles className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">Open Jobs</p>
+                <p className="admin-stat-card__label">Open Jobs</p>
                 <p className="text-2xl font-bold text-slate-900">
                   {jobs.filter((job) => job.status === 'Open').length}
                 </p>
               </div>
             </div>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-blue-50 p-3 text-blue-600">
+          <div className="admin-stat-card">
+            <div className="admin-stat-card__row">
+              <div className="admin-stat-card__icon admin-stat-card__icon--blue">
                 <Users className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">Companies</p>
-                <p className="text-2xl font-bold text-slate-900">{companies.length}</p>
+                <p className="admin-stat-card__label">Companies</p>
+                <p className="admin-stat-card__value">{companies.length}</p>
               </div>
             </div>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-amber-50 p-3 text-amber-600">
+          <div className="admin-stat-card">
+            <div className="admin-stat-card__row">
+              <div className="admin-stat-card__icon admin-stat-card__icon--amber">
                 <Clock3 className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">Internships</p>
+                <p className="admin-stat-card__label">Internships</p>
                 <p className="text-2xl font-bold text-slate-900">
                   {jobs.filter((job) => job.type === 'Internship').length}
                 </p>
@@ -308,7 +308,7 @@ export function JobManagement({ onNavigate, onLogout }: JobManagementProps) {
                 }
               ]}
               trigger={
-                <button className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600">
+                <button className="company-icon-button" type="button">
                   <MoreHorizontal className="h-5 w-5" />
                 </button>
               }
@@ -341,30 +341,30 @@ export function JobManagement({ onNavigate, onLogout }: JobManagementProps) {
             </>
           }
         >
-          <div className="space-y-4">
+          <div className="admin-form">
             {modalErrorMessage && (
-              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              <div className="admin-alert admin-alert--error">
                 {modalErrorMessage}
               </div>
             )}
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-              <div className="flex items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 text-xl font-bold text-white">
+            <div className="admin-preview">
+              <div className="admin-preview__row">
+                <div className="admin-preview__avatar admin-preview__avatar--indigo">
                   {(formData.title || 'J').charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <p className="text-base font-semibold text-slate-900">{formData.title || 'Job Title'}</p>
-                  <p className="text-sm text-slate-500">{formData.type} • {formData.jobMode}</p>
+                  <p className="admin-preview__title">{formData.title || 'Job Title'}</p>
+                  <p className="admin-preview__subtitle">{formData.type} • {formData.jobMode}</p>
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700">Company</label>
+            <div className="admin-grid admin-grid--two">
+              <div className="admin-field">
+                <label className="admin-field__label">Company</label>
                 <select
                   value={formData.companyId}
                   onChange={(event) => setFormData((prev) => ({ ...prev, companyId: event.target.value }))}
-                  className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
+                  className="shared-select-reset"
                 >
                   <option value="">Select Company</option>
                   {companies.map((company) => (
@@ -381,24 +381,24 @@ export function JobManagement({ onNavigate, onLogout }: JobManagementProps) {
                 onChange={(event) => setFormData((prev) => ({ ...prev, title: event.target.value }))}
               />
             </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700">Job Type</label>
+            <div className="admin-grid admin-grid--two">
+              <div className="admin-field">
+                <label className="admin-field__label">Job Type</label>
                 <select
                   value={formData.type}
                   onChange={(event) => setFormData((prev) => ({ ...prev, type: event.target.value as Job['type'] }))}
-                  className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
+                  className="shared-select-reset"
                 >
                   <option value="Job">Job</option>
                   <option value="Internship">Internship</option>
                 </select>
               </div>
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700">Work Mode</label>
+              <div className="admin-field">
+                <label className="admin-field__label">Work Mode</label>
                 <select
                   value={formData.jobMode}
                   onChange={(event) => setFormData((prev) => ({ ...prev, jobMode: event.target.value as NonNullable<Job['jobMode']> }))}
-                  className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
+                  className="shared-select-reset"
                 >
                   <option value="Remote">Remote</option>
                   <option value="Hybrid">Hybrid</option>
@@ -406,7 +406,7 @@ export function JobManagement({ onNavigate, onLogout }: JobManagementProps) {
                 </select>
               </div>
             </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="admin-grid admin-grid--two">
               <Input
                 label="Package / Stipend"
                 placeholder="e.g. INR 4.5 LPA / INR 15,000 per month"
@@ -421,12 +421,12 @@ export function JobManagement({ onNavigate, onLogout }: JobManagementProps) {
                 icon={<ListChecks className="h-4 w-4" />}
               />
             </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">Description</label>
+            <div className="admin-field">
+              <label className="admin-field__label">Description</label>
               <textarea
                 value={formData.description}
                 onChange={(event) => setFormData((prev) => ({ ...prev, description: event.target.value }))}
-                className="h-24 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
+                className="shared-textarea-reset"
                 placeholder="Job description and requirements..."
               />
             </div>
@@ -436,19 +436,19 @@ export function JobManagement({ onNavigate, onLogout }: JobManagementProps) {
               onChange={(event) => setFormData((prev) => ({ ...prev, eligibility: event.target.value }))}
               placeholder="e.g. CGPA 6+ and no active backlogs"
             />
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="admin-grid admin-grid--two">
               <Input
                 label="Application Deadline"
                 type="date"
                 value={formData.lastDate}
                 onChange={(event) => setFormData((prev) => ({ ...prev, lastDate: event.target.value }))}
               />
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-slate-700">Status</label>
+              <div className="admin-field">
+                <label className="admin-field__label">Status</label>
                 <select
                   value={formData.status}
                   onChange={(event) => setFormData((prev) => ({ ...prev, status: event.target.value as Job['status'] }))}
-                  className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
+                  className="shared-select-reset"
                 >
                   <option value="Open">Open</option>
                   <option value="Closed">Closed</option>
@@ -482,13 +482,13 @@ export function JobManagement({ onNavigate, onLogout }: JobManagementProps) {
             </>
           }
         >
-          <div className="space-y-3">
+          <div className="admin-form">
             {modalErrorMessage && (
-              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              <div className="admin-alert admin-alert--error">
                 {modalErrorMessage}
               </div>
             )}
-            <p className="text-slate-600">
+            <p className="company-page__subtitle">
               Are you sure you want to delete this job posting? This will also remove all associated applications.
             </p>
           </div>

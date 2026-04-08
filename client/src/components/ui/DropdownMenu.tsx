@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { MoreVertical } from 'lucide-react';
 import { createPortal } from 'react-dom';
 export interface DropdownItem {
@@ -62,10 +62,10 @@ export function DropdownMenu({
   }, [isOpen]);
 
   return (
-    <div className="relative inline-block text-left" ref={triggerRef}>
+    <div className="shared-dropdown" ref={triggerRef}>
       <div onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }}>
         {trigger ||
-        <button className="flex items-center rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 focus:outline-none">
+        <button className="shared-dropdown__trigger-default" type="button">
             <span className="sr-only">Open options</span>
             <MoreVertical className="h-5 w-5" />
           </button>
@@ -82,24 +82,22 @@ export function DropdownMenu({
               ? window.innerWidth - position.right
               : position.left
           }}
-          className={`
-            z-[9999] w-56 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none
-          `}
+          className="shared-dropdown__panel"
         >
-          <div className="py-1">
+          <div className="shared-dropdown__list">
             {items.map((item, index) =>
               <button
                 key={index}
+                type="button"
                 onClick={() => {
                   item.onClick();
                   setIsOpen(false);
                 }}
-                className={`
-                  flex w-full items-center px-4 py-2 text-sm
-                  ${item.variant === 'danger' ? 'text-red-700 hover:bg-red-50' : 'text-slate-700 hover:bg-slate-100'}
-                `}
+                className={`shared-dropdown__item ${
+                  item.variant === 'danger' ? 'shared-dropdown__item--danger' : ''
+                }`}
               >
-                {item.icon && <span className="mr-3 h-4 w-4">{item.icon}</span>}
+                {item.icon && <span className="shared-dropdown__icon">{item.icon}</span>}
                 {item.label}
               </button>
             )}

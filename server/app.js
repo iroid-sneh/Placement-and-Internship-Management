@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config({ quiet: true });
 import express from "express";
+import { createServer } from "http";
 import path from "path";
 import routes from "./routes/index.js";
 import { mongoConnection } from "./models/connection.js";
@@ -15,8 +16,19 @@ import {
     autoSelectExpiredInterviews,
 } from "./services/application.service.js";
 import { createNotification } from "./services/notification.service.js";
+import {
+    emitTypingStatus,
+    markConversationAsRead,
+    sendChatMessage,
+    verifyConversationAccess,
+} from "./services/chat.service.js";
 import Job from "./models/job.js";
 import Company from "./models/company.js";
+import {
+    initializeSocketServer,
+    registerSocketHandlers,
+    setActiveConversation,
+} from "./services/socket.service.js";
 
 // Suppress MaxListenersExceededWarning during development
 if (process.env.NODE_ENV !== "production") {
@@ -24,6 +36,7 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 const app = express();
+const httpServer = createServer(app);
 const PORT = process.env.PORT || 5001;
 
 app.use(express.json());
@@ -53,7 +66,49 @@ async function bootstrap() {
     await mongoConnection();
     await seedAdmin();
 
-    app.listen(PORT, () => {
+    initializeSocketServer(httpServer);
+    registerSocketHandlers({
+        onJoinConversation: async (socket, payload) => {
+            const conversation = await verifyConversationAccess(
+                socket.data.user,
+                payload.conversationId
+            );
+            socket.join(`conversation:${conversation._id}`);
+            setActiveConversation(socket.id, conversation._id);
+            await markConversationAsRead(socket.data.user, conversation._id);
+            return {
+                conversationId: String(conversation._id),
+            };
+        },
+        onSendMessage: async (socket, payload) =>
+            sendChatMessage({
+                currentUser: socket.data.user,
+                conversationId: payload.conversationId,
+                content: payload.content,
+                attachments: payload.attachments,
+            }),
+        onTyping: async (socket, payload) => {
+            await verifyConversationAccess(socket.data.user, payload.conversationId);
+            setActiveConversation(socket.id, payload.conversationId);
+            await emitTypingStatus({
+                currentUser: socket.data.user,
+                conversationId: payload.conversationId,
+                eventName: "typing",
+            });
+        },
+        onStopTyping: async (socket, payload) => {
+            await verifyConversationAccess(socket.data.user, payload.conversationId);
+            await emitTypingStatus({
+                currentUser: socket.data.user,
+                conversationId: payload.conversationId,
+                eventName: "stopTyping",
+            });
+        },
+        onMessageRead: async (socket, payload) =>
+            markConversationAsRead(socket.data.user, payload.conversationId),
+    });
+
+    httpServer.listen(PORT, () => {
         console.log(`Listening on ${process.env.BASE_URL}:${PORT}`);
     });
 

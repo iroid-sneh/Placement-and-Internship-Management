@@ -88,6 +88,9 @@ export interface Notification {
   _id: string;
   userId: string;
   type:
+    | "message"
+    | "job"
+    | "system"
     | "new_application"
     | "application_status_updated"
     | "interview_scheduled"
@@ -97,11 +100,57 @@ export interface Notification {
   title: string;
   message: string;
   link: string;
+  conversationId?: string;
   isRead: boolean;
   relatedApplicationId?: string;
   relatedJobId?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ChatParticipant {
+  _id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+}
+
+export interface ChatAttachment {
+  name: string;
+  url: string;
+  type?: string;
+}
+
+export interface ChatMessage {
+  _id: string;
+  conversationId: string;
+  sender: ChatParticipant;
+  senderType: UserRole;
+  content: string;
+  attachments: ChatAttachment[];
+  readBy: string[];
+  createdAt: string;
+}
+
+export interface ConversationSummary {
+  _id: string;
+  participants: ChatParticipant[];
+  participantTypes: UserRole[];
+  counterpart: ChatParticipant | null;
+  lastMessage: {
+    content: string;
+    timestamp: string | null;
+  };
+  unreadCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ChatContact {
+  userId: string;
+  role: Exclude<UserRole, "admin"> | "admin";
+  name: string;
+  subtitle: string;
 }
 
 export interface CompanySettings {

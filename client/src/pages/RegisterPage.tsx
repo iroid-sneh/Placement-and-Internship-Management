@@ -250,26 +250,26 @@ export function RegisterPage({ onGoLogin }: RegisterPageProps) {
   return (
     <div className="flex min-h-screen w-full">
       {/* Left Side - Branding (Fixed) */}
-      <div className="fixed left-0 top-0 hidden h-screen w-1/2 flex-col justify-center bg-slate-900 p-16 text-white lg:p-24 md:flex">
+      <div className="fixed left-0 top-0 hidden h-screen w-1/2 flex-col justify-center bg-theme-base p-16 text-white lg:p-24 md:flex">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1521737604893-d14cc237f11d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center opacity-10"></div>
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/90 to-slate-800/90"></div>
+        <div className="absolute inset-0 bg-gradient-hero"></div>
 
         <div className="relative z-10">
           <div className="mb-8 flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-teal-500 text-2xl font-bold text-white shadow-lg shadow-teal-500/30">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-brand text-2xl font-bold text-white shadow-brand-icon">
               P
             </div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              Place<span className="text-teal-400">Mate</span>
+            <h1 className="text-3xl font-bold tracking-tight font-display">
+              Place<span className="text-brand-accent">Mate</span>
             </h1>
           </div>
 
-          <h2 className="mb-6 text-4xl font-extrabold leading-tight tracking-tight md:text-5xl">
+          <h2 className="mb-6 text-4xl font-extrabold leading-tight tracking-tight md:text-5xl font-display">
             Start your journey <br />
-            <span className="text-teal-400">today.</span>
+            <span className="text-brand-accent">today.</span>
           </h2>
 
-          <p className="mb-10 text-lg text-slate-300 md:text-xl">
+          <p className="mb-10 text-lg text-theme-secondary md:text-xl">
             Join thousands of students and companies using PlaceMate for seamless placement management.
           </p>
 
@@ -285,8 +285,8 @@ export function RegisterPage({ onGoLogin }: RegisterPageProps) {
               'Track applications in real-time',
             ].map((feature, i) => (
               <div key={i} className="flex items-center gap-3">
-                <CheckCircle2 className="h-6 w-6 text-teal-400" />
-                <span className="text-slate-200">{feature}</span>
+                <CheckCircle2 className="h-6 w-6 text-brand-accent" />
+                <span className="text-theme-light">{feature}</span>
               </div>
             ))}
           </div>
@@ -294,71 +294,71 @@ export function RegisterPage({ onGoLogin }: RegisterPageProps) {
       </div>
 
       {/* Right Side - Registration Form (Scrollable) */}
-      <div className="ml-0 w-full overflow-y-auto bg-white md:ml-[50%] md:w-1/2">
+      <div className="ml-0 w-full overflow-y-auto bg-theme-surface md:ml-[50%] md:w-1/2">
         <div className="flex min-h-screen items-start justify-center p-6 md:p-10 lg:p-16">
           <div className="w-full max-w-lg space-y-6">
             {/* Mobile-only logo */}
             <div className="flex items-center gap-3 md:hidden">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-500 text-xl font-bold text-white shadow-lg shadow-teal-500/30">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-brand text-xl font-bold text-white shadow-brand-icon">
                 P
               </div>
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-                Place<span className="text-teal-600">Mate</span>
+              <h1 className="text-2xl font-bold tracking-tight text-theme-primary font-display">
+                Place<span className="text-brand-accent">Mate</span>
               </h1>
             </div>
 
             <div className="text-center md:text-left">
-              <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+              <h2 className="text-3xl font-bold tracking-tight text-theme-primary font-display">
                 Create an account
               </h2>
-              <p className="mt-2 text-slate-600">
+              <p className="mt-2 text-theme-secondary">
                 Fill in your details to get started
               </p>
             </div>
 
           {/* Role Selector */}
-          <div className="grid grid-cols-2 gap-2 rounded-lg bg-slate-100 p-1">
+          <div className="grid grid-cols-2 gap-2 rounded-xl bg-theme-elevated p-1.5 border border-brand-light">
             <button
               type="button"
               onClick={() => handleRoleChange('student')}
-              className={`flex flex-col items-center justify-center rounded-md py-3 text-sm font-medium transition-all ${
+              className={`flex flex-col items-center justify-center rounded-lg py-2.5 text-sm font-semibold transition-all duration-200 ${
                 role === 'student'
-                  ? 'bg-white text-teal-600 shadow-sm ring-1 ring-black/5'
-                  : 'text-slate-500 hover:text-slate-700'
+                  ? 'bg-gradient-brand text-white shadow-brand-icon'
+                  : 'text-theme-muted hover:text-theme-primary hover:bg-theme-primary-light'
               }`}
             >
-              <GraduationCap className="mb-1 h-5 w-5" />
+              <GraduationCap className="mb-1.5 h-5 w-5" />
               Student
             </button>
             <button
               type="button"
               onClick={() => handleRoleChange('company')}
-              className={`flex flex-col items-center justify-center rounded-md py-3 text-sm font-medium transition-all ${
+              className={`flex flex-col items-center justify-center rounded-lg py-2.5 text-sm font-semibold transition-all duration-200 ${
                 role === 'company'
-                  ? 'bg-white text-teal-600 shadow-sm ring-1 ring-black/5'
-                  : 'text-slate-500 hover:text-slate-700'
+                  ? 'bg-gradient-brand text-white shadow-brand-icon'
+                  : 'text-theme-muted hover:text-theme-primary hover:bg-theme-primary-light'
               }`}
             >
-              <Building2 className="mb-1 h-5 w-5" />
+              <Building2 className="mb-1.5 h-5 w-5" />
               Company
             </button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {errorMessage && (
-              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <div className="rounded-lg border border-rose/30 bg-rose-light px-4 py-3 text-sm text-rose-light">
                 {errorMessage}
               </div>
             )}
             {successMessage && (
-              <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+              <div className="rounded-lg border border-emerald/30 bg-emerald-light px-4 py-3 text-sm text-emerald-light">
                 {successMessage}
               </div>
             )}
 
             {/* Section: Account Details */}
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-theme-muted">
                 Account Details
               </h3>
 
@@ -410,7 +410,7 @@ export function RegisterPage({ onGoLogin }: RegisterPageProps) {
             {/* Student-specific fields */}
             {role === 'student' && (
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-theme-muted">
                   Academic Details
                 </h3>
 
@@ -481,8 +481,8 @@ export function RegisterPage({ onGoLogin }: RegisterPageProps) {
                   onChange={(e) => setSkills(e.target.value)}
                 />
 
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
-                  Online Profiles <span className="font-normal normal-case text-slate-400">(Optional)</span>
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-theme-muted">
+                  Online Profiles <span className="font-normal normal-case text-theme-muted">(Optional)</span>
                 </h3>
 
                 <Input
@@ -518,7 +518,7 @@ export function RegisterPage({ onGoLogin }: RegisterPageProps) {
             {/* Company-specific fields */}
             {role === 'company' && (
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-theme-muted">
                   Company Details
                 </h3>
 
@@ -573,15 +573,15 @@ export function RegisterPage({ onGoLogin }: RegisterPageProps) {
                 />
 
                 <div className="w-full">
-                  <label className="mb-1 block text-sm font-medium text-slate-700">
+                  <label className="mb-1 block text-sm font-medium text-theme-secondary">
                     Company Description
                   </label>
                   <div className="relative">
-                    <div className="absolute left-3 top-3 text-slate-400">
+                    <div className="absolute left-3 top-3 text-theme-muted">
                       <FileText className="h-4 w-4" />
                     </div>
                     <textarea
-                      className="block min-h-[100px] w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 disabled:bg-slate-50 disabled:text-slate-500"
+                      className="block min-h-[100px] w-full rounded-lg border border-brand-accent bg-theme-elevated py-2.5 pl-10 pr-3 text-sm text-theme-primary placeholder:text-theme-muted focus:border-brand-primary focus:ring-2 focus:ring-brand-primary-light disabled:bg-theme-surface disabled:text-theme-muted"
                       placeholder="Brief description about your company, culture, and what you do..."
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
@@ -592,20 +592,20 @@ export function RegisterPage({ onGoLogin }: RegisterPageProps) {
               </div>
             )}
 
-            <Button className="w-full" type="submit" size="lg" isLoading={isLoading}>
+            <Button className="w-full bg-gradient-brand" type="submit" size="lg" isLoading={isLoading}>
               Create {role === 'student' ? 'Student' : 'Company'} Account
             </Button>
           </form>
 
-          <p className="text-center text-sm text-slate-600">
+          <p className="text-center text-sm text-theme-secondary">
             Already have an account?{' '}
-            <button onClick={onGoLogin} className="font-medium text-teal-600 hover:text-teal-500">
+            <button onClick={onGoLogin} className="font-medium text-brand-primary hover:text-brand-accent-hover">
               Sign in
             </button>
           </p>
         </div>
+        </div>
       </div>
-    </div>
     </div>
   );
 }

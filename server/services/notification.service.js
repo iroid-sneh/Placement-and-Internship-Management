@@ -9,6 +9,7 @@ export async function createNotification({
     link = "",
     relatedApplicationId = null,
     relatedJobId = null,
+    conversationId = null,
 }) {
     try {
         const notification = await Notification.create({
@@ -19,6 +20,7 @@ export async function createNotification({
             link,
             relatedApplicationId,
             relatedJobId,
+            conversationId,
         });
         return notification;
     } catch (error) {

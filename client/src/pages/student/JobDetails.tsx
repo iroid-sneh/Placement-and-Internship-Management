@@ -1,29 +1,24 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { Button } from '../../components/ui/Button';
 import { useAuth } from '../../context/AuthContext';
 import { applyForJob, getStudentApplications, getStudentJobs } from '../../services/api/student';
 import type { Application, Job } from '../../types/app';
-import {
-  MapPin,
-  Briefcase,
-  IndianRupee,
-  Clock,
-  Calendar,
-  CheckCircle,
-  ArrowLeft } from
-'lucide-react';
+import { MapPin, Briefcase, IndianRupee, Clock, CheckCircle, ArrowLeft } from 'lucide-react';
+
 interface JobDetailsProps {
   onNavigate: (path: string) => void;
   onLogout: () => void;
   jobId?: string;
 }
+
 export function JobDetails({ onNavigate, onLogout, jobId }: JobDetailsProps) {
   const { user } = useAuth();
   const [job, setJob] = useState<Job | null>(null);
   const [applications, setApplications] = useState<Application[]>([]);
   const [errorMessage, setErrorMessage] = useState('');
   const [isApplying, setIsApplying] = useState(false);
+
   useEffect(() => {
     const loadJob = async (): Promise<void> => {
       try {
@@ -40,6 +35,7 @@ export function JobDetails({ onNavigate, onLogout, jobId }: JobDetailsProps) {
     };
     void loadJob();
   }, [jobId]);
+
   const isApplied = useMemo(
     () =>
       applications.some(
@@ -48,6 +44,7 @@ export function JobDetails({ onNavigate, onLogout, jobId }: JobDetailsProps) {
       ),
     [applications, jobId]
   );
+
   const handleApply = async (): Promise<void> => {
     if (!job?._id || isApplied) return;
     setIsApplying(true);
@@ -61,6 +58,7 @@ export function JobDetails({ onNavigate, onLogout, jobId }: JobDetailsProps) {
       setIsApplying(false);
     }
   };
+
   if (!job) {
     return (
       <DashboardLayout
@@ -68,29 +66,20 @@ export function JobDetails({ onNavigate, onLogout, jobId }: JobDetailsProps) {
         currentPath="jobs"
         onNavigate={onNavigate}
         onLogout={onLogout}
-        user={{
-          name: user?.name || 'Student',
-          email: user?.email || ''
-        }}
-        breadcrumbs={[
-          {
-            label: 'Browse Jobs',
-            href: 'jobs'
-          },
-          {
-            label: 'Job Detail'
-          }
-        ]}
+        user={{ name: user?.name || 'Student', email: user?.email || '' }}
+        breadcrumbs={[{ label: 'Browse Jobs', href: 'jobs' }, { label: 'Job Detail' }]}
       >
-        <div className="rounded-md border border-slate-200 bg-white px-4 py-6 text-slate-600">
-          {errorMessage || 'Loading job details...'}
+        <div className="student-page student-page--narrow">
+          <div className="student-card student-card--padded">
+            {errorMessage || 'Loading job details...'}
+          </div>
         </div>
       </DashboardLayout>
     );
   }
+
   const companyName = typeof job.companyId === 'string' ? '-' : job.companyId.name;
   const companyLocation = typeof job.companyId === 'string' ? '-' : job.companyId.location;
-  const descriptionText = job.description;
   const requirements = job.requiredSkills && job.requiredSkills.length > 0
     ? job.requiredSkills
     : job.eligibility
@@ -100,114 +89,67 @@ export function JobDetails({ onNavigate, onLogout, jobId }: JobDetailsProps) {
     job.packageOrStipend.toLowerCase().includes('inr') || job.packageOrStipend.includes('₹')
       ? job.packageOrStipend
       : `INR ${job.packageOrStipend}`;
+
   return (
     <DashboardLayout
       userRole="student"
       currentPath="jobs"
       onNavigate={onNavigate}
       onLogout={onLogout}
-      user={{
-        name: user?.name || 'Student',
-        email: user?.email || ''
-      }}
-      breadcrumbs={[
-      {
-        label: 'Browse Jobs',
-        href: 'jobs'
-      },
-      {
-        label: job.title
-      }]
-      }>
-
-      <div className="max-w-4xl mx-auto space-y-6">
-        <Button
-          variant="ghost"
-          className="pl-0 hover:bg-transparent hover:text-teal-600"
-          onClick={() => onNavigate('jobs')}
-          icon={<ArrowLeft className="h-4 w-4" />}>
-
+      user={{ name: user?.name || 'Student', email: user?.email || '' }}
+      breadcrumbs={[{ label: 'Browse Jobs', href: 'jobs' }, { label: job.title }]}
+    >
+      <div className="student-page student-page--narrow">
+        <Button variant="ghost" onClick={() => onNavigate('jobs')} icon={<ArrowLeft className="h-4 w-4" />}>
           Back to Jobs
         </Button>
 
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-          {/* Header */}
-          <div className="p-8 border-b border-slate-200">
-            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-              <div className="flex items-start gap-4">
-                <div className="h-16 w-16 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center font-bold text-2xl">
-                  {companyName.charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-slate-900">
-                    {job.title}
-                  </h1>
-                  <p className="text-lg text-slate-600 font-medium">
-                    {companyName}
-                  </p>
-                  <div className="flex flex-wrap gap-4 mt-3 text-sm text-slate-500">
-                    <div className="flex items-center gap-1">
-                      <Briefcase className="h-4 w-4" />
-                      {job.type}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4" />
-                      {companyLocation}
-                      {job.jobMode && (
-                        <span className="ml-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
-                          {job.jobMode}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <IndianRupee className="h-4 w-4" />
-                      {inrCompensationText}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      Deadline: {new Date(job.lastDate).toLocaleDateString()}
-                    </div>
-                  </div>
+        <div className="student-card student-card--padded">
+          <div className="student-page__header">
+            <div className="student-application-card__company">
+              <div className="student-application-card__logo">
+                {companyName.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <h1 className="student-page__title">{job.title}</h1>
+                <p className="student-page__subtitle">{companyName}</p>
+                <div className="student-job-card__meta">
+                  <div className="student-job-card__meta-item"><Briefcase className="h-4 w-4" />{job.type}</div>
+                  <div className="student-job-card__meta-item"><MapPin className="h-4 w-4" />{companyLocation}{job.jobMode && <span className="student-badge student-badge--progress">{job.jobMode}</span>}</div>
+                  <div className="student-job-card__meta-item"><IndianRupee className="h-4 w-4" />{inrCompensationText}</div>
+                  <div className="student-job-card__meta-item"><Clock className="h-4 w-4" />Deadline: {new Date(job.lastDate).toLocaleDateString()}</div>
                 </div>
               </div>
-              <Button size="lg" disabled={isApplied || isApplying} isLoading={isApplying} onClick={handleApply}>
-                {isApplied ? 'Applied' : 'Apply Now'}
-              </Button>
             </div>
+            <Button size="lg" disabled={isApplied || isApplying} isLoading={isApplying} onClick={handleApply}>
+              {isApplied ? 'Applied' : 'Apply Now'}
+            </Button>
           </div>
-          {errorMessage && (
-            <div className="mx-8 mt-6 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-              {errorMessage}
-            </div>
-          )}
 
-          {/* Content */}
-          <div className="p-8 space-y-8">
+          {errorMessage && <div className="student-alert student-alert--error">{errorMessage}</div>}
+
+          <div className="student-form">
             <section>
-              <h3 className="text-lg font-bold text-slate-900 mb-3">
-                About the Role
-              </h3>
-              <p className="text-slate-600 leading-relaxed">
-                {descriptionText}
-              </p>
+              <h3 className="student-card__title">About the Role</h3>
+              <p className="student-page__subtitle">{job.description}</p>
             </section>
 
             <section>
-              <h3 className="text-lg font-bold text-slate-900 mb-3">
+              <h3 className="student-card__title">
                 {job.requiredSkills && job.requiredSkills.length > 0 ? 'Required Skills' : 'Requirements'}
               </h3>
-              <ul className="space-y-2">
-                {requirements.map((req, i) =>
-                <li key={i} className="flex items-start gap-3 text-slate-600">
-                    <CheckCircle className="h-5 w-5 text-teal-500 flex-shrink-0 mt-0.5" />
+              <ul className="student-tips__list">
+                {requirements.map((req, i) => (
+                  <li key={i} className="student-icon-inline">
+                    <CheckCircle className="h-5 w-5 text-teal-600" />
                     {req}
                   </li>
-                )}
+                ))}
               </ul>
             </section>
           </div>
         </div>
       </div>
-    </DashboardLayout>);
-
+    </DashboardLayout>
+  );
 }

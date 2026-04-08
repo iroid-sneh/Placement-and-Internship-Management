@@ -22,42 +22,41 @@ export function StatCard({
   className = ''
 }: StatCardProps) {
   const gradients = {
-    teal: 'from-teal-500 to-cyan-600',
-    purple: 'from-purple-500 to-pink-600',
-    orange: 'from-orange-500 to-yellow-500',
-    blue: 'from-blue-500 to-indigo-600'
+    teal: 'student-stat-card--teal',
+    purple: 'student-stat-card--purple',
+    orange: 'student-stat-card--orange',
+    blue: 'student-stat-card--blue'
   };
   return (
     <div
-      className={`relative overflow-hidden rounded-xl bg-gradient-to-br ${gradients[gradient]} p-6 text-white shadow-md ${className}`}>
+      className={`student-stat-card ${gradients[gradient]} ${className}`}>
 
-      <div className="flex items-start justify-between">
+      <div className="student-stat-card__top">
         <div>
-          <p className="text-sm font-medium text-white/80">{title}</p>
-          <h3 className="mt-2 text-3xl font-bold">{value}</h3>
+          <p className="student-stat-card__label">{title}</p>
+          <h3 className="student-stat-card__value">{value}</h3>
         </div>
-        <div className="rounded-lg bg-white/20 p-2 text-white backdrop-blur-sm">
+        <div className="student-stat-card__icon">
           {icon}
         </div>
       </div>
 
       {trend &&
-      <div className="mt-4 flex items-center text-sm">
-          <span
-          className={`flex items-center rounded-full bg-white/20 px-2 py-0.5 font-medium backdrop-blur-sm`}>
+      <div className="student-stat-card__trend">
+          <span className="student-stat-card__trend-pill">
 
             {trend.direction === 'up' &&
-          <ArrowUpRight className="mr-1 h-3 w-3" />
+          <ArrowUpRight />
           }
             {trend.direction === 'down' &&
-          <ArrowDownRight className="mr-1 h-3 w-3" />
+          <ArrowDownRight />
           }
             {trend.direction === 'neutral' &&
-          <Minus className="mr-1 h-3 w-3" />
+          <Minus />
           }
             {trend.value}
           </span>
-          {trendLabel ? <span className="ml-2 text-white/70">{trendLabel}</span> : null}
+          {trendLabel ? <span>{trendLabel}</span> : null}
         </div>
       }
     </div>);

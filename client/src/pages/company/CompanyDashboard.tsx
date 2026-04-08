@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { StatCard } from '../../components/ui/StatCard';
 import { Button } from '../../components/ui/Button';
@@ -158,36 +158,26 @@ export function CompanyDashboard({
       {
         id: 'new',
         title: 'New Applications',
-        color: 'bg-slate-100',
-        borderColor: 'border-slate-300',
         count: applicants.filter((applicant) => applicant.column === 'new').length
       },
       {
         id: 'screening',
         title: 'Shortlisted',
-        color: 'bg-blue-50',
-        borderColor: 'border-blue-300',
         count: applicants.filter((applicant) => applicant.column === 'screening').length
       },
       {
         id: 'interview',
         title: 'Interview',
-        color: 'bg-purple-50',
-        borderColor: 'border-purple-300',
         count: applicants.filter((applicant) => applicant.column === 'interview').length
       },
       {
         id: 'offer',
         title: 'Rejected',
-        color: 'bg-red-50',
-        borderColor: 'border-red-300',
         count: applicants.filter((applicant) => applicant.column === 'offer').length
       },
       {
         id: 'hired',
         title: 'Selected',
-        color: 'bg-green-50',
-        borderColor: 'border-green-300',
         count: applicants.filter((applicant) => applicant.column === 'hired').length
       }
     ],
@@ -210,13 +200,13 @@ export function CompanyDashboard({
       }}
       breadcrumbs={[{ label: 'Dashboard' }]}
     >
-      <div className="space-y-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="company-page">
+        <div className="company-page__header">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Recruitment Pipeline</h1>
-            <p className="text-slate-600">Manage your job postings and applicants.</p>
+            <h1 className="company-page__title">Recruitment Pipeline</h1>
+            <p className="company-page__subtitle">Manage your job postings and applicants.</p>
           </div>
-          <div className="flex gap-2">
+          <div className="company-page__actions">
             <Button
               variant="outline"
               icon={<Briefcase className="h-4 w-4" />}
@@ -234,13 +224,12 @@ export function CompanyDashboard({
         </div>
 
         {errorMessage && (
-          <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <div className="company-alert company-alert--error">
             {errorMessage}
           </div>
         )}
 
-        {/* Stats Row */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="company-grid company-grid--stats">
           <StatCard
             title="Open Positions"
             value={String(openJobs)}
@@ -275,33 +264,32 @@ export function CompanyDashboard({
           />
         </div>
 
-        {/* Kanban Board - Grid Layout */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="company-grid company-grid--kanban">
           {kanbanColumns.map((column) => (
             <div
               key={column.id}
-              className="flex flex-col rounded-xl bg-white border border-slate-200 shadow-sm overflow-hidden"
+              className="company-kanban-column"
             >
-              <div className={`flex items-center justify-between px-4 py-3 border-b ${column.color}`}>
-                <h3 className="font-semibold text-slate-900 text-sm">{column.title}</h3>
-                <span className="rounded-full bg-white px-2 py-0.5 text-xs font-medium text-slate-600 shadow-sm">
+              <div className={`company-kanban-column__header company-kanban-column__header--${column.id}`}>
+                <h3 className="company-kanban-column__title">{column.title}</h3>
+                <span className="company-kanban-column__count">
                   {column.count}
                 </span>
               </div>
-              <div className="flex-1 overflow-y-auto p-3 space-y-3 max-h-[480px]">
+              <div className="company-kanban-column__body">
                 {applicants
                   .filter((a) => a.column === column.id)
                   .map((applicant) => (
                     <div
                       key={applicant.id}
-                      className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm hover:shadow-md hover:border-teal-200 transition-all"
+                      className="company-applicant-card"
                     >
-                      <div className="flex justify-between items-start">
-                        <div className="min-w-0 flex-1">
-                          <h4 className="font-semibold text-slate-900 text-sm truncate">
+                      <div className="company-applicant-card__top">
+                        <div className="company-flex-grow">
+                          <h4 className="company-applicant-card__name">
                             {applicant.name}
                           </h4>
-                          <p className="text-xs text-slate-500 truncate">{applicant.role}</p>
+                          <p className="company-applicant-card__role">{applicant.role}</p>
                         </div>
                         <DropdownMenu
                           items={[
@@ -328,15 +316,15 @@ export function CompanyDashboard({
                             }
                           ]}
                           trigger={
-                            <button className="p-1 text-slate-400 hover:text-slate-600 transition-colors rounded-md hover:bg-slate-100">
+                            <button className="company-icon-button" type="button">
                               <MoreHorizontal className="h-4 w-4" />
                             </button>
                           }
                         />
                       </div>
-                      <div className="mt-2 flex items-center justify-between text-xs text-slate-400">
+                      <div className="company-applicant-card__footer">
                         <span>Applied {applicant.date}</span>
-                        <div className="h-5 w-5 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-[10px]">
+                        <div className="company-applicant-card__avatar">
                           {applicant.name.charAt(0)}
                         </div>
                       </div>
@@ -344,7 +332,7 @@ export function CompanyDashboard({
                   ))}
 
                 {applicants.filter((a) => a.column === column.id).length === 0 && (
-                  <div className="flex h-24 items-center justify-center rounded-lg border-2 border-dashed border-slate-200 text-xs text-slate-400">
+                  <div className="company-empty">
                     No applicants
                   </div>
                 )}
@@ -386,11 +374,11 @@ export function CompanyDashboard({
             </>
           }
         >
-          <div className="space-y-3">
-            <p className="text-sm text-slate-600">
+          <div className="company-stack">
+            <p className="company-page__subtitle">
               Are you sure you want to reject <strong>{rejectTargetName}</strong>?
             </p>
-            <p className="text-sm text-slate-500">
+            <p className="company-page__subtitle">
               This action will mark the applicant as rejected. This cannot be undone.
             </p>
           </div>

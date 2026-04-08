@@ -10,6 +10,9 @@ const notificationSchema = new mongoose.Schema(
         type: {
             type: String,
             enum: [
+                "message",
+                "job",
+                "system",
                 "new_application",
                 "application_status_updated",
                 "interview_scheduled",
@@ -45,6 +48,11 @@ const notificationSchema = new mongoose.Schema(
         relatedJobId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Job",
+            default: null,
+        },
+        conversationId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Conversation",
             default: null,
         },
     },

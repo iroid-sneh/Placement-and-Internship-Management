@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { DataTable } from '../../components/ui/DataTable';
 import { StatusDot } from '../../components/ui/StatusDot';
@@ -145,11 +145,11 @@ export function ApplicantList({ onNavigate, onLogout }: ApplicantListProps) {
       header: 'Applicant',
       sortable: true,
       render: (item: any) => (
-        <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-sm">
+        <div className="company-table-user">
+          <div className="company-table-avatar">
             {item.name.charAt(0)}
           </div>
-          <span className="font-medium text-slate-900">{item.name}</span>
+          <span className="company-table-user__name">{item.name}</span>
         </div>
       )
     },
@@ -193,23 +193,23 @@ export function ApplicantList({ onNavigate, onLogout }: ApplicantListProps) {
       }}
       breadcrumbs={[{ label: 'Applicants' }]}
     >
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="company-page">
+        <div className="company-page__header">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Applicants</h1>
-            <p className="text-slate-600">Review and manage job applications.</p>
+            <h1 className="company-page__title">Applicants</h1>
+            <p className="company-page__subtitle">Review and manage job applications.</p>
           </div>
           <div />
         </div>
 
         {errorMessage && (
-          <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <div className="company-alert company-alert--error">
             {errorMessage}
           </div>
         )}
 
         {pendingDecisionCount > 0 && (
-          <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          <div className="company-alert company-alert--warning">
             {pendingDecisionCount} application{pendingDecisionCount === 1 ? '' : 's'} had an interview date that has
             passed. Please update each to <strong>Selected</strong> or <strong>Rejected</strong> (or reschedule the
             interview).
@@ -240,7 +240,7 @@ export function ApplicantList({ onNavigate, onLogout }: ApplicantListProps) {
                 }
               ]}
               trigger={
-                <button className="p-1 text-slate-400 hover:text-slate-600 rounded-md hover:bg-slate-100">
+                <button className="company-icon-button" type="button">
                   <MoreHorizontal className="h-5 w-5" />
                 </button>
               }
@@ -271,18 +271,18 @@ export function ApplicantList({ onNavigate, onLogout }: ApplicantListProps) {
             </>
           }
         >
-          <div className="space-y-4">
+          <div className="company-page company-page--compact">
             {modalErrorMessage && (
-              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              <div className="company-alert company-alert--error">
                 {modalErrorMessage}
               </div>
             )}
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">Status</label>
+            <div className="company-field">
+              <label className="company-input__label">Status</label>
               <select
                 value={selectedStatus}
                 onChange={(event) => setSelectedStatus(event.target.value as Application['status'])}
-                className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+                className="company-select"
               >
                 <option value="Applied">Applied</option>
                 <option value="Shortlisted">Shortlisted</option>

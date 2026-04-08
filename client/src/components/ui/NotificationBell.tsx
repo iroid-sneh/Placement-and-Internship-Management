@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Bell, CheckCheck, X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import type { Notification } from '../../types/app';
@@ -69,7 +69,7 @@ export function NotificationBell({
         setNotifications(data.notifications);
         setUnreadCount(data.unreadCount);
       })
-      .catch(() => {});
+      .catch(() => undefined);
     window.addEventListener('scroll', updatePosition, true);
     window.addEventListener('resize', updatePosition);
     return () => {
@@ -111,11 +111,18 @@ export function NotificationBell({
 
   const handleClick = (n: Notification) => {
     void handleMarkRead(n._id);
-    if (n.link) onNavigate(n.link);
+    if (n.conversationId) {
+      onNavigate(`chat/${n.conversationId}`);
+    } else if (n.link) {
+      onNavigate(n.link);
+    }
     setIsOpen(false);
   };
 
   const icon = (type: string) => {
+    if (type === 'message') return '\uD83D\uDCAC';
+    if (type === 'system') return '\uD83D\uDCE2';
+    if (type === 'job') return '\uD83D\uDCBC';
     if (type === 'new_application') return '\uD83D\uDCCB';
     if (type === 'application_status_updated') return '\u2705';
     if (type === 'interview_scheduled') return '\uD83D\uDCC5';
@@ -134,15 +141,16 @@ export function NotificationBell({
   };
 
   return (
-    <div className="relative" ref={triggerRef}>
+    <div className="shared-notification" ref={triggerRef}>
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+        className="shared-notification__trigger"
         title="Notifications"
       >
         <Bell className="h-5 w-5" />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+          <span className="shared-notification__badge">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
@@ -152,53 +160,56 @@ export function NotificationBell({
         <div
           ref={panelRef}
           style={{ position: 'fixed', top: position.top, right: position.right }}
-          className="z-[9999] w-96 max-h-[32rem] bg-white rounded-xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden"
+          className="shared-notification__panel"
         >
-          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-slate-50">
-            <h3 className="text-sm font-semibold text-slate-900">Notifications</h3>
-            <div className="flex items-center gap-2">
+          <div className="shared-notification__header">
+            <h3 className="shared-notification__title">Notifications</h3>
+            <div className="shared-notification__header-actions">
               {unreadCount > 0 && (
                 <button
+                  type="button"
                   onClick={handleMarkAllRead}
-                  className="text-xs text-teal-600 hover:text-teal-700 font-medium flex items-center gap-1"
+                  className="shared-notification__mark-all"
                 >
                   <CheckCheck className="h-3.5 w-3.5" />
                   Mark all read
                 </button>
               )}
               <button
+                type="button"
                 onClick={() => setIsOpen(false)}
-                className="p-1 text-slate-400 hover:text-slate-600 rounded hover:bg-slate-200"
+                className="shared-notification__close"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto">
+          <div className="shared-notification__body">
             {notifications.length === 0 ? (
-              <div className="p-6 text-center">
+              <div className="shared-notification__empty">
                 <Bell className="h-8 w-8 text-slate-300 mx-auto mb-2" />
-                <p className="text-sm text-slate-500">No notifications yet</p>
+                <p className="shared-notification__empty-text">No notifications yet</p>
               </div>
             ) : (
-              <div className="divide-y divide-slate-100">
+              <div className="shared-notification__list">
                 {notifications.map((n) => (
                   <button
                     key={n._id}
+                    type="button"
                     onClick={() => handleClick(n)}
-                    className={`w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors flex gap-3 ${!n.isRead ? 'bg-teal-50/50' : ''}`}
+                    className={`shared-notification__item ${!n.isRead ? 'shared-notification__item--unread' : ''}`}
                   >
-                    <span className="text-lg flex-shrink-0 mt-0.5">{icon(n.type)}</span>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <p className={`text-sm ${!n.isRead ? 'font-semibold text-slate-900' : 'font-medium text-slate-700'}`}>
+                    <span className="shared-notification__emoji">{icon(n.type)}</span>
+                    <div className="shared-notification__content">
+                      <div className="shared-notification__content-top">
+                        <p className={`shared-notification__item-title ${!n.isRead ? 'shared-notification__item-title--unread' : 'shared-notification__item-title--read'}`}>
                           {n.title}
                         </p>
-                        {!n.isRead && <span className="flex-shrink-0 mt-1.5 h-2 w-2 rounded-full bg-teal-500" />}
+                        {!n.isRead && <span className="shared-notification__dot" />}
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{n.message}</p>
-                      <p className="text-[10px] text-slate-400 mt-1">{timeAgo(n.createdAt)}</p>
+                      <p className="shared-notification__message">{n.message}</p>
+                      <p className="shared-notification__time">{timeAgo(n.createdAt)}</p>
                     </div>
                   </button>
                 ))}

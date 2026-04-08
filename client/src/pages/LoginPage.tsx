@@ -45,26 +45,26 @@ export function LoginPage({ onLogin, onGoRegister, onGoForgotPassword }: LoginPa
   return (
     <div className="flex min-h-screen w-full">
       {/* Left Side - Branding (Fixed) */}
-      <div className="fixed left-0 top-0 hidden h-screen w-1/2 flex-col justify-center bg-slate-900 p-16 text-white lg:p-24 md:flex">
+      <div className="fixed left-0 top-0 hidden h-screen w-1/2 flex-col justify-center bg-theme-base p-16 text-white lg:p-24 md:flex">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1521737604893-d14cc237f11d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center opacity-10"></div>
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/90 to-slate-800/90"></div>
+        <div className="absolute inset-0 bg-gradient-hero"></div>
 
         <div className="relative z-10">
           <div className="mb-8 flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-teal-500 text-2xl font-bold text-white shadow-lg shadow-teal-500/30">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-brand text-2xl font-bold text-white shadow-brand-icon">
               P
             </div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              Place<span className="text-teal-400">Mate</span>
+            <h1 className="font-display text-3xl font-bold tracking-tight">
+              Place<span className="text-brand-accent">Mate</span>
             </h1>
           </div>
 
-          <h2 className="mb-6 text-4xl font-extrabold leading-tight tracking-tight md:text-5xl">
+          <h2 className="mb-6 text-4xl font-extrabold leading-tight tracking-tight md:text-5xl font-display">
             Launch your career <br />
-            <span className="text-teal-400">with confidence.</span>
+            <span className="text-brand-accent">with confidence.</span>
           </h2>
 
-          <p className="mb-10 text-lg text-slate-300 md:text-xl">
+          <p className="mb-10 text-lg text-theme-secondary md:text-xl">
             The complete placement management ecosystem connecting students,
             universities, and top companies.
           </p>
@@ -77,8 +77,8 @@ export function LoginPage({ onLogin, onGoRegister, onGoForgotPassword }: LoginPa
               'Direct communication channels',
             ].map((feature, i) => (
               <div key={i} className="flex items-center gap-3">
-                <CheckCircle2 className="h-6 w-6 text-teal-400" />
-                <span className="text-slate-200">{feature}</span>
+                <CheckCircle2 className="h-6 w-6 text-brand-accent" />
+                <span className="text-theme-light">{feature}</span>
               </div>
             ))}
           </div>
@@ -86,64 +86,64 @@ export function LoginPage({ onLogin, onGoRegister, onGoForgotPassword }: LoginPa
       </div>
 
       {/* Right Side - Login Form (Scrollable) */}
-      <div className="ml-0 w-full overflow-y-auto bg-white md:ml-[50%] md:w-1/2">
+      <div className="ml-0 w-full overflow-y-auto bg-theme-surface md:ml-[50%] md:w-1/2">
         <div className="flex min-h-screen items-center justify-center p-8 md:p-16">
           <div className="w-full max-w-md space-y-8">
             {/* Mobile-only logo */}
             <div className="flex items-center gap-3 md:hidden">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-500 text-xl font-bold text-white shadow-lg shadow-teal-500/30">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-brand text-xl font-bold text-white shadow-brand-icon">
                 P
               </div>
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-                Place<span className="text-teal-600">Mate</span>
+              <h1 className="text-2xl font-bold tracking-tight text-theme-primary font-display">
+                Place<span className="text-brand-accent">Mate</span>
               </h1>
             </div>
 
             <div className="text-center md:text-left">
-              <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+              <h2 className="text-3xl font-bold tracking-tight text-theme-primary font-display">
                 Welcome back
               </h2>
-              <p className="mt-2 text-slate-600">
+              <p className="mt-2 text-theme-secondary">
                 Please sign in to your account
               </p>
             </div>
 
             {/* Role Selector */}
-            <div className="grid grid-cols-3 gap-2 rounded-lg bg-slate-100 p-1">
+            <div className="grid grid-cols-3 gap-2 rounded-xl bg-theme-elevated p-1.5 border border-brand-light">
               <button
                 type="button"
                 onClick={() => setRole('student')}
-                className={`flex flex-col items-center justify-center rounded-md py-3 text-sm font-medium transition-all ${
+                className={`flex flex-col items-center justify-center rounded-lg py-2.5 text-sm font-semibold transition-all duration-200 ${
                   role === 'student'
-                    ? 'bg-white text-teal-600 shadow-sm ring-1 ring-black/5'
-                    : 'text-slate-500 hover:text-slate-700'
+                    ? 'bg-gradient-brand text-white shadow-brand-icon'
+                    : 'text-theme-muted hover:text-theme-primary hover:bg-theme-primary-light'
                 }`}
               >
-                <GraduationCap className="mb-1 h-5 w-5" />
+                <GraduationCap className="mb-1.5 h-5 w-5" />
                 Student
               </button>
               <button
                 type="button"
                 onClick={() => setRole('company')}
-                className={`flex flex-col items-center justify-center rounded-md py-3 text-sm font-medium transition-all ${
+                className={`flex flex-col items-center justify-center rounded-lg py-2.5 text-sm font-semibold transition-all duration-200 ${
                   role === 'company'
-                    ? 'bg-white text-teal-600 shadow-sm ring-1 ring-black/5'
-                    : 'text-slate-500 hover:text-slate-700'
+                    ? 'bg-gradient-brand text-white shadow-brand-icon'
+                    : 'text-theme-muted hover:text-theme-primary hover:bg-theme-primary-light'
                 }`}
               >
-                <Building2 className="mb-1 h-5 w-5" />
+                <Building2 className="mb-1.5 h-5 w-5" />
                 Company
               </button>
               <button
                 type="button"
                 onClick={() => setRole('admin')}
-                className={`flex flex-col items-center justify-center rounded-md py-3 text-sm font-medium transition-all ${
+                className={`flex flex-col items-center justify-center rounded-lg py-2.5 text-sm font-semibold transition-all duration-200 ${
                   role === 'admin'
-                    ? 'bg-white text-teal-600 shadow-sm ring-1 ring-black/5'
-                    : 'text-slate-500 hover:text-slate-700'
+                    ? 'bg-gradient-brand text-white shadow-brand-icon'
+                    : 'text-theme-muted hover:text-theme-primary hover:bg-theme-primary-light'
                 }`}
               >
-                <Shield className="mb-1 h-5 w-5" />
+                <Shield className="mb-1.5 h-5 w-5" />
                 Admin
               </button>
             </div>
@@ -151,7 +151,7 @@ export function LoginPage({ onLogin, onGoRegister, onGoForgotPassword }: LoginPa
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-4">
                 {errorMessage && (
-                  <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  <div className="rounded-md border border-rose/30 bg-rose-light px-3 py-2 text-sm text-rose-light">
                     {errorMessage}
                   </div>
                 )}
@@ -181,7 +181,7 @@ export function LoginPage({ onLogin, onGoRegister, onGoForgotPassword }: LoginPa
                       <button
                         type="button"
                         onClick={onGoForgotPassword}
-                        className="text-sm font-medium text-teal-600 hover:text-teal-500"
+                        className="text-sm font-medium text-brand-primary hover:text-brand-accent-hover underline underline-offset-2 decoration-brand-accent hover:decoration-brand-accent-hover transition-all"
                       >
                         Forgot password?
                       </button>
@@ -196,11 +196,11 @@ export function LoginPage({ onLogin, onGoRegister, onGoForgotPassword }: LoginPa
                     id="remember-me"
                     name="remember-me"
                     type="checkbox"
-                    className="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                    className="h-4 w-4 rounded border-brand-accent bg-theme-elevated text-brand-primary focus:ring-brand"
                   />
                   <label
                     htmlFor="remember-me"
-                    className="ml-2 block text-sm text-slate-900"
+                    className="ml-2 block text-sm text-theme-secondary"
                   >
                     Remember me
                   </label>
@@ -209,7 +209,7 @@ export function LoginPage({ onLogin, onGoRegister, onGoForgotPassword }: LoginPa
 
               <Button
                 type="submit"
-                className="w-full"
+                className="w-full bg-gradient-brand"
                 size="lg"
                 isLoading={isLoading}
               >
@@ -218,11 +218,11 @@ export function LoginPage({ onLogin, onGoRegister, onGoForgotPassword }: LoginPa
             </form>
 
             {!isAdmin && (
-              <p className="text-center text-sm text-slate-600">
+              <p className="text-center text-sm text-theme-secondary">
                 Don't have an account?{' '}
                 <button
                   onClick={onGoRegister}
-                  className="font-medium text-teal-600 hover:text-teal-500"
+                  className="font-medium text-brand-primary hover:text-brand-accent-hover underline underline-offset-2 decoration-brand-accent hover:decoration-brand-accent-hover transition-all"
                 >
                   Register
                 </button>

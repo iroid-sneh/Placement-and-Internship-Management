@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { loginAdmin, loginUser } from "../services/api/auth";
 import { registerUnauthorizedHandler } from "../services/api/client";
+import { disconnectChatSocket } from "../services/chatSocket";
 import type { AuthUser } from "../types/app";
 
 interface AuthContextValue {
@@ -57,6 +58,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const logout = (): void => {
+    disconnectChatSocket();
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     setToken("");
@@ -70,6 +72,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const saveAuthSession = (tokenValue: string, userValue: AuthUser): void => {
+    disconnectChatSocket();
     localStorage.setItem(TOKEN_KEY, tokenValue);
     localStorage.setItem(USER_KEY, JSON.stringify(userValue));
     setToken(tokenValue);

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -244,7 +244,7 @@ export function CompanySettings({ onNavigate, onLogout }: CompanySettingsProps) 
         user={{ name: user?.name || 'Company', email: user?.email || '' }}
         breadcrumbs={[{ label: 'Settings' }]}
       >
-        <div className="p-8 text-slate-600">Loading settings...</div>
+        <div className="company-page">Loading settings...</div>
       </DashboardLayout>
     );
   }
@@ -258,36 +258,34 @@ export function CompanySettings({ onNavigate, onLogout }: CompanySettingsProps) 
       user={{ name: user?.name || 'Company', email: user?.email || '' }}
       breadcrumbs={[{ label: 'Settings' }]}
     >
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="company-page">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Settings</h1>
-          <p className="text-slate-600">Manage your account and preferences.</p>
+          <h1 className="company-page__title">Settings</h1>
+          <p className="company-page__subtitle">Manage your account and preferences.</p>
         </div>
 
         {successMessage && (
-          <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+          <div className="company-alert company-alert--success">
             {successMessage}
           </div>
         )}
         {errorMessage && (
-          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div className="company-alert company-alert--error">
             {errorMessage}
           </div>
         )}
 
-        {/* Account Settings */}
-        <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-          <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+        <div className="company-card company-card--padded">
+          <h2 className="company-card__title">
             <Shield className="h-5 w-5 text-teal-600" />
             Account Settings
           </h2>
 
-          {/* Change Password */}
-          <form onSubmit={handleChangePassword} className="mb-8">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500 mb-4">
+          <form onSubmit={handleChangePassword} className="company-form">
+            <h3 className="company-card__section-label">
               Change Password
             </h3>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="company-grid company-grid--forms">
               <Input
                 label="Current Password"
                 type="password"
@@ -315,7 +313,6 @@ export function CompanySettings({ onNavigate, onLogout }: CompanySettingsProps) 
             </div>
             <Button
               type="submit"
-              className="mt-4"
               isLoading={isChangingPassword}
               icon={<Lock className="h-4 w-4" />}
             >
@@ -323,12 +320,12 @@ export function CompanySettings({ onNavigate, onLogout }: CompanySettingsProps) 
             </Button>
           </form>
 
-          <div className="border-t border-slate-200 pt-6">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500 mb-4">
+          <div className="company-card company-card--padded">
+            <h3 className="company-card__section-label">
               Update Email
             </h3>
-            <form onSubmit={handleUpdateEmail}>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <form onSubmit={handleUpdateEmail} className="company-form">
+              <div className="company-grid company-grid--forms">
                 <Input
                   label="Current Email"
                   type="email"
@@ -355,7 +352,6 @@ export function CompanySettings({ onNavigate, onLogout }: CompanySettingsProps) 
               </div>
               <Button
                 type="submit"
-                className="mt-4"
                 isLoading={isUpdatingEmail}
                 icon={<Mail className="h-4 w-4" />}
               >
@@ -365,13 +361,12 @@ export function CompanySettings({ onNavigate, onLogout }: CompanySettingsProps) 
           </div>
         </div>
 
-        {/* Notification Preferences */}
-        <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-          <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+        <div className="company-card company-card--padded">
+          <h2 className="company-card__title">
             <Bell className="h-5 w-5 text-teal-600" />
             Notification Preferences
           </h2>
-          <div className="space-y-4">
+          <div className="company-form">
             <ToggleSwitch
               label="Application Notifications"
               description="Receive notifications when a student applies to a job"
@@ -386,7 +381,6 @@ export function CompanySettings({ onNavigate, onLogout }: CompanySettingsProps) 
             />
           </div>
           <Button
-            className="mt-6"
             onClick={handleSaveNotifications}
             isLoading={isSavingNotifications}
             icon={<Save className="h-4 w-4" />}
@@ -395,21 +389,20 @@ export function CompanySettings({ onNavigate, onLogout }: CompanySettingsProps) 
           </Button>
         </div>
 
-        {/* Interview Settings */}
-        <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-          <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+        <div className="company-card company-card--padded">
+          <h2 className="company-card__title">
             <Calendar className="h-5 w-5 text-teal-600" />
             Interview Settings
           </h2>
-          <div className="space-y-4">
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-slate-700">
+          <div className="company-form">
+            <div className="company-field">
+              <label className="company-input__label">
                 Default Interview Reminder
               </label>
               <select
                 value={defaultReminder}
                 onChange={(e) => setDefaultReminder(e.target.value as '1h' | '24h')}
-                className="block h-11 w-full max-w-xs rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+                className="company-select"
               >
                 <option value="1h">1 hour before interview</option>
                 <option value="24h">24 hours before interview</option>
@@ -429,7 +422,6 @@ export function CompanySettings({ onNavigate, onLogout }: CompanySettingsProps) 
             />
           </div>
           <Button
-            className="mt-6"
             onClick={handleSaveInterviewSettings}
             isLoading={isSavingInterview}
             icon={<Save className="h-4 w-4" />}
@@ -438,20 +430,19 @@ export function CompanySettings({ onNavigate, onLogout }: CompanySettingsProps) 
           </Button>
         </div>
 
-        {/* Danger Zone */}
-        <div className="bg-white rounded-xl border border-red-200 p-6 shadow-sm">
-          <h2 className="text-lg font-bold text-red-700 mb-6 flex items-center gap-2">
+        <div className="company-danger-card">
+          <h2 className="company-card__title company-card__title--danger">
             <AlertTriangle className="h-5 w-5" />
             Danger Zone
           </h2>
-          <p className="text-sm text-slate-600 mb-6">
+          <p className="company-page__subtitle">
             These actions are irreversible. Please proceed with caution.
           </p>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 p-4">
+          <div className="company-form">
+            <div className="company-danger-row">
               <div>
-                <p className="text-sm font-medium text-slate-900">Delete Company Account</p>
-                <p className="text-xs text-slate-500">Permanently delete your account and all associated data.</p>
+                <p className="company-card__title">Delete Company Account</p>
+                <p className="company-page__subtitle">Permanently delete your account and all associated data.</p>
               </div>
               <Button
                 variant="danger"
@@ -462,10 +453,10 @@ export function CompanySettings({ onNavigate, onLogout }: CompanySettingsProps) 
                 Delete Account
               </Button>
             </div>
-            <div className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 p-4">
+            <div className="company-danger-row">
               <div>
-                <p className="text-sm font-medium text-slate-900">Remove All Job Postings</p>
-                <p className="text-xs text-slate-500">Delete all job postings and their associated applications.</p>
+                <p className="company-card__title">Remove All Job Postings</p>
+                <p className="company-page__subtitle">Delete all job postings and their associated applications.</p>
               </div>
               <Button
                 variant="danger"
@@ -476,10 +467,10 @@ export function CompanySettings({ onNavigate, onLogout }: CompanySettingsProps) 
                 Remove All Jobs
               </Button>
             </div>
-            <div className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 p-4">
+            <div className="company-danger-row">
               <div>
-                <p className="text-sm font-medium text-slate-900">Clear Application History</p>
-                <p className="text-xs text-slate-500">Remove all applications received for your job postings.</p>
+                <p className="company-card__title">Clear Application History</p>
+                <p className="company-page__subtitle">Remove all applications received for your job postings.</p>
               </div>
               <Button
                 variant="danger"
@@ -510,13 +501,13 @@ export function CompanySettings({ onNavigate, onLogout }: CompanySettingsProps) 
           </>
         }
       >
-        <div className="flex items-start gap-3">
-          <AlertTriangle className="h-6 w-6 text-red-500 flex-shrink-0 mt-0.5" />
+        <div className="company-dialog-copy">
+          <AlertTriangle className="company-dialog-copy__icon h-6 w-6" />
           <div>
-            <p className="text-slate-700 font-medium">
+            <p className="company-card__title">
               Are you sure you want to delete your company account?
             </p>
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="company-page__subtitle">
               This action cannot be undone. All your data including company profile, job postings, applications, and notifications will be permanently removed.
             </p>
           </div>
@@ -539,13 +530,13 @@ export function CompanySettings({ onNavigate, onLogout }: CompanySettingsProps) 
           </>
         }
       >
-        <div className="flex items-start gap-3">
-          <AlertTriangle className="h-6 w-6 text-red-500 flex-shrink-0 mt-0.5" />
+        <div className="company-dialog-copy">
+          <AlertTriangle className="company-dialog-copy__icon h-6 w-6" />
           <div>
-            <p className="text-slate-700 font-medium">
+            <p className="company-card__title">
               Are you sure you want to remove all job postings?
             </p>
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="company-page__subtitle">
               This will permanently delete all your job postings and all associated student applications. This action cannot be undone.
             </p>
           </div>
@@ -568,13 +559,13 @@ export function CompanySettings({ onNavigate, onLogout }: CompanySettingsProps) 
           </>
         }
       >
-        <div className="flex items-start gap-3">
-          <AlertTriangle className="h-6 w-6 text-red-500 flex-shrink-0 mt-0.5" />
+        <div className="company-dialog-copy">
+          <AlertTriangle className="company-dialog-copy__icon h-6 w-6" />
           <div>
-            <p className="text-slate-700 font-medium">
+            <p className="company-card__title">
               Are you sure you want to clear all application history?
             </p>
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="company-page__subtitle">
               This will permanently remove all applications received for your job postings. The job postings themselves will remain. This action cannot be undone.
             </p>
           </div>
@@ -596,21 +587,21 @@ function ToggleSwitch({
   onChange: (value: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between py-2">
+    <div className="company-toggle">
       <div>
-        <p className="text-sm font-medium text-slate-900">{label}</p>
-        <p className="text-xs text-slate-500">{description}</p>
+        <p className="company-card__title">{label}</p>
+        <p className="company-page__subtitle">{description}</p>
       </div>
       <button
         type="button"
         onClick={() => onChange(!checked)}
-        className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 ${
-          checked ? 'bg-teal-600' : 'bg-slate-200'
+        className={`company-toggle__button ${
+          checked ? 'company-toggle__button--active' : ''
         }`}
       >
         <span
-          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-            checked ? 'translate-x-5' : 'translate-x-0'
+          className={`company-toggle__thumb ${
+            checked ? 'company-toggle__thumb--active' : ''
           }`}
         />
       </button>

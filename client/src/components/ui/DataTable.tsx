@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ChevronDown,
   ChevronUp,
@@ -146,48 +146,49 @@ export function DataTable<
   const showingTo = sortedData.length === 0 ? 0 : Math.min(currentPage * itemsPerPage, sortedData.length);
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
+    <div className="shared-table">
       {/* Header */}
-      <div className="flex flex-col gap-4 border-b border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="shared-table__header">
         {title &&
-        <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
+        <h3 className="shared-table__title">{title}</h3>
         }
 
-        <div className="flex items-center gap-2">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+        <div className="shared-table__toolbar">
+          <div className="shared-table__search">
+            <Search className="shared-table__search-icon h-4 w-4" />
             <input
               type="text"
               placeholder="Search..."
               value={activeSearch}
               onChange={(e) => handleSearch(e.target.value)}
-              className="h-9 w-full rounded-md border border-slate-300 pl-9 pr-4 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 sm:w-64" />
+              className="shared-input-reset shared-table__search-input" />
 
           </div>
           {filterOptions && filterOptions.length > 0 && (
-            <div className="relative">
+            <div className="shared-table__filter-wrap">
               <button
+                type="button"
                 onClick={() => setShowFilterPanel(!showFilterPanel)}
-                className={`inline-flex items-center justify-center rounded-md border p-2 transition-colors ${
+                className={`shared-table__filter-button ${
                   showFilterPanel || activeFilterCount > 0
-                    ? 'border-teal-500 bg-teal-50 text-teal-700'
-                    : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                    ? 'shared-table__filter-button--active'
+                    : ''
                 }`}
               >
                 <Filter className="h-4 w-4" />
               </button>
               {showFilterPanel && (
-                <div className="absolute right-0 top-full z-50 mt-2 w-72 rounded-lg border border-slate-200 bg-white p-4 shadow-xl">
-                  <div className="space-y-4">
+                <div className="shared-table__filter-panel">
+                  <div className="shared-table__filter-list">
                     {filterOptions.map((filter) => (
                       <div key={filter.key}>
-                        <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-500">
+                        <label className="shared-table__filter-label">
                           {filter.label}
                         </label>
                         <select
                           value={filters[filter.key] || ''}
                           onChange={(e) => handleFilterChange(filter.key, e.target.value)}
-                          className="h-9 w-full rounded-md border border-slate-300 bg-white px-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                          className="shared-select-reset"
                         >
                           <option value="">All</option>
                           {filter.options.map((opt) => (
@@ -200,12 +201,13 @@ export function DataTable<
                     ))}
                     {activeFilterCount > 0 && (
                       <button
+                        type="button"
                         onClick={() => {
                           setFilters({});
                           setCurrentPage(1);
                           onFilterChange?.({});
                         }}
-                        className="w-full text-sm font-medium text-teal-600 hover:text-teal-700"
+                        className="shared-table__clear"
                       >
                         Clear all filters
                       </button>
@@ -220,14 +222,15 @@ export function DataTable<
 
       {/* Bulk Actions Bar */}
       {selectedIds.length > 0 && bulkActions &&
-      <div className="flex items-center gap-2 bg-teal-50 px-4 py-2 text-sm text-teal-900">
+      <div className="shared-table__bulk">
           <span className="font-medium">{selectedIds.length} selected</span>
-          <div className="h-4 w-px bg-teal-200 mx-2" />
+          <div className="shared-table__bulk-divider" />
           {bulkActions.map((action, idx) =>
         <button
           key={idx}
+          type="button"
           onClick={() => action.onClick(selectedIds)}
-          className="rounded px-2 py-1 font-medium hover:bg-teal-100">
+          className="shared-table__bulk-button">
 
               {action.label}
             </button>
@@ -236,14 +239,14 @@ export function DataTable<
       }
 
       {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm text-slate-600">
-          <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+      <div className="shared-table__scroll">
+        <table className="shared-table__table">
+          <thead className="shared-table__head">
             <tr>
-              <th className="w-4 px-4 py-3">
+              <th className="shared-table__th shared-table__th--checkbox">
                 <input
                   type="checkbox"
-                  className="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                  className="shared-checkbox"
                   onChange={handleSelectAll}
                   checked={
                   selectedIds.length === data.length && data.length > 0
@@ -253,10 +256,10 @@ export function DataTable<
               {columns.map((col) =>
               <th
                 key={String(col.key)}
-                className={`px-4 py-3 font-semibold ${col.sortable ? 'cursor-pointer hover:text-slate-700' : ''}`}
+                className={`shared-table__th ${col.sortable ? 'shared-table__th--sortable' : ''}`}
                 onClick={() => col.sortable && handleSort(String(col.key))}>
 
-                  <div className="flex items-center gap-1">
+                  <div className="shared-table__sort">
                     {col.header}
                     {sortConfig?.key === col.key && (
                   sortConfig.direction === 'asc' ?
@@ -267,28 +270,28 @@ export function DataTable<
                   </div>
                 </th>
               )}
-              {actions && <th className="px-4 py-3 text-right">Actions</th>}
+              {actions && <th className="shared-table__th shared-table__cell-actions">Actions</th>}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-200">
+          <tbody className="shared-table__body">
             {paginatedData.length > 0 ?
             paginatedData.map((item) =>
-            <tr key={String(item[keyField])} className="hover:bg-slate-50">
-                  <td className="px-4 py-3">
+            <tr key={String(item[keyField])} className="shared-table__row">
+                  <td className="shared-table__td">
                     <input
                   type="checkbox"
-                  className="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                  className="shared-checkbox"
                   checked={selectedIds.includes(String(item[keyField]))}
                   onChange={() => handleSelectRow(String(item[keyField]))} />
 
                   </td>
                   {columns.map((col) =>
-              <td key={String(col.key)} className="px-4 py-3">
+              <td key={String(col.key)} className="shared-table__td">
                       {col.render ? col.render(item) : item[col.key as keyof T]}
                     </td>
               )}
                   {actions &&
-              <td className="px-4 py-3 text-right">{actions(item)}</td>
+              <td className="shared-table__td shared-table__cell-actions">{actions(item)}</td>
               }
                 </tr>
             ) :
@@ -296,7 +299,7 @@ export function DataTable<
             <tr>
                 <td
                 colSpan={columns.length + 2}
-                className="px-4 py-8 text-center text-slate-500">
+                className="shared-table__empty">
 
                   No results found
                 </td>
@@ -307,26 +310,28 @@ export function DataTable<
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between border-t border-slate-200 px-4 py-3">
-        <div className="text-sm text-slate-500">
+      <div className="shared-table__footer">
+        <div className="shared-table__footer-text">
           Showing{' '}
           <span className="font-medium">{showingFrom}</span>{' '}
           to{' '}
           <span className="font-medium">{showingTo}</span>{' '}
           of <span className="font-medium">{sortedData.length}</span> results
         </div>
-        <div className="flex gap-1">
+        <div className="shared-table__pager">
           <button
+            type="button"
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className="rounded px-3 py-1 text-sm disabled:opacity-50 hover:bg-slate-100">
+            className="shared-table__pager-button">
 
             Previous
           </button>
           <button
+            type="button"
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
-            className="rounded px-3 py-1 text-sm disabled:opacity-50 hover:bg-slate-100">
+            className="shared-table__pager-button">
 
             Next
           </button>

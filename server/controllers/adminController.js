@@ -4,6 +4,7 @@ import Company from "../models/company.js";
 import Job from "../models/job.js";
 import Application from "../models/application.js";
 import Notification from "../models/notification.js";
+import Admin from "../models/admin.js";
 import {
     parseInterviewDate,
     syncExpiredInterviewsToPendingDecision,
@@ -17,6 +18,7 @@ import {
     closeExpiredJobs,
     validateFutureDeadline,
 } from "../services/job.service.js";
+import AuthHelper from "../src/common/authHelper.js";
 
 export const getStudents = async (_req, res) => {
     try {
@@ -563,6 +565,168 @@ export const getReportSummary = async (_req, res) => {
         return res.status(500).json({
             success: false,
             message: "Failed to fetch report summary",
+            error: error.message,
+        });
+    }
+};
+
+export const getAdminSettings = async (req, res) => {
+    try {
+        const admin = await Admin.findById(req.user.id).select("-password");
+        if (!admin) {
+            return res.status(404).json({
+                success: false,
+                message: "Admin not found",
+            });
+        }
+        return res.status(200).json({
+            success: true,
+            data: {
+                email: admin.email,
+                notifications: admin.notifications || {
+                    newStudentAlerts: true,
+                    companyApprovals: true,
+                    reportReadyAlerts: true,
+                },
+                preferences: admin.preferences || {
+                    darkMode: false,
+                    autoCloseExpiredJobs: true,
+                    weeklyReportDigest: true,
+                },
+            },
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch admin settings",
+            error: error.message,
+        });
+    }
+};
+
+export const updateAdminSettings = async (req, res) => {
+    try {
+        const admin = await Admin.findById(req.user.id);
+        if (!admin) {
+            return res.status(404).json({
+                success: false,
+                message: "Admin not found",
+            });
+        }
+        if (req.body.notifications) {
+            admin.notifications = {
+                ...(admin.notifications?.toObject?.() || admin.notifications || {}),
+                ...req.body.notifications,
+            };
+        }
+        if (req.body.preferences) {
+            admin.preferences = {
+                ...(admin.preferences?.toObject?.() || admin.preferences || {}),
+                ...req.body.preferences,
+            };
+        }
+        await admin.save();
+        return res.status(200).json({
+            success: true,
+            message: "Admin settings updated successfully",
+            data: {
+                email: admin.email,
+                notifications: admin.notifications,
+                preferences: admin.preferences,
+            },
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to update admin settings",
+            error: error.message,
+        });
+    }
+};
+
+export const changeAdminPassword = async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const admin = await Admin.findById(req.user.id);
+        if (!admin) {
+            return res.status(404).json({
+                success: false,
+                message: "Admin not found",
+            });
+        }
+        const isValid = await AuthHelper.matchHashedPassword(
+            currentPassword,
+            admin.password
+        );
+        if (!isValid) {
+            return res.status(400).json({
+                success: false,
+                message: "Current password is incorrect",
+            });
+        }
+        admin.password = await AuthHelper.hashPassword(newPassword);
+        await admin.save();
+        return res.status(200).json({
+            success: true,
+            message: "Password changed successfully",
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to change password",
+            error: error.message,
+        });
+    }
+};
+
+export const updateAdminEmail = async (req, res) => {
+    try {
+        const { newEmail, password } = req.body;
+        const admin = await Admin.findById(req.user.id);
+        if (!admin) {
+            return res.status(404).json({
+                success: false,
+                message: "Admin not found",
+            });
+        }
+        const isValid = await AuthHelper.matchHashedPassword(
+            password,
+            admin.password
+        );
+        if (!isValid) {
+            return res.status(400).json({
+                success: false,
+                message: "Password is incorrect",
+            });
+        }
+        const normalizedEmail = newEmail.toLowerCase().trim();
+        if (normalizedEmail === admin.email) {
+            return res.status(400).json({
+                success: false,
+                message: "New email must be different from current email",
+            });
+        }
+        const existingAdmin = await Admin.findOne({
+            email: normalizedEmail,
+            _id: { $ne: admin._id },
+        });
+        if (existingAdmin) {
+            return res.status(409).json({
+                success: false,
+                message: "This email is already in use",
+            });
+        }
+        admin.email = normalizedEmail;
+        await admin.save();
+        return res.status(200).json({
+            success: true,
+            message: "Email updated successfully",
+            data: { email: admin.email },
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Failed to update email",
             error: error.message,
         });
     }

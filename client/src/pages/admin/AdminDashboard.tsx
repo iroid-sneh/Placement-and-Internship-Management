@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { StatCard } from '../../components/ui/StatCard';
 import { DataTable, Column } from '../../components/ui/DataTable';
@@ -281,10 +281,10 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
         user={{ name: user?.name || 'Admin', email: user?.email || '' }}
         breadcrumbs={[{ label: 'Dashboard' }]}
       >
-        <div className="flex h-96 items-center justify-center">
-          <div className="flex flex-col items-center gap-3 rounded-3xl border border-slate-200 bg-white/90 px-8 py-10 shadow-sm">
+        <div className="admin-empty-state">
+          <div className="admin-panel admin-inline-loader">
             <Loader2 className="h-8 w-8 animate-spin text-teal-600" />
-            <p className="text-sm text-slate-500">Loading dashboard...</p>
+            <p className="admin-panel__subtitle">Loading dashboard...</p>
           </div>
         </div>
       </DashboardLayout>
@@ -300,36 +300,31 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
       user={{ name: user?.name || 'Admin', email: user?.email || '' }}
       breadcrumbs={[{ label: 'Dashboard' }]}
     >
-      <div className="space-y-8">
-        {/* Header */}
-        <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-teal-900 px-6 py-7 text-white shadow-xl sm:px-8">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <div className="max-w-2xl space-y-3">
-              <span className="inline-flex w-fit items-center rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-teal-100">
-                Admin Dashboard
-              </span>
-              <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Placement Overview</h1>
-                <p className="max-w-xl text-sm text-slate-200 sm:text-base">
-                  Monitor applications, interviews, placements, and hiring momentum from one
-                  well-structured workspace.
-                </p>
-              </div>
+      <div className="admin-page">
+        <div className="admin-hero admin-hero--teal">
+          <div className="admin-hero__row">
+            <div className="admin-hero__body">
+              <span className="admin-hero__eyebrow">Admin Dashboard</span>
+              <h1 className="admin-hero__title">Placement Overview</h1>
+              <p className="admin-hero__subtitle">
+                Monitor applications, interviews, placements, and hiring momentum from one
+                well-structured workspace.
+              </p>
             </div>
-            <div className="grid grid-cols-2 gap-3 sm:w-auto">
-              <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur">
-                <p className="text-xs uppercase tracking-wide text-slate-300">Placement Rate</p>
-                <p className="mt-1 text-2xl font-semibold">{placementRate}%</p>
+            <div className="admin-hero__stats admin-grid admin-grid--two">
+              <div className="admin-hero__stat">
+                <p className="admin-hero__stat-label">Placement Rate</p>
+                <p className="admin-hero__stat-value">{placementRate}%</p>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur">
-                <p className="text-xs uppercase tracking-wide text-slate-300">Applications</p>
-                <p className="mt-1 text-2xl font-semibold">{reportSummary.totalApplications}</p>
+              <div className="admin-hero__stat">
+                <p className="admin-hero__stat-label">Applications</p>
+                <p className="admin-hero__stat-value">{reportSummary.totalApplications}</p>
               </div>
             </div>
           </div>
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div className="admin-actions-row admin-actions-row--hero">
             <Button
-              className="bg-teal-500 text-white shadow-sm hover:bg-teal-400 focus:ring-teal-300"
+              className="company-primary-button"
               icon={<BarChart3 className="h-4 w-4" />}
               onClick={() => onNavigate('reports')}
             >
@@ -337,7 +332,7 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
             </Button>
             <Button
               variant="ghost"
-              className="border border-white/15 bg-white/10 text-white hover:bg-white/20 hover:text-white"
+              className="company-secondary-button"
               icon={<Users className="h-4 w-4" />}
               onClick={() => onNavigate('students')}
             >
@@ -347,13 +342,10 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
         </div>
 
         {errorMessage && (
-          <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            {errorMessage}
-          </div>
+          <div className="admin-alert admin-alert--error">{errorMessage}</div>
         )}
 
-        {/* Quick Actions */}
-        <div className="flex gap-2 overflow-x-auto rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+        <div className="admin-action-scroll">
           <Button
             variant="secondary"
             size="sm"
@@ -397,7 +389,7 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
         </div>
 
         {/* Stats Row */}
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+        <div className="admin-grid admin-grid--three">
           <StatCard
             title="Total Students"
             value={String(reportSummary.totalStudents)}
@@ -442,48 +434,51 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
         </div>
 
         {/* Insights Row */}
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-          <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex flex-col gap-5 border-b border-slate-100 pb-5 sm:flex-row sm:items-end sm:justify-between">
+        <div className="admin-split-grid">
+          <div className="admin-panel">
+            <div className="admin-panel__header admin-panel__header--divider">
               <div>
-                <p className="text-sm font-semibold text-slate-900">Application Status Breakdown</p>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="admin-panel__title">Application Status Breakdown</p>
+                <p className="admin-panel__subtitle">
                   Share of all applications by current stage.
                 </p>
               </div>
-              <div className="grid grid-cols-2 gap-3 sm:min-w-[260px]">
-                <div className="rounded-2xl bg-slate-50 px-4 py-3">
-                  <p className="text-xs uppercase tracking-wide text-slate-500">Top Status</p>
-                  <p className="mt-1 text-base font-semibold text-slate-900">
+              <div className="admin-highlight-grid">
+                <div className="admin-highlight">
+                  <p className="admin-highlight__label">Top Status</p>
+                  <p className="admin-highlight__value admin-highlight__value--sm">
                     {topStatus ? STATUS_LABELS[topStatus.status] : 'No Data'}
                   </p>
                 </div>
-                <div className="rounded-2xl bg-slate-50 px-4 py-3">
-                  <p className="text-xs uppercase tracking-wide text-slate-500">Live Records</p>
-                  <p className="mt-1 text-base font-semibold text-slate-900">{totalStatusCount}</p>
+                <div className="admin-highlight">
+                  <p className="admin-highlight__label">Live Records</p>
+                  <p className="admin-highlight__value admin-highlight__value--sm">{totalStatusCount}</p>
                 </div>
               </div>
             </div>
-            <div className="space-y-3">
+            <div className="admin-progress-list">
               {chartEntries.map((entry) => (
-                <div key={entry.status} className="rounded-2xl bg-slate-50/80 px-4 py-3">
-                  <div className="mb-2 flex items-center justify-between gap-3 text-sm">
-                    <div className="flex items-center gap-2">
+                <div key={entry.status} className="admin-progress-item">
+                  <div className="admin-progress-item__top">
+                    <div className="admin-progress-item__label">
                       <span
-                        className="h-2.5 w-2.5 rounded-full"
-                        style={{ backgroundColor: STATUS_COLORS[entry.status] }}
+                        style={{
+                          width: '0.625rem',
+                          height: '0.625rem',
+                          borderRadius: '999px',
+                          display: 'inline-block',
+                          backgroundColor: STATUS_COLORS[entry.status]
+                        }}
                       />
-                      <span className="font-medium text-slate-700">
-                        {STATUS_LABELS[entry.status]}
-                      </span>
+                      <span>{STATUS_LABELS[entry.status]}</span>
                     </div>
-                    <span className="text-slate-500">
+                    <span className="admin-progress-item__meta">
                       {entry.count} ({entry.percentage}%)
                     </span>
                   </div>
-                  <div className="h-2.5 w-full rounded-full bg-slate-200">
+                  <div className="admin-progress-item__bar">
                     <div
-                      className="h-2.5 rounded-full transition-all duration-500"
+                      className="admin-progress-item__fill"
                       style={{
                         width: `${Math.max(entry.percentage, 6)}%`,
                         backgroundColor: STATUS_COLORS[entry.status]
@@ -493,30 +488,30 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
                 </div>
               ))}
               {chartEntries.length === 0 && (
-                <p className="py-10 text-center text-sm text-slate-400">No application data yet</p>
+                <p className="admin-empty-state">No application data yet</p>
               )}
             </div>
           </div>
 
-          <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="mb-6 flex items-start justify-between gap-4">
+          <div className="admin-panel">
+            <div className="admin-panel__header">
               <div>
-                <h3 className="font-bold text-slate-900">Application Distribution</h3>
-                <p className="mt-1 text-sm text-slate-500">
+                <h3 className="admin-panel__title">Application Distribution</h3>
+                <p className="admin-panel__subtitle">
                   Visual snapshot of application flow across statuses.
                 </p>
               </div>
-              <div className="rounded-2xl bg-teal-50 px-4 py-3 text-right">
-                <p className="text-xs uppercase tracking-wide text-teal-700">Interviews</p>
-                <p className="mt-1 text-lg font-semibold text-teal-900">
+              <div className="admin-highlight">
+                <p className="admin-highlight__label">Interviews</p>
+                <p className="admin-highlight__value admin-highlight__value--md">
                   {reportSummary.scheduledInterviews}
                 </p>
               </div>
             </div>
-            <div className="flex items-center justify-center">
+            <div className="admin-empty-state admin-empty-state--compact">
               {applicationsData.length > 0 ? (
-                <div className="flex flex-col items-center gap-6 lg:flex-row">
-                  <div className="relative h-44 w-44">
+                <div className="admin-distribution">
+                  <div className="admin-distribution__chart">
                     <svg viewBox="0 0 36 36" className="h-full w-full -rotate-90">
                       {donutSegments.map((seg) => (
                         <circle
@@ -533,93 +528,89 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
                         />
                       ))}
                     </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-3xl font-bold text-slate-900">
+                    <div className="admin-distribution__center">
+                      <span className="admin-highlight__value">
                         {applicationsData.length}
                       </span>
-                      <span className="text-xs text-slate-500">Total</span>
+                      <span className="admin-highlight__label">Total</span>
                     </div>
                   </div>
-                  <div className="grid w-full gap-3">
+                  <div className="admin-distribution__legend">
                     {chartEntries.map((entry) => (
-                      <div
-                        key={entry.status}
-                        className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-sm"
-                      >
-                        <div className="flex items-center gap-2">
+                      <div key={entry.status} className="admin-distribution__legend-item">
+                        <div className="admin-progress-item__label">
                           <span
-                            className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
-                            style={{ backgroundColor: STATUS_COLORS[entry.status] }}
+                            className="admin-distribution__legend-dot"
+                            style={{
+                              backgroundColor: STATUS_COLORS[entry.status]
+                            }}
                           />
-                          <span className="text-slate-700">{STATUS_LABELS[entry.status]}</span>
+                          <span>{STATUS_LABELS[entry.status]}</span>
                         </div>
-                        <span className="font-medium text-slate-500">
-                          {entry.count} apps
-                        </span>
+                        <span className="admin-progress-item__meta">{entry.count} apps</span>
                       </div>
                     ))}
                   </div>
                 </div>
               ) : (
-                <p className="py-8 text-sm text-slate-400">No application data yet</p>
+                <p className="admin-empty-state">No application data yet</p>
               )}
             </div>
           </div>
         </div>
 
         {/* Activity + Navigation Row */}
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-          <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="mb-5 flex items-center justify-between">
+        <div className="admin-split-grid">
+          <div className="admin-panel">
+            <div className="admin-panel__header">
               <div>
-                <h3 className="font-bold text-slate-900">Performance Snapshot</h3>
-                <p className="mt-1 text-sm text-slate-500">
+                <h3 className="admin-panel__title">Performance Snapshot</h3>
+                <p className="admin-panel__subtitle">
                   A quick, user-friendly summary of current platform activity.
                 </p>
               </div>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                <p className="text-sm font-medium text-slate-500">Active Companies</p>
-                <p className="mt-2 text-3xl font-bold text-slate-900">{companiesCount}</p>
-                <p className="mt-2 text-sm text-slate-500">
+            <div className="admin-highlight-grid">
+              <div className="admin-highlight">
+                <p className="admin-highlight__label">Active Companies</p>
+                <p className="admin-highlight__value">{companiesCount}</p>
+                <p className="admin-highlight__copy">
                   Companies currently available in the recruitment ecosystem.
                 </p>
               </div>
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                <p className="text-sm font-medium text-slate-500">Published Jobs</p>
-                <p className="mt-2 text-3xl font-bold text-slate-900">{jobsCount}</p>
-                <p className="mt-2 text-sm text-slate-500">
+              <div className="admin-highlight">
+                <p className="admin-highlight__label">Published Jobs</p>
+                <p className="admin-highlight__value">{jobsCount}</p>
+                <p className="admin-highlight__copy">
                   Open and recently managed opportunities visible to students.
                 </p>
               </div>
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                <p className="text-sm font-medium text-slate-500">Successful Placements</p>
-                <p className="mt-2 text-3xl font-bold text-slate-900">
+              <div className="admin-highlight">
+                <p className="admin-highlight__label">Successful Placements</p>
+                <p className="admin-highlight__value">
                   {reportSummary.selectedCount}
                 </p>
-                <p className="mt-2 text-sm text-slate-500">
+                <p className="admin-highlight__copy">
                   Confirmed selections contributing to overall placement success.
                 </p>
               </div>
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                <p className="text-sm font-medium text-slate-500">Upcoming Interviews</p>
-                <p className="mt-2 text-3xl font-bold text-slate-900">
+              <div className="admin-highlight">
+                <p className="admin-highlight__label">Upcoming Interviews</p>
+                <p className="admin-highlight__value">
                   {reportSummary.scheduledInterviews}
                 </p>
-                <p className="mt-2 text-sm text-slate-500">
+                <p className="admin-highlight__copy">
                   Students waiting for the next step in the hiring pipeline.
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Recent Activity Timeline */}
-          <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="mb-4 flex items-center justify-between">
+          <div className="admin-panel">
+            <div className="admin-panel__header">
               <div>
-                <h3 className="font-bold text-slate-900">Recent Activity</h3>
-                <p className="mt-1 text-sm text-slate-500">
+                <h3 className="admin-panel__title">Recent Activity</h3>
+                <p className="admin-panel__subtitle">
                   Latest updates from student applications and hiring progress.
                 </p>
               </div>
@@ -632,7 +623,7 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
               </Button>
             </div>
             {recentActivity.length > 0 ? (
-              <div className="relative ml-3 space-y-0 border-l border-slate-200">
+              <div className="admin-timeline">
                 {recentActivity.map((item) => {
                   const dotColor =
                     item.status === 'Selected'
@@ -655,31 +646,29 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
                             ? 'bg-purple-100 text-purple-600'
                             : 'bg-yellow-100 text-yellow-600';
                   return (
-                    <div key={item.id} className="relative ml-6 pb-6">
-                      <span
-                        className={`absolute -left-[31px] flex h-6 w-6 items-center justify-center rounded-full ring-4 ring-white ${bgColor}`}
-                      >
-                        <div className={`h-2 w-2 rounded-full ${dotColor}`} />
+                    <div key={item.id} className="admin-timeline__item">
+                      <span className={`admin-timeline__badge ${bgColor}`}>
+                        <div className={`admin-timeline__dot ${dotColor}`} />
                       </span>
-                      <h4 className="flex items-center text-sm font-semibold text-slate-900">
+                      <h4 className="admin-timeline__title">
                         {item.student}
-                        <span className="ml-2 text-xs font-normal text-slate-500">
+                        <span className="admin-timeline__date">
                           {item.date}
                         </span>
                       </h4>
-                      <p className="text-sm text-slate-600">
+                      <p className="admin-timeline__copy">
                         {item.role} at {item.company}
                       </p>
-                      <p className="mt-0.5 text-xs text-slate-400">{item.status}</p>
+                      <p className="admin-timeline__status">{item.status}</p>
                     </div>
                   );
                 })}
               </div>
             ) : (
-              <div className="flex h-40 items-center justify-center">
-                <div className="text-center">
+              <div className="admin-empty-state">
+                <div>
                   <Clock className="mx-auto h-8 w-8 text-slate-300" />
-                  <p className="mt-2 text-sm text-slate-400">No recent activity</p>
+                  <p className="admin-panel__subtitle">No recent activity</p>
                 </div>
               </div>
             )}
@@ -713,7 +702,7 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
                 }
               ]}
               trigger={
-                <button className="p-1 text-slate-400 hover:text-slate-600">
+                <button className="company-icon-button" type="button">
                   <MoreHorizontal className="h-5 w-5" />
                 </button>
               }

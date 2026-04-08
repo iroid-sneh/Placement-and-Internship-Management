@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { DataTable } from '../../components/ui/DataTable';
 import { Button } from '../../components/ui/Button';
@@ -96,7 +96,7 @@ export function CompanyManagement({
             href={item.website}
             target="_blank"
             rel="noreferrer"
-            className="text-teal-600 hover:text-teal-700 hover:underline"
+            className="admin-link"
           >
             Visit
           </a>
@@ -166,22 +166,22 @@ export function CompanyManagement({
       user={{ name: user?.name || 'Admin', email: user?.email || '' }}
       breadcrumbs={[{ label: 'Company Management' }]}
     >
-      <div className="space-y-6">
-        <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-900 p-6 text-white shadow-xl sm:p-8">
-          <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
-            <div className="max-w-2xl space-y-3">
-              <span className="inline-flex w-fit rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-100">
+      <div className="admin-page">
+        <div className="admin-hero admin-hero--emerald">
+          <div className="admin-hero__row">
+            <div className="admin-hero__body">
+              <span className="admin-hero__eyebrow">
                 Company Management
               </span>
               <div>
-                <h1 className="text-3xl font-bold tracking-tight">Recruiting Partners</h1>
-                <p className="mt-2 text-sm text-slate-200 sm:text-base">
+                <h1 className="admin-hero__title">Recruiting Partners</h1>
+                <p className="admin-hero__subtitle">
                   Manage company profiles, contact details, industries, and hiring-ready records from a single admin view.
                 </p>
               </div>
             </div>
             <Button
-              className="h-12 rounded-2xl border border-white/15 bg-white/10 px-5 text-white shadow-none backdrop-blur hover:bg-white/15"
+              className="company-button company-button--hero"
               icon={<Plus className="h-4 w-4" />}
               onClick={handleOpenCreate}
             >
@@ -191,42 +191,42 @@ export function CompanyManagement({
         </div>
 
         {errorMessage && (
-          <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <div className="admin-alert admin-alert--error">
             {errorMessage}
           </div>
         )}
 
-        <div className="grid gap-4 sm:grid-cols-3">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-emerald-50 p-3 text-emerald-600">
+        <div className="admin-stat-grid admin-grid--three">
+          <div className="admin-stat-card">
+            <div className="admin-stat-card__row">
+              <div className="admin-stat-card__icon admin-stat-card__icon--emerald">
                 <Building2 className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">Companies</p>
-                <p className="text-2xl font-bold text-slate-900">{totalCompanies}</p>
+                <p className="admin-stat-card__label">Companies</p>
+                <p className="admin-stat-card__value">{totalCompanies}</p>
               </div>
             </div>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-blue-50 p-3 text-blue-600">
+          <div className="admin-stat-card">
+            <div className="admin-stat-card__row">
+              <div className="admin-stat-card__icon admin-stat-card__icon--blue">
                 <Globe className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">Websites Added</p>
-                <p className="text-2xl font-bold text-slate-900">{companiesWithWebsites}</p>
+                <p className="admin-stat-card__label">Websites Added</p>
+                <p className="admin-stat-card__value">{companiesWithWebsites}</p>
               </div>
             </div>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-amber-50 p-3 text-amber-600">
+          <div className="admin-stat-card">
+            <div className="admin-stat-card__row">
+              <div className="admin-stat-card__icon admin-stat-card__icon--amber">
                 <Briefcase className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">Industries</p>
-                <p className="text-2xl font-bold text-slate-900">{industriesCovered}</p>
+                <p className="admin-stat-card__label">Industries</p>
+                <p className="admin-stat-card__value">{industriesCovered}</p>
               </div>
             </div>
           </div>
@@ -257,7 +257,7 @@ export function CompanyManagement({
                 }
               ]}
               trigger={
-                <button className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600">
+                <button className="company-icon-button" type="button">
                   <MoreHorizontal className="h-5 w-5" />
                 </button>
               }
@@ -288,24 +288,24 @@ export function CompanyManagement({
             </>
           }
         >
-          <div className="space-y-4">
+          <div className="admin-form">
             {modalErrorMessage && (
-              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              <div className="admin-alert admin-alert--error">
                 {modalErrorMessage}
               </div>
             )}
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-              <div className="flex items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-xl font-bold text-white">
+            <div className="admin-preview">
+              <div className="admin-preview__row">
+                <div className="admin-preview__avatar admin-preview__avatar--emerald">
                   {(formData.name || 'C').charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <p className="text-base font-semibold text-slate-900">{formData.name || 'Company Name'}</p>
-                  <p className="text-sm text-slate-500">{formData.industry || 'Industry not specified'}</p>
+                  <p className="admin-preview__title">{formData.name || 'Company Name'}</p>
+                  <p className="admin-preview__subtitle">{formData.industry || 'Industry not specified'}</p>
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="admin-grid admin-grid--two">
               <Input
                 label="Company Name"
                 placeholder="TechCorp Inc."
@@ -321,7 +321,7 @@ export function CompanyManagement({
                 icon={<User className="h-4 w-4" />}
               />
             </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="admin-grid admin-grid--two">
               <Input
                 label="Email"
                 type="email"
@@ -339,7 +339,7 @@ export function CompanyManagement({
                 icon={<Phone className="h-4 w-4" />}
               />
             </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="admin-grid admin-grid--two">
               <Input
                 label="Location"
                 placeholder="City, Country or Remote"
@@ -363,17 +363,17 @@ export function CompanyManagement({
               icon={<Briefcase className="h-4 w-4" />}
             />
             {selectedCompany && (
-              <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              <div className="admin-note admin-note--warning">
                 Company email is visible here, but admins cannot change it from this page.
               </div>
             )}
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">Description</label>
+            <div className="admin-field">
+              <label className="admin-field__label">Description</label>
               <textarea
                 value={formData.description}
                 onChange={(event) => setFormData((prev) => ({ ...prev, description: event.target.value }))}
                 rows={4}
-                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
+                className="shared-textarea-reset"
                 placeholder="Tell students about this company..."
               />
             </div>
@@ -404,13 +404,13 @@ export function CompanyManagement({
             </>
           }
         >
-          <div className="space-y-3">
+          <div className="admin-form">
             {modalErrorMessage && (
-              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              <div className="admin-alert admin-alert--error">
                 {modalErrorMessage}
               </div>
             )}
-            <p className="text-slate-600">
+            <p className="company-page__subtitle">
               Are you sure you want to delete this company? All associated job postings will also be removed.
             </p>
           </div>

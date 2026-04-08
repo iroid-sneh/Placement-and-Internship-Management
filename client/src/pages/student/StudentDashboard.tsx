@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { StatCard } from '../../components/ui/StatCard';
 import { Button } from '../../components/ui/Button';
@@ -118,18 +118,17 @@ export function StudentDashboard({
       }]
       }>
 
-      <div className="space-y-8">
-        {/* Welcome Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="student-page">
+        <div className="student-page__header">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">
+            <h1 className="student-page__title">
               Welcome back, {user?.name || 'Student'}!
             </h1>
-            <p className="text-slate-600">
+            <p className="student-page__subtitle">
               Here's what's happening with your applications today.
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="student-page__actions">
             <Button
               variant="outline"
               onClick={() => onNavigate('profile')}
@@ -146,13 +145,12 @@ export function StudentDashboard({
           </div>
         </div>
         {errorMessage && (
-          <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <div className="student-alert student-alert--error">
             {errorMessage}
           </div>
         )}
 
-        {/* Stats Row */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="student-grid student-grid--stats">
           <StatCard
             title="Applications"
             value={String(applications.length)}
@@ -179,13 +177,11 @@ export function StudentDashboard({
 
         </div>
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          {/* Main Content Column */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Recommended Jobs */}
+        <div className="student-grid student-grid--dashboard">
+          <div className="student-dashboard__main">
             <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-slate-900">
+              <div className="student-card__title-row">
+                <h2 className="student-card__title">
                   Recommended for you
                 </h2>
                 <Button
@@ -197,55 +193,51 @@ export function StudentDashboard({
                   View all
                 </Button>
               </div>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="student-grid student-grid--cards">
                 {jobs.slice(0, 4).map((job) => {
                   const alreadyApplied = appliedJobIds.has(job._id);
                   return (
                     <div
                       key={job._id}
-                      className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white p-5 transition-all hover:shadow-md hover:border-teal-200">
-
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className="flex h-10 w-10 items-center justify-center rounded-lg font-bold bg-blue-100 text-blue-600">
+                      className="student-job-card">
+                      <div className="student-job-card__company">
+                          <div className="student-job-card__logo">
 
                             {(typeof job.companyId === 'string' ? 'C' : job.companyId.name.charAt(0)).toUpperCase()}
                           </div>
                           <div>
-                            <h3 className="font-semibold text-slate-900 group-hover:text-teal-600 transition-colors line-clamp-1">
+                            <h3 className="student-job-card__title">
                               {job.title}
                             </h3>
-                            <p className="text-sm text-slate-500">
+                            <p className="student-job-card__company-name">
                               {typeof job.companyId === 'string' ? '-' : job.companyId.name}
                             </p>
                           </div>
-                        </div>
                       </div>
-                      <div className="mt-4 flex items-center gap-4 text-xs text-slate-500">
-                        <div className="flex items-center gap-1">
+                      <div className="student-job-card__meta">
+                        <div className="student-job-card__meta-item">
                           <MapPin className="h-3 w-3" />
                           {typeof job.companyId === 'string' ? '-' : job.companyId.location}
                         </div>
-                        <div className="flex items-center gap-1">
+                        <div className="student-job-card__meta-item">
                           <Clock className="h-3 w-3" />
                           {new Date(job.lastDate).toLocaleDateString()}
                         </div>
                       </div>
                       {applyMessage && applyMessage.jobId === job._id && (
-                        <div className={`mt-3 rounded-md px-3 py-1.5 text-xs ${
+                        <div className={`student-job-card__feedback ${
                           applyMessage.type === 'success'
-                            ? 'bg-green-50 text-green-700 border border-green-200'
-                            : 'bg-red-50 text-red-700 border border-red-200'
+                            ? 'student-job-card__feedback--success'
+                            : 'student-job-card__feedback--error'
                         }`}>
                           {applyMessage.text}
                         </div>
                       )}
-                      <div className="mt-4 flex gap-2">
+                      <div className="student-job-card__actions">
                         <Button
                           variant={alreadyApplied ? 'secondary' : 'primary'}
                           size="sm"
-                          className="flex-1"
+                          className="student-flex-grow"
                           icon={<Send className="h-3.5 w-3.5" />}
                           isLoading={applyingJobId === job._id}
                           disabled={alreadyApplied}
@@ -256,7 +248,7 @@ export function StudentDashboard({
                         <Button
                           variant="outline"
                           size="sm"
-                          className="flex-1"
+                          className="student-flex-grow"
                           onClick={() => onNavigate(`jobs/${job._id}`)}>
 
                           View Details
@@ -269,43 +261,36 @@ export function StudentDashboard({
             </div>
           </div>
 
-          {/* Sidebar Column */}
-          <div className="space-y-8">
-            {/* Profile Completion - hidden when 100% */}
+          <div className="student-dashboard__side">
             {!isProfileComplete && (
-              <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h3 className="font-bold text-slate-900 mb-4">
+              <div className="student-panel">
+                <h3 className="student-card__title">
                   Profile Completion
                 </h3>
-                <div className="relative pt-1">
-                  <div className="flex mb-2 items-center justify-between">
+                <div>
+                  <div className="student-card__title-row">
                     <div>
-                      <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-teal-600 bg-teal-200">
+                      <span className="student-badge student-badge--progress">
                         In Progress
                       </span>
                     </div>
-                    <div className="text-right">
-                      <span className="text-xs font-semibold inline-block text-teal-600">
+                    <div>
+                      <span className="student-badge student-badge--progress">
                         {profileScore}
                       </span>
                     </div>
                   </div>
-                  <div className="overflow-hidden h-2 mb-4 text-xs flex rounded bg-teal-100">
-                    <div
-                      style={{
-                        width: profileScore
-                      }}
-                      className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-teal-500">
-                    </div>
+                  <div className="student-progress">
+                    <div className="student-progress__bar" style={{ width: profileScore }} />
                   </div>
-                  <p className="text-sm text-slate-600 mb-4">
+                  <p className="student-page__subtitle">
                     Complete your profile to increase your chances of getting
                     hired.
                   </p>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-full"
+                    className="student-full-width"
                     onClick={() => onNavigate('profile')}>
 
                     Complete Profile
@@ -314,10 +299,9 @@ export function StudentDashboard({
               </div>
             )}
 
-            {/* Application Timeline */}
-            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-slate-900">Recent Activity</h3>
+            <div className="student-panel">
+              <div className="student-card__title-row">
+                <h3 className="student-card__title">Recent Activity</h3>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -326,24 +310,26 @@ export function StudentDashboard({
                   View All
                 </Button>
               </div>
-              <div className="relative border-l border-slate-200 ml-3 space-y-6">
+              <div className="student-timeline">
                 {timeline.map((item) =>
-                  <div key={item.id} className="mb-6 ml-6 relative">
+                  <div key={item.id} className="student-timeline__item">
                     <span
-                      className={`absolute -left-[31px] flex h-6 w-6 items-center justify-center rounded-full ring-4 ring-white ${item.status === 'interviewing' ? 'bg-blue-100 text-blue-600' : item.status === 'rejected' ? 'bg-red-100 text-red-600' : 'bg-yellow-100 text-yellow-600'}`}>
-
-                      <div
-                        className={`h-2 w-2 rounded-full ${item.status === 'interviewing' ? 'bg-blue-600' : item.status === 'rejected' ? 'bg-red-600' : 'bg-yellow-600'}`} />
-
+                      className={`student-timeline__dot ${
+                        item.status === 'interviewing'
+                          ? 'student-timeline__dot--interviewing'
+                          : item.status === 'rejected'
+                            ? 'student-timeline__dot--rejected'
+                            : 'student-timeline__dot--pending'
+                      }`}>
                     </span>
-                    <h4 className="flex items-center text-sm font-semibold text-slate-900">
+                    <h4 className="student-card__title">
                       {item.company}
-                      <span className="ml-2 text-xs font-normal text-slate-500">
+                      <span className="student-page__subtitle">
                         {item.date}
                       </span>
                     </h4>
-                    <p className="text-sm text-slate-600">{item.role}</p>
-                    <p className="mt-1 text-xs text-slate-500">{item.note}</p>
+                    <p className="student-page__subtitle">{item.role}</p>
+                    <p className="student-page__subtitle">{item.note}</p>
                   </div>
                 )}
               </div>

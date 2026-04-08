@@ -1,9 +1,7 @@
-import React from 'react';
 import {
   LayoutDashboard,
   Users,
   Briefcase,
-  FileText,
   Settings,
   LogOut,
   PieChart,
@@ -13,7 +11,8 @@ import {
   ClipboardList,
   FileBarChart,
   UserCircle,
-  Upload } from
+  Upload,
+  MessageSquare } from
 'lucide-react';
 interface SidebarProps {
   userRole: 'student' | 'admin' | 'company';
@@ -61,6 +60,11 @@ export function Sidebar({
           id: 'applications',
           label: 'My Applications',
           icon: <ClipboardList className="h-5 w-5" />
+        },
+        {
+          id: 'chat',
+          label: 'Messages',
+          icon: <MessageSquare className="h-5 w-5" />
         }];
 
       case 'admin':
@@ -99,6 +103,11 @@ export function Sidebar({
           id: 'reports',
           label: 'Reports',
           icon: <FileBarChart className="h-5 w-5" />
+        },
+        {
+          id: 'chat',
+          label: 'Messages',
+          icon: <MessageSquare className="h-5 w-5" />
         }];
 
       case 'company':
@@ -127,6 +136,11 @@ export function Sidebar({
           id: 'profile',
           label: 'Company Profile',
           icon: <Building2 className="h-5 w-5" />
+        },
+        {
+          id: 'chat',
+          label: 'Messages',
+          icon: <MessageSquare className="h-5 w-5" />
         }];
 
       default:
@@ -135,38 +149,38 @@ export function Sidebar({
   };
   const navItems = getNavItems();
   return (
-    <div className="flex h-full w-64 flex-col bg-slate-900 text-white shadow-xl">
+    <div className="shared-sidebar">
       {/* Logo Area */}
-      <div className="flex h-16 items-center px-6 bg-slate-950">
-        <div className="flex items-center gap-2 font-bold text-xl tracking-tight">
-          <div className="h-8 w-8 rounded bg-teal-500 flex items-center justify-center text-white">
+      <div className="shared-sidebar__brand">
+        <div className="shared-sidebar__brand-inner">
+          <div className="shared-sidebar__brand-mark">
             P
           </div>
           <span>
-            Place<span className="text-teal-400">Mate</span>
+            Place<span className="shared-sidebar__brand-accent">Mate</span>
           </span>
         </div>
       </div>
 
       {/* User Profile Summary */}
-      <div className="border-b border-slate-800 p-4">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-teal-600 flex items-center justify-center text-sm font-bold overflow-hidden">
+      <div className="shared-sidebar__profile">
+        <div className="shared-sidebar__profile-row">
+          <div className="shared-sidebar__avatar">
             {user.avatar ?
             <img
               src={user.avatar}
               alt={user.name}
-              className="h-full w-full object-cover" /> :
+              className="shared-sidebar__avatar-img" /> :
 
 
             user.name.charAt(0)
             }
           </div>
-          <div className="overflow-hidden">
-            <p className="truncate text-sm font-medium text-white">
+          <div>
+            <p className="shared-sidebar__profile-name">
               {user.name}
             </p>
-            <p className="truncate text-xs text-slate-400 capitalize">
+            <p className="shared-sidebar__profile-role">
               {userRole}
             </p>
           </div>
@@ -174,22 +188,18 @@ export function Sidebar({
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 px-2 py-4 overflow-y-auto">
+      <nav className="shared-sidebar__nav">
         {navItems.map((item) => {
           const isActive =
           currentPath === item.id || currentPath.startsWith(item.id + '/');
           return (
             <button
+              type="button"
               key={item.id}
               onClick={() => onNavigate(item.id)}
-              className={`
-                group flex w-full items-center rounded-md px-3 py-2 text-sm font-medium transition-all
-                ${isActive ? 'bg-slate-800 text-teal-400 border-l-4 border-teal-500' : 'text-slate-300 hover:bg-slate-800 hover:text-white border-l-4 border-transparent'}
-              `}>
+              className={`shared-sidebar__nav-item ${isActive ? 'shared-sidebar__nav-item--active' : ''}`}>
 
-              <span
-                className={`${isActive ? 'text-teal-400' : 'text-slate-400 group-hover:text-white'} mr-3`}>
-
+              <span className="shared-sidebar__nav-icon">
                 {item.icon}
               </span>
               {item.label}
@@ -199,19 +209,21 @@ export function Sidebar({
       </nav>
 
       {/* Bottom Actions */}
-      <div className="border-t border-slate-800 p-4">
+      <div className="shared-sidebar__footer">
         <button
+          type="button"
           onClick={() => onNavigate('settings')}
-          className="flex w-full items-center rounded-md px-3 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+          className="shared-sidebar__footer-button">
 
-          <Settings className="mr-3 h-5 w-5 text-slate-400" />
+          <Settings className="shared-sidebar__footer-icon h-5 w-5" />
           Settings
         </button>
         <button
+          type="button"
           onClick={onLogout}
-          className="mt-1 flex w-full items-center rounded-md px-3 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+          className="shared-sidebar__footer-button">
 
-          <LogOut className="mr-3 h-5 w-5 text-slate-400" />
+          <LogOut className="shared-sidebar__footer-icon h-5 w-5" />
           Logout
         </button>
       </div>

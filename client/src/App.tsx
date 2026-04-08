@@ -1,7 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
+import './index.css';
+import './styles/student.css';
+import './styles/company.css';
+import './styles/admin.css';
+import './styles/chat.css';
+import './styles/shared.css';
+import './styles/utility.css';
 import { useAuth } from './context/AuthContext';
 // Student Pages
 import { StudentDashboard } from './pages/student/StudentDashboard';
@@ -20,6 +27,7 @@ import { JobManagement } from './pages/admin/JobManagement';
 import { ApplicationTracking } from './pages/admin/ApplicationTracking';
 import { InterviewManagement } from './pages/admin/InterviewManagement';
 import { PlacementReports } from './pages/admin/PlacementReports';
+import { AdminSettings } from './pages/admin/AdminSettings';
 // Company Pages
 import { CompanyDashboard } from './pages/company/CompanyDashboard';
 import { CompanyJobPostings } from './pages/company/CompanyJobPostings';
@@ -27,6 +35,7 @@ import { ApplicantList } from './pages/company/ApplicantList';
 import { CompanyProfile } from './pages/company/CompanyProfile';
 import { UpcomingInterviews } from './pages/company/UpcomingInterviews';
 import { CompanySettings } from './pages/company/CompanySettings';
+import { ChatPage } from './pages/shared/ChatPage';
 
 type UserRole = 'student' | 'admin' | 'company';
 
@@ -159,6 +168,14 @@ export function App() {
     return (
       <StudentSettings onNavigate={handleNavigate} onLogout={handleLogout} />);
 
+    if (currentPath === 'chat' || currentPath.startsWith('chat/'))
+    return (
+      <ChatPage
+        userRole="student"
+        onNavigate={handleNavigate}
+        onLogout={handleLogout}
+        initialConversationId={currentPath.split('/')[1] || ''} />);
+
     return (
       <StudentDashboard onNavigate={handleNavigate} onLogout={handleLogout} />);
 
@@ -212,6 +229,18 @@ export function App() {
     return (
       <PlacementReports onNavigate={handleNavigate} onLogout={handleLogout} />);
 
+    if (currentPath === 'settings')
+    return (
+      <AdminSettings onNavigate={handleNavigate} onLogout={handleLogout} />);
+
+    if (currentPath === 'chat' || currentPath.startsWith('chat/'))
+    return (
+      <ChatPage
+        userRole="admin"
+        onNavigate={handleNavigate}
+        onLogout={handleLogout}
+        initialConversationId={currentPath.split('/')[1] || ''} />);
+
     return (
       <AdminDashboard onNavigate={handleNavigate} onLogout={handleLogout} />);
 
@@ -243,6 +272,14 @@ export function App() {
     if (currentPath === 'settings')
     return (
       <CompanySettings onNavigate={handleNavigate} onLogout={handleLogout} />);
+
+    if (currentPath === 'chat' || currentPath.startsWith('chat/'))
+    return (
+      <ChatPage
+        userRole="company"
+        onNavigate={handleNavigate}
+        onLogout={handleLogout}
+        initialConversationId={currentPath.split('/')[1] || ''} />);
 
     return (
       <CompanyDashboard onNavigate={handleNavigate} onLogout={handleLogout} />);

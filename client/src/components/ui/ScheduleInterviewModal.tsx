@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Modal } from './Modal';
 import { Button } from './Button';
 import { Video, MapPin } from 'lucide-react';
@@ -80,63 +80,65 @@ export function ScheduleInterviewModal({
         </>
       }
     >
-      <div className="space-y-4">
+      <div className="shared-schedule">
         {error && (
-          <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <div className="shared-schedule__error-wrap">
+            <div className="shared-schedule__error">
             {error}
+            </div>
           </div>
         )}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-slate-700">Date *</label>
+        <div className="shared-schedule__grid">
+          <div className="shared-schedule__field">
+            <label className="shared-schedule__label">Date *</label>
             <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+              className="shared-input-reset"
             />
           </div>
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-slate-700">Time</label>
+          <div className="shared-schedule__field">
+            <label className="shared-schedule__label">Time</label>
             <input
               type="time"
               value={time}
               onChange={(e) => setTime(e.target.value)}
-              className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+              className="shared-input-reset"
             />
           </div>
         </div>
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-slate-700">Interview Mode</label>
-          <div className="flex gap-3">
+        <div className="shared-schedule__field">
+          <label className="shared-schedule__label">Interview Mode</label>
+          <div className="shared-schedule__mode-row">
             <button
               type="button"
               onClick={() => setMode('Online')}
-              className={`flex-1 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors ${
+              className={`shared-schedule__mode-button ${
                 mode === 'Online'
-                  ? 'border-teal-500 bg-teal-50 text-teal-700'
-                  : 'border-slate-300 text-slate-600 hover:bg-slate-50'
+                  ? 'shared-schedule__mode-button--active'
+                  : ''
               }`}
             >
-              <Video className="inline h-4 w-4 mr-1.5" />
+              <Video className="shared-schedule__mode-icon h-4 w-4" />
               Online
             </button>
             <button
               type="button"
               onClick={() => setMode('Offline')}
-              className={`flex-1 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors ${
+              className={`shared-schedule__mode-button ${
                 mode === 'Offline'
-                  ? 'border-teal-500 bg-teal-50 text-teal-700'
-                  : 'border-slate-300 text-slate-600 hover:bg-slate-50'
+                  ? 'shared-schedule__mode-button--active'
+                  : ''
               }`}
             >
-              <MapPin className="inline h-4 w-4 mr-1.5" />
+              <MapPin className="shared-schedule__mode-icon h-4 w-4" />
               Offline
             </button>
           </div>
         </div>
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-slate-700">
+        <div className="shared-schedule__field">
+          <label className="shared-schedule__label">
             {mode === 'Online' ? 'Meeting Link' : 'Location'}
           </label>
           <input
@@ -148,16 +150,16 @@ export function ScheduleInterviewModal({
                 ? 'https://meet.google.com/...'
                 : 'Office address or venue'
             }
-            className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+            className="shared-input-reset"
           />
         </div>
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-slate-700">Notes (optional)</label>
+        <div className="shared-schedule__field">
+          <label className="shared-schedule__label">Notes (optional)</label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
-            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+            className="shared-textarea-reset"
             placeholder="Any additional notes for the candidate..."
           />
         </div>

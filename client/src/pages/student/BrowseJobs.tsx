@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { Button } from '../../components/ui/Button';
 import {
@@ -148,13 +148,13 @@ export function BrowseJobs({ onNavigate, onLogout }: BrowseJobsProps) {
         { label: 'Browse Jobs' }
       ]}
     >
-      <div className="space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="student-page">
+        <div className="student-page__header">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">
+            <h1 className="student-page__title">
               Browse Jobs &amp; Internships
             </h1>
-            <p className="text-slate-600">
+            <p className="student-page__subtitle">
               Find your next opportunity from top companies.
             </p>
           </div>
@@ -164,37 +164,36 @@ export function BrowseJobs({ onNavigate, onLogout }: BrowseJobsProps) {
         </div>
 
         {errorMessage && (
-          <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <div className="student-alert student-alert--error">
             {errorMessage}
           </div>
         )}
 
-        {/* Search & Filter Bar */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
-          <div className="p-4 flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+        <div className="student-filter-bar">
+          <div className="student-filter-bar__row">
+            <div className="student-search">
+              <Search className="student-search__icon" />
               <input
                 type="text"
                 placeholder="Search by role or company..."
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
-                className="h-11 w-full rounded-lg border border-slate-300 bg-white pl-9 pr-4 text-sm text-slate-900 placeholder:text-slate-400 shadow-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+                className="student-input student-search__input"
               />
             </div>
-            <div className="flex gap-2">
+            <div className="student-page__actions">
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className={`h-11 inline-flex items-center gap-2 rounded-lg border px-4 text-sm font-medium transition-colors ${
+                className={`student-filter-toggle ${
                   showFilters || activeFilterCount > 0
-                    ? 'border-teal-500 bg-teal-50 text-teal-700'
-                    : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                    ? 'student-filter-toggle--active'
+                    : ''
                 }`}
               >
-                <SlidersHorizontal className="h-4 w-4" />
+                <SlidersHorizontal />
                 Filters
                 {activeFilterCount > 0 && (
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-teal-600 text-xs text-white">
+                  <span className="student-badge student-badge--progress">
                     {activeFilterCount}
                   </span>
                 )}
@@ -202,19 +201,17 @@ export function BrowseJobs({ onNavigate, onLogout }: BrowseJobsProps) {
             </div>
           </div>
 
-          {/* Expanded Filters */}
           {showFilters && (
-            <div className="border-t border-slate-200 p-4">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {/* Job Type */}
+            <div className="student-form-section">
+              <div className="student-grid student-grid--filters">
                 <div>
-                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  <label className="student-card__section-label">
                     Job Type
                   </label>
                   <select
                     value={typeFilter}
                     onChange={(e) => setTypeFilter(e.target.value)}
-                    className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+                    className="student-select"
                   >
                     <option value="">All Types</option>
                     <option value="Internship">Internship</option>
@@ -222,15 +219,14 @@ export function BrowseJobs({ onNavigate, onLogout }: BrowseJobsProps) {
                   </select>
                 </div>
 
-                {/* Location */}
                 <div>
-                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  <label className="student-card__section-label">
                     Location
                   </label>
                   <select
                     value={locationFilter}
                     onChange={(e) => setLocationFilter(e.target.value)}
-                    className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+                    className="student-select"
                   >
                     <option value="">All Locations</option>
                     {uniqueLocations.map((loc) => (
@@ -239,15 +235,14 @@ export function BrowseJobs({ onNavigate, onLogout }: BrowseJobsProps) {
                   </select>
                 </div>
 
-                {/* Deadline */}
                 <div>
-                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  <label className="student-card__section-label">
                     Application Deadline
                   </label>
                   <select
                     value={deadlineFilter}
                     onChange={(e) => setDeadlineFilter(e.target.value)}
-                    className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none"
+                    className="student-select"
                   >
                     {DEADLINE_OPTIONS.map((opt) => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -257,16 +252,15 @@ export function BrowseJobs({ onNavigate, onLogout }: BrowseJobsProps) {
               </div>
 
               {activeFilterCount > 0 && (
-                <div className="mt-4 flex items-center justify-between">
-                  <p className="text-sm text-slate-500">
+                <div className="student-card__title-row">
+                  <p className="student-page__subtitle">
                     {filteredJobs.length} job{filteredJobs.length !== 1 ? 's' : ''} found
                   </p>
                   <button
                     onClick={clearFilters}
-                    className="inline-flex items-center gap-1 text-sm font-medium text-teal-600 hover:text-teal-700"
+                    className="student-inline-button"
                   >
-                    <X className="h-3.5 w-3.5" />
-                    Clear all filters
+                    <span className="student-icon-inline"><X /> Clear all filters</span>
                   </button>
                 </div>
               )}
@@ -274,15 +268,14 @@ export function BrowseJobs({ onNavigate, onLogout }: BrowseJobsProps) {
           )}
         </div>
 
-        {/* Job Grid */}
         {isLoading ? (
-          <div className="rounded-md border border-slate-200 bg-white px-4 py-6 text-slate-600">
+          <div className="student-card student-card--padded">
             Loading jobs...
           </div>
         ) : filteredJobs.length === 0 ? (
-          <div className="rounded-xl border border-slate-200 bg-white px-6 py-12 text-center">
-            <p className="text-lg font-medium text-slate-700">No jobs found</p>
-            <p className="mt-1 text-sm text-slate-500">
+          <div className="student-card student-results-empty">
+            <p className="student-card__title">No jobs found</p>
+            <p className="student-page__subtitle">
               Try adjusting your search or filters.
             </p>
             {activeFilterCount > 0 && (
@@ -292,7 +285,7 @@ export function BrowseJobs({ onNavigate, onLogout }: BrowseJobsProps) {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="student-grid student-grid--cards">
             {filteredJobs.map((job) => {
               const location = typeof job.companyId === 'string' ? '-' : job.companyId.location;
               const companyName = typeof job.companyId === 'string' ? 'Company' : job.companyId.name;
@@ -303,51 +296,51 @@ export function BrowseJobs({ onNavigate, onLogout }: BrowseJobsProps) {
               return (
                 <div
                   key={job._id}
-                  className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full"
+                  className="student-job-card"
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="h-12 w-12 rounded-lg flex items-center justify-center font-bold text-lg bg-blue-100 text-blue-600">
+                  <div className="student-card__title-row">
+                    <div className="student-job-card__logo">
                       {companyName.charAt(0).toUpperCase()}
                     </div>
                     <span
-                      className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+                      className={`student-badge ${
                         job.type === 'Internship'
-                          ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                          : 'bg-green-50 text-green-700 border border-green-200'
+                          ? 'student-job-card__feedback--success'
+                          : 'student-badge--progress'
                       }`}
                     >
                       {job.type}
                     </span>
                   </div>
 
-                  <div className="mb-4 flex-1">
-                    <h3 className="font-bold text-lg text-slate-900 mb-1">
+                  <div className="student-flex-grow">
+                    <h3 className="student-card__title">
                       {job.title}
                     </h3>
-                    <p className="text-slate-600 font-medium">{companyName}</p>
-                    <p className="mt-1 text-sm text-slate-500 flex items-center gap-1">
+                    <p className="student-page__subtitle">{companyName}</p>
+                    <p className="student-job-card__meta">
                       <MapPin className="h-3.5 w-3.5" />
                       {location}
-                      <span className="mx-1.5 text-slate-300">|</span>
+                      <span>|</span>
                       {job.type}
                       {job.jobMode && (
                         <>
-                          <span className="mx-1.5 text-slate-300">|</span>
+                          <span>|</span>
                           {job.jobMode}
                         </>
                       )}
                     </p>
                   </div>
 
-                  <div className="space-y-2 mb-6 text-sm text-slate-500">
-                    <div className="flex items-center gap-2">
+                  <div className="student-job-card__meta">
+                    <div className="student-job-card__meta-item">
                       <IndianRupee className="h-4 w-4" />
                       {getInrText(job.packageOrStipend)}
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="student-job-card__meta-item">
                       <Clock className="h-4 w-4" />
                       {isUrgent ? (
-                        <span className="font-medium text-red-600">
+                        <span>
                           Closing in {daysLeft} day{daysLeft !== 1 ? 's' : ''}
                         </span>
                       ) : (
@@ -356,16 +349,16 @@ export function BrowseJobs({ onNavigate, onLogout }: BrowseJobsProps) {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="student-job-card__actions">
                     <Button
-                      className="w-full"
+                      className="student-flex-grow"
                       variant="outline"
                       onClick={() => onNavigate(`jobs/${job._id}`)}
                     >
                       View Details
                     </Button>
                     <Button
-                      className="w-full"
+                      className="student-flex-grow"
                       onClick={() => handleApply(job._id)}
                       isLoading={applyingJobId === job._id}
                       disabled={alreadyApplied || applyingJobId === job._id}

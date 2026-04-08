@@ -5,7 +5,9 @@ import {
     deleteCompany,
     deleteJob,
     deleteStudent,
+    changeAdminPassword,
     getAdminNotifications,
+    getAdminSettings,
     getApplications,
     getCompanies,
     getJobs,
@@ -13,6 +15,8 @@ import {
     getStudents,
     markAllAdminNotificationsRead,
     markAdminNotificationRead,
+    updateAdminEmail,
+    updateAdminSettings,
     updateApplicationStatus,
     updateCompany,
     updateJob,
@@ -52,6 +56,10 @@ adminRoutes.put(
 );
 
 adminRoutes.get("/reports/summary", getReportSummary);
+adminRoutes.get("/settings", getAdminSettings);
+adminRoutes.put("/settings", updateAdminSettings);
+adminRoutes.put("/settings/password", changeAdminPassword);
+adminRoutes.put("/settings/email", updateAdminEmail);
 
 // Notifications
 adminRoutes.get("/notifications", getAdminNotifications);

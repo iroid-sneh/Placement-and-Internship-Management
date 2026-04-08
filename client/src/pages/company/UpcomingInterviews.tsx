@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
@@ -6,19 +6,9 @@ import { ApplicantProfileModal } from '../../components/ui/ApplicantProfileModal
 import { ScheduleInterviewModal } from '../../components/ui/ScheduleInterviewModal';
 import type { ScheduleInterviewData } from '../../components/ui/ScheduleInterviewModal';
 import { useAuth } from '../../context/AuthContext';
-import {
-  getUpcomingInterviews,
-  updateCompanyApplicantStatus,
-  getStudentProfileById
-} from '../../services/api/company';
+import { getUpcomingInterviews, updateCompanyApplicantStatus, getStudentProfileById } from '../../services/api/company';
 import type { Application, StudentProfileDetail } from '../../types/app';
-import {
-  Calendar,
-  Clock,
-  Edit,
-  XCircle,
-  User
-} from 'lucide-react';
+import { Calendar, Clock, Edit, XCircle, User } from 'lucide-react';
 
 interface UpcomingInterviewsProps {
   onNavigate: (path: string) => void;
@@ -36,18 +26,12 @@ export function UpcomingInterviews({ onNavigate, onLogout }: UpcomingInterviewsP
   const [interviews, setInterviews] = useState<Application[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
-
-  // Reschedule modal
   const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
   const [rescheduleTargetId, setRescheduleTargetId] = useState('');
   const [rescheduleApplicantName, setRescheduleApplicantName] = useState('');
-
-  // Cancel confirmation
   const [isCancelOpen, setIsCancelOpen] = useState(false);
   const [cancelTarget, setCancelTarget] = useState<Application | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
-
-  // Profile modal
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [profileLoader, setProfileLoader] = useState<(() => Promise<StudentProfileDetail>) | null>(null);
 
@@ -71,22 +55,22 @@ export function UpcomingInterviews({ onNavigate, onLogout }: UpcomingInterviewsP
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
-
     const todayList: Application[] = [];
     const upcomingList: Application[] = [];
-
     interviews.forEach((interview) => {
       if (!interview.interviewDate) return;
       const d = new Date(interview.interviewDate);
-      if (d >= today && d < tomorrow) {
-        todayList.push(interview);
-      } else {
-        upcomingList.push(interview);
-      }
+      if (d >= today && d < tomorrow) todayList.push(interview);
+      else upcomingList.push(interview);
     });
-
     return { today: todayList, upcoming: upcomingList };
   }, [interviews]);
+
+  const getStudentName = (interview: Application) =>
+    typeof interview.studentId === 'string' ? '-' : interview.studentId.name;
+
+  const getJobTitle = (interview: Application) =>
+    typeof interview.jobId === 'string' ? '-' : interview.jobId.title;
 
   const openReschedule = (interview: Application) => {
     setRescheduleTargetId(interview._id);
@@ -132,14 +116,6 @@ export function UpcomingInterviews({ onNavigate, onLogout }: UpcomingInterviewsP
     setIsProfileOpen(true);
   }, []);
 
-  const getStudentName = (interview: Application) => {
-    return typeof interview.studentId === 'string' ? '-' : interview.studentId.name;
-  };
-
-  const getJobTitle = (interview: Application) => {
-    return typeof interview.jobId === 'string' ? '-' : interview.jobId.title;
-  };
-
   const formatInterviewDate = (date: string | null) => {
     if (!date) return '-';
     const d = new Date(date);
@@ -161,50 +137,35 @@ export function UpcomingInterviews({ onNavigate, onLogout }: UpcomingInterviewsP
   };
 
   const renderInterviewCard = (interview: Application) => (
-    <div
-      key={interview._id}
-      className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow"
-    >
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-sm">
+    <div key={interview._id} className="company-interview-card">
+      <div className="company-interview-card__top">
+        <div className="company-interview-card__person">
+          <div className="company-interview-card__avatar">
             {getStudentName(interview).charAt(0)}
           </div>
           <div>
-            <h4 className="font-semibold text-slate-900">{getStudentName(interview)}</h4>
-            <p className="text-sm text-slate-500">{getJobTitle(interview)}</p>
+            <h4 className="company-interview-card__name">{getStudentName(interview)}</h4>
+            <p className="company-interview-card__role">{getJobTitle(interview)}</p>
           </div>
         </div>
-        <div className="flex gap-1">
-          <button
-            onClick={() => openProfile(interview)}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-            title="View Profile"
-          >
+        <div className="company-interview-card__actions">
+          <button onClick={() => openProfile(interview)} className="company-icon-button" title="View Profile">
             <User className="h-4 w-4" />
           </button>
-          <button
-            onClick={() => openReschedule(interview)}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-blue-50 hover:text-blue-600"
-            title="Reschedule"
-          >
+          <button onClick={() => openReschedule(interview)} className="company-icon-button company-icon-button--info" title="Reschedule">
             <Edit className="h-4 w-4" />
           </button>
-          <button
-            onClick={() => openCancel(interview)}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600"
-            title="Cancel Interview"
-          >
+          <button onClick={() => openCancel(interview)} className="company-icon-button company-icon-button--danger" title="Cancel Interview">
             <XCircle className="h-4 w-4" />
           </button>
         </div>
       </div>
-      <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-slate-600">
-        <span className="flex items-center gap-1.5">
+      <div className="company-interview-card__meta">
+        <span className="company-inline-meta">
           <Calendar className="h-4 w-4 text-slate-400" />
           {formatInterviewDate(interview.interviewDate)}
         </span>
-        <span className="flex items-center gap-1.5">
+        <span className="company-inline-meta">
           <Clock className="h-4 w-4 text-slate-400" />
           {formatInterviewTime(interview.interviewDate)}
         </span>
@@ -218,59 +179,46 @@ export function UpcomingInterviews({ onNavigate, onLogout }: UpcomingInterviewsP
       currentPath="interviews"
       onNavigate={onNavigate}
       onLogout={onLogout}
-      user={{
-        name: user?.name || 'Company',
-        email: user?.email || ''
-      }}
+      user={{ name: user?.name || 'Company', email: user?.email || '' }}
       breadcrumbs={[{ label: 'Upcoming Interviews' }]}
     >
-      <div className="space-y-6">
+      <div className="company-page">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Upcoming Interviews</h1>
-          <p className="text-slate-600">Manage your scheduled interviews.</p>
+          <h1 className="company-page__title">Upcoming Interviews</h1>
+          <p className="company-page__subtitle">Manage your scheduled interviews.</p>
         </div>
 
-        {errorMessage && (
-          <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            {errorMessage}
-          </div>
-        )}
+        {errorMessage && <div className="company-alert company-alert--error">{errorMessage}</div>}
 
         {isLoading ? (
-          <div className="rounded-xl border border-slate-200 bg-white p-6 text-slate-600">
-            Loading interviews...
-          </div>
+          <div className="company-card company-card--padded">Loading interviews...</div>
         ) : interviews.length === 0 ? (
-          <div className="rounded-xl border border-slate-200 bg-white px-6 py-12 text-center">
-            <Calendar className="mx-auto h-12 w-12 text-slate-300" />
-            <p className="mt-4 text-lg font-medium text-slate-700">No upcoming interviews</p>
-            <p className="mt-1 text-sm text-slate-500">
-              Schedule interviews from the dashboard to see them here.
-            </p>
+          <div className="company-empty-state">
+            <Calendar className="company-empty-state__icon h-12 w-12" />
+            <p className="company-page__title">No upcoming interviews</p>
+            <p className="company-page__subtitle">Schedule interviews from the dashboard to see them here.</p>
           </div>
         ) : (
-          <div className="space-y-8">
-            {/* Today */}
+          <div className="company-page">
             {groupedInterviews.today.length > 0 && (
               <div>
-                <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-teal-500" />
+                <h2 className="company-section-title">
+                  <span className="company-section-dot company-section-dot--today" />
                   Today ({groupedInterviews.today.length})
                 </h2>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div className="company-grid company-grid--interviews">
                   {groupedInterviews.today.map((i) => renderInterviewCard(i))}
                 </div>
               </div>
             )}
 
-            {/* Upcoming */}
             {groupedInterviews.upcoming.length > 0 && (
               <div>
-                <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-blue-500" />
+                <h2 className="company-section-title">
+                  <span className="company-section-dot company-section-dot--upcoming" />
                   Upcoming ({groupedInterviews.upcoming.length})
                 </h2>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div className="company-grid company-grid--interviews">
                   {groupedInterviews.upcoming.map((i) => renderInterviewCard(i))}
                 </div>
               </div>
@@ -278,7 +226,6 @@ export function UpcomingInterviews({ onNavigate, onLogout }: UpcomingInterviewsP
           </div>
         )}
 
-        {/* Reschedule Modal - Reusable */}
         <ScheduleInterviewModal
           isOpen={isRescheduleOpen}
           onClose={() => setIsRescheduleOpen(false)}
@@ -286,35 +233,25 @@ export function UpcomingInterviews({ onNavigate, onLogout }: UpcomingInterviewsP
           applicantName={rescheduleApplicantName}
         />
 
-        {/* Cancel Confirmation Modal */}
         <Modal
           isOpen={isCancelOpen}
           onClose={() => setIsCancelOpen(false)}
           title="Cancel Interview"
           footer={
             <>
-              <Button variant="ghost" onClick={() => setIsCancelOpen(false)}>
-                Keep Interview
-              </Button>
-              <Button variant="danger" onClick={handleCancel} isLoading={isCancelling}>
-                Cancel Interview
-              </Button>
+              <Button variant="ghost" onClick={() => setIsCancelOpen(false)}>Keep Interview</Button>
+              <Button variant="danger" onClick={handleCancel} isLoading={isCancelling}>Cancel Interview</Button>
             </>
           }
         >
-          <div className="space-y-3">
-            <p className="text-sm text-slate-600">
-              Are you sure you want to cancel the interview with{' '}
-              <strong>{cancelTarget ? getStudentName(cancelTarget) : ''}</strong> for the position of{' '}
-              <strong>{cancelTarget ? getJobTitle(cancelTarget) : ''}</strong>?
+          <div className="company-page">
+            <p className="company-page__subtitle">
+              Are you sure you want to cancel the interview with <strong>{cancelTarget ? getStudentName(cancelTarget) : ''}</strong> for the position of <strong>{cancelTarget ? getJobTitle(cancelTarget) : ''}</strong>?
             </p>
-            <p className="text-sm text-slate-500">
-              The applicant will be moved back to the Shortlisted stage.
-            </p>
+            <p className="company-page__subtitle">The applicant will be moved back to the Shortlisted stage.</p>
           </div>
         </Modal>
 
-        {/* Profile Modal - Reusable */}
         {profileLoader && (
           <ApplicantProfileModal
             isOpen={isProfileOpen}

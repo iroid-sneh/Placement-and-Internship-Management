@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { DataTable } from '../../components/ui/DataTable';
 import { Button } from '../../components/ui/Button';
@@ -47,7 +47,7 @@ export function ApplicationTracking({
       setErrorMessage(error instanceof Error ? error.message : 'Failed to load applications');
     }
   };
-  React.useEffect(() => {
+  useEffect(() => {
     void loadApplications();
   }, []);
 
@@ -198,89 +198,83 @@ export function ApplicationTracking({
       }]
       }>
 
-      <div className="space-y-6">
-        <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-sky-900 p-6 text-white shadow-xl sm:p-8">
-          <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
-            <div className="max-w-2xl space-y-3">
-              <span className="inline-flex w-fit rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-sky-100">
-                Application Tracking
-              </span>
-              <div>
-                <h1 className="text-3xl font-bold tracking-tight">Placement Pipeline</h1>
-                <p className="mt-2 text-sm text-slate-200 sm:text-base">
-                  Review every application, update outcomes quickly, and keep interview scheduling tightly coordinated.
-                </p>
-              </div>
+      <div className="admin-page">
+        <div className="admin-hero admin-hero--sky">
+          <div className="admin-hero__row">
+            <div className="admin-hero__body">
+              <span className="admin-hero__eyebrow">Application Tracking</span>
+              <h1 className="admin-hero__title">Placement Pipeline</h1>
+              <p className="admin-hero__subtitle">
+                Review every application, update outcomes quickly, and keep interview scheduling tightly coordinated.
+              </p>
             </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur">
-                <p className="text-xs uppercase tracking-wide text-slate-300">Applications</p>
-                <p className="mt-1 text-2xl font-semibold">{totalApplications}</p>
+            <div className="admin-hero__stats admin-grid admin-grid--four">
+              <div className="admin-hero__stat">
+                <p className="admin-hero__stat-label">Applications</p>
+                <p className="admin-hero__stat-value">{totalApplications}</p>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur">
-                <p className="text-xs uppercase tracking-wide text-slate-300">Scheduled</p>
-                <p className="mt-1 text-2xl font-semibold">{scheduledApplications}</p>
+              <div className="admin-hero__stat">
+                <p className="admin-hero__stat-label">Scheduled</p>
+                <p className="admin-hero__stat-value">{scheduledApplications}</p>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur">
-                <p className="text-xs uppercase tracking-wide text-slate-300">Selected</p>
-                <p className="mt-1 text-2xl font-semibold">{selectedApplications}</p>
+              <div className="admin-hero__stat">
+                <p className="admin-hero__stat-label">Selected</p>
+                <p className="admin-hero__stat-value">{selectedApplications}</p>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 backdrop-blur">
-                <p className="text-xs uppercase tracking-wide text-slate-300">In Review</p>
-                <p className="mt-1 text-2xl font-semibold">{shortlistedApplications}</p>
+              <div className="admin-hero__stat">
+                <p className="admin-hero__stat-label">In Review</p>
+                <p className="admin-hero__stat-value">{shortlistedApplications}</p>
               </div>
             </div>
           </div>
         </div>
 
         {errorMessage && (
-          <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            {errorMessage}
-          </div>
+          <div className="admin-alert admin-alert--error">{errorMessage}</div>
         )}
 
-        <div className="grid gap-4 sm:grid-cols-4">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-sky-50 p-3 text-sky-600">
+        <div className="admin-stat-grid admin-grid--four">
+          <div className="admin-stat-card">
+            <div className="admin-stat-card__row">
+              <div className="admin-stat-card__icon admin-stat-card__icon--sky">
                 <Activity className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">All Applications</p>
-                <p className="text-2xl font-bold text-slate-900">{totalApplications}</p>
+                <p className="admin-stat-card__label">All Applications</p>
+                <p className="admin-stat-card__value">{totalApplications}</p>
               </div>
             </div>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-violet-50 p-3 text-violet-600">
+          <div className="admin-stat-card">
+            <div className="admin-stat-card__row">
+              <div className="admin-stat-card__icon admin-stat-card__icon--violet">
                 <Clock3 className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">Interviews Scheduled</p>
-                <p className="text-2xl font-bold text-slate-900">{scheduledApplications}</p>
+                <p className="admin-stat-card__label">Interviews Scheduled</p>
+                <p className="admin-stat-card__value">{scheduledApplications}</p>
               </div>
             </div>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-emerald-50 p-3 text-emerald-600">
+          <div className="admin-stat-card">
+            <div className="admin-stat-card__row">
+              <div className="admin-stat-card__icon admin-stat-card__icon--emerald">
                 <UserCheck className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">Selected</p>
-                <p className="text-2xl font-bold text-slate-900">{selectedApplications}</p>
+                <p className="admin-stat-card__label">Selected</p>
+                <p className="admin-stat-card__value">{selectedApplications}</p>
               </div>
             </div>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-amber-50 p-3 text-amber-600">
+          <div className="admin-stat-card">
+            <div className="admin-stat-card__row">
+              <div className="admin-stat-card__icon admin-stat-card__icon--amber">
                 <Briefcase className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">Shortlisted / Pending</p>
-                <p className="text-2xl font-bold text-slate-900">{shortlistedApplications}</p>
+                <p className="admin-stat-card__label">Shortlisted / Pending</p>
+                <p className="admin-stat-card__value">{shortlistedApplications}</p>
               </div>
             </div>
           </div>
@@ -317,7 +311,7 @@ export function ApplicationTracking({
             }]
             }
             trigger={
-            <button className="p-1 text-slate-400 hover:text-slate-600">
+            <button className="company-icon-button" type="button">
                   <MoreHorizontal className="h-5 w-5" />
                 </button>
             } />
@@ -351,40 +345,38 @@ export function ApplicationTracking({
             </>
           }>
 
-          <div className="space-y-4">
+          <div className="admin-form">
             {modalErrorMessage && (
-              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                {modalErrorMessage}
-              </div>
+              <div className="admin-alert admin-alert--error">{modalErrorMessage}</div>
             )}
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-              <p className="text-sm text-slate-600">
+            <div className="admin-preview">
+              <p className="admin-preview__subtitle">
                 Student:{' '}
-                <span className="font-medium text-slate-900">
+                <span className="admin-preview__title">
                   {selectedApplication?.student}
                 </span>
               </p>
-              <p className="text-sm text-slate-600">
+              <p className="admin-preview__subtitle">
                 Company:{' '}
-                <span className="font-medium text-slate-900">
+                <span className="admin-preview__title">
                   {selectedApplication?.company}
                 </span>
               </p>
-              <p className="text-sm text-slate-600">
+              <p className="admin-preview__subtitle">
                 Role:{' '}
-                <span className="font-medium text-slate-900">
+                <span className="admin-preview__title">
                   {selectedApplication?.role}
                 </span>
               </p>
             </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-slate-700">
+            <div className="admin-field">
+              <label className="admin-field__label">
                 New Status
               </label>
               <select
                 value={statusValue}
                 onChange={(event) => setStatusValue(event.target.value as Application['status'])}
-                className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none">
+                className="shared-select-reset">
                 <option value="Applied">Applied</option>
                 <option value="Shortlisted">Shortlisted</option>
                 <option value="Interview Scheduled">Interview Scheduled</option>
@@ -421,22 +413,20 @@ export function ApplicationTracking({
             </>
           }>
 
-          <div className="space-y-4">
+          <div className="admin-form">
             {modalErrorMessage && (
-              <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                {modalErrorMessage}
-              </div>
+              <div className="admin-alert admin-alert--error">{modalErrorMessage}</div>
             )}
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-              <p className="text-sm text-slate-600">
+            <div className="admin-preview">
+              <p className="admin-preview__subtitle">
                 Student:{' '}
-                <span className="font-medium text-slate-900">
+                <span className="admin-preview__title">
                   {selectedApplication?.student}
                 </span>
               </p>
-              <p className="text-sm text-slate-600">
+              <p className="admin-preview__subtitle">
                 Company:{' '}
-                <span className="font-medium text-slate-900">
+                <span className="admin-preview__title">
                   {selectedApplication?.company}
                 </span>
               </p>

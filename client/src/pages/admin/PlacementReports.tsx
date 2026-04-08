@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { StatCard } from '../../components/ui/StatCard';
 import { Button } from '../../components/ui/Button';
@@ -12,7 +12,12 @@ import {
   TrendingUp } from
 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { getAdminReportSummary, type ReportSummary, type ReportStudent } from '../../services/api/admin';
+import {
+  getAdminApplications,
+  getAdminReportSummary,
+  type ReportSummary,
+  type ReportStudent
+} from '../../services/api/admin';
 interface PlacementReportsProps {
   onNavigate: (path: string) => void;
   onLogout: () => void;
@@ -33,13 +38,33 @@ export function PlacementReports({
     students: []
   });
   const [students, setStudents] = useState<ReportStudent[]>([]);
+  const [companyPlacements, setCompanyPlacements] = useState<{ company: string; hired: number }[]>([]);
   const [errorMessage, setErrorMessage] = useState('');
   useEffect(() => {
     const loadSummary = async (): Promise<void> => {
       try {
-        const response = await getAdminReportSummary();
+        const [response, applications] = await Promise.all([
+          getAdminReportSummary(),
+          getAdminApplications()
+        ]);
         setSummary(response);
         setStudents(response.students || []);
+        const placementsMap = new Map<string, number>();
+        applications.forEach((application) => {
+          if (application.status !== 'Selected') return;
+          const job = application.jobId && typeof application.jobId !== 'string' ? application.jobId : null;
+          const companyName =
+            job?.companyId && typeof job.companyId !== 'string'
+              ? job.companyId.name
+              : 'Unknown Company';
+          placementsMap.set(companyName, (placementsMap.get(companyName) || 0) + 1);
+        });
+        setCompanyPlacements(
+          Array.from(placementsMap.entries())
+            .map(([company, hired]) => ({ company, hired }))
+            .sort((a, b) => b.hired - a.hired)
+            .slice(0, 6)
+        );
       } catch (error) {
         setErrorMessage(error instanceof Error ? error.message : 'Failed to load report');
       }
@@ -110,22 +135,18 @@ export function PlacementReports({
       }]
       }>
 
-      <div className="space-y-8">
-        <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-900 p-6 text-white shadow-xl sm:p-8">
-          <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
-            <div className="max-w-2xl space-y-3">
-              <span className="inline-flex w-fit rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-100">
-                Placement Reports
-              </span>
-              <div>
-                <h1 className="text-3xl font-bold tracking-tight">Performance Insights</h1>
-                <p className="mt-2 text-sm text-slate-200 sm:text-base">
-                  Track placement outcomes, monitor active hiring, and export a clean report snapshot for the current academic cycle.
-                </p>
-              </div>
+      <div className="admin-page">
+        <div className="admin-hero admin-hero--emerald">
+          <div className="admin-hero__row">
+            <div className="admin-hero__body">
+              <span className="admin-hero__eyebrow">Placement Reports</span>
+              <h1 className="admin-hero__title">Performance Insights</h1>
+              <p className="admin-hero__subtitle">
+                Track placement outcomes, monitor active hiring, and export a clean report snapshot for the current academic cycle.
+              </p>
             </div>
             <Button
-              className="h-12 rounded-2xl border border-white/15 bg-white/10 px-5 text-white shadow-none backdrop-blur hover:bg-white/15"
+              className="company-secondary-button"
               icon={<Download className="h-4 w-4" />}
               onClick={handleExportReport}
             >
@@ -133,50 +154,46 @@ export function PlacementReports({
             </Button>
           </div>
         </div>
-        {errorMessage && (
-          <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            {errorMessage}
-          </div>
-        )}
+        {errorMessage && <div className="admin-alert admin-alert--error">{errorMessage}</div>}
 
-        <div className="grid gap-4 sm:grid-cols-3">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-emerald-50 p-3 text-emerald-600">
+        <div className="admin-stat-grid admin-grid admin-grid--three">
+          <div className="admin-stat-card">
+            <div className="admin-stat-card__row">
+              <div className="admin-stat-card__icon admin-stat-card__icon--emerald">
                 <CheckCircle className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">Placement Rate</p>
-                <p className="text-2xl font-bold text-slate-900">{placementPercentage}%</p>
+                <p className="admin-stat-card__label">Placement Rate</p>
+                <p className="admin-stat-card__value">{placementPercentage}%</p>
               </div>
             </div>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-sky-50 p-3 text-sky-600">
+          <div className="admin-stat-card">
+            <div className="admin-stat-card__row">
+              <div className="admin-stat-card__icon admin-stat-card__icon--sky">
                 <FileSpreadsheet className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">Applications</p>
-                <p className="text-2xl font-bold text-slate-900">{summary.totalApplications}</p>
+                <p className="admin-stat-card__label">Applications</p>
+                <p className="admin-stat-card__value">{summary.totalApplications}</p>
               </div>
             </div>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-amber-50 p-3 text-amber-600">
+          <div className="admin-stat-card">
+            <div className="admin-stat-card__row">
+              <div className="admin-stat-card__icon admin-stat-card__icon--amber">
                 <Sparkles className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-sm text-slate-500">Unplaced Students</p>
-                <p className="text-2xl font-bold text-slate-900">{unplacedCount}</p>
+                <p className="admin-stat-card__label">Unplaced Students</p>
+                <p className="admin-stat-card__value">{unplacedCount}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Summary Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="admin-grid admin-grid--four">
           <StatCard
             title="Total Students"
             value={String(summary.totalStudents)}
@@ -208,162 +225,145 @@ export function PlacementReports({
         </div>
 
         {/* Charts Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Bar Chart */}
-          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-            <h3 className="font-bold text-slate-900 mb-6">
-              Company-wise Placements
-            </h3>
-            <div className="space-y-4">
-              {[{
-                id: '1',
-                company: 'Applications',
-                hired: summary.totalApplications
-              },
-              {
-                id: '2',
-                company: 'Selected',
-                hired: summary.selectedCount
-              },
-              {
-                id: '3',
-                company: 'Open Jobs',
-                hired: summary.openJobs
-              }].map((item) =>
-              <div key={item.id}>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="font-medium text-slate-700">
+        <div className="admin-split-grid">
+          <div className="admin-panel">
+            <h3 className="admin-panel__title">Company-wise Placements</h3>
+            <div className="admin-progress-list admin-progress-list--spaced">
+              {companyPlacements.length === 0 ? (
+                <div className="admin-note">
+                  No company placement data available yet.
+                </div>
+              ) : companyPlacements.map((item) =>
+              <div key={item.company} className="admin-progress-item">
+                  <div className="admin-progress-item__top">
+                    <span className="admin-progress-item__label">
                       {item.company}
                     </span>
-                    <span className="text-slate-500">
+                    <span className="admin-progress-item__meta">
                       {item.hired}
                     </span>
                   </div>
-                  <div className="w-full bg-slate-100 rounded-full h-3">
+                  <div className="admin-progress-item__bar">
                     <div
-                    className="bg-teal-500 h-3 rounded-full transition-all"
-                    style={{
-                      width: `${summary.totalApplications > 0 ? item.hired / summary.totalApplications * 100 : 0}%`
-                    }}>
-                  </div>
+                      className="admin-progress-item__fill"
+                      style={{
+                        width: `${summary.selectedCount > 0 ? (item.hired / summary.selectedCount) * 100 : 0}%`,
+                        backgroundColor: '#14b8a6'
+                      }}
+                    />
                   </div>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Placement Ring Chart */}
-          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-            <h3 className="font-bold text-slate-900 mb-6">
-              Placement Distribution
-            </h3>
-            <div className="flex items-center justify-center h-48">
-              <div className="relative h-40 w-40">
+          <div className="admin-panel">
+            <h3 className="admin-panel__title">Placement Distribution</h3>
+            <div className="admin-chart-placeholder">
+              <div className="admin-chart-ring-wrap">
                 <svg viewBox="0 0 36 36" className="h-full w-full">
                   <path
+                    className="admin-chart-ring__track"
                     d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                     fill="none"
-                    stroke="#e2e8f0"
-                    strokeWidth="3" />
+                    strokeWidth="3"
+                  />
 
                   <path
+                    className="admin-chart-ring__fill"
                     d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                     fill="none"
-                    stroke="#14b8a6"
                     strokeWidth="3"
-                    strokeDasharray={`${placementPercentage}, 100`} />
+                    strokeDasharray={`${placementPercentage}, 100`}
+                  />
 
                 </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-3xl font-bold text-slate-900">{placementPercentage}%</span>
-                  <span className="text-sm text-slate-500">Placed</span>
+                <div className="admin-chart-ring-center">
+                  <span className="admin-highlight__value">{placementPercentage}%</span>
+                  <span className="admin-highlight__label">Placed</span>
                 </div>
               </div>
             </div>
-            <div className="flex justify-center gap-6 mt-4 text-sm">
-              <div className="flex items-center gap-2">
-                <span className="h-3 w-3 rounded-full bg-teal-500"></span>
-                <span className="text-slate-600">Placed ({summary.selectedCount})</span>
+            <div className="admin-actions-row admin-actions-row--center">
+              <div className="admin-progress-item__label">
+                <span className="admin-legend-dot admin-legend-dot--placed" />
+                <span>Placed ({summary.selectedCount})</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="h-3 w-3 rounded-full bg-slate-200"></span>
-                <span className="text-slate-600">Unplaced ({unplacedCount})</span>
+              <div className="admin-progress-item__label">
+                <span className="admin-legend-dot admin-legend-dot--unplaced" />
+                <span>Unplaced ({unplacedCount})</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
-          <div className="p-4 border-b border-slate-200">
-            <h3 className="font-bold text-slate-900">
-              Basic Summary
-            </h3>
+        <div className="admin-table-card">
+          <div className="admin-table-card__header">
+            <h3 className="admin-panel__title">Basic Summary</h3>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+          <div className="admin-table-card__scroll">
+            <table className="admin-table-card__table">
+              <thead className="admin-table-card__head">
                 <tr>
-                  <th className="px-4 py-3">Metric</th>
-                  <th className="px-4 py-3">Value</th>
+                  <th>Metric</th>
+                  <th>Value</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200">
-                <tr className="hover:bg-slate-50"><td className="px-4 py-3 font-medium text-slate-900">Total Jobs</td><td className="px-4 py-3">{summary.totalJobs}</td></tr>
-                <tr className="hover:bg-slate-50"><td className="px-4 py-3 font-medium text-slate-900">Total Applications</td><td className="px-4 py-3">{summary.totalApplications}</td></tr>
-                <tr className="hover:bg-slate-50"><td className="px-4 py-3 font-medium text-slate-900">Scheduled Interviews</td><td className="px-4 py-3">{summary.scheduledInterviews}</td></tr>
-                <tr className="hover:bg-slate-50"><td className="px-4 py-3 font-medium text-slate-900">Placement Percentage</td><td className="px-4 py-3">{placementPercentage}%</td></tr>
+              <tbody>
+                <tr><td><strong>Total Jobs</strong></td><td>{summary.totalJobs}</td></tr>
+                <tr><td><strong>Total Applications</strong></td><td>{summary.totalApplications}</td></tr>
+                <tr><td><strong>Scheduled Interviews</strong></td><td>{summary.scheduledInterviews}</td></tr>
+                <tr><td><strong>Placement Percentage</strong></td><td>{placementPercentage}%</td></tr>
               </tbody>
             </table>
           </div>
         </div>
 
         {/* Students Table with Skills */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
-          <div className="p-4 border-b border-slate-200">
-            <h3 className="font-bold text-slate-900">
-              Students Overview
-            </h3>
-            <p className="text-sm text-slate-500 mt-1">
+        <div className="admin-table-card">
+          <div className="admin-table-card__header">
+            <h3 className="admin-panel__title">Students Overview</h3>
+            <p className="admin-panel__subtitle">
               All registered students with their skills.
             </p>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+          <div className="admin-table-card__scroll">
+            <table className="admin-table-card__table">
+              <thead className="admin-table-card__head">
                 <tr>
-                  <th className="px-4 py-3">Name</th>
-                  <th className="px-4 py-3">Department</th>
-                  <th className="px-4 py-3">CGPA</th>
-                  <th className="px-4 py-3">Skills</th>
+                  <th>Name</th>
+                  <th>Department</th>
+                  <th>CGPA</th>
+                  <th>Skills</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200">
+              <tbody>
                 {students.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-4 py-6 text-center text-slate-500">
+                    <td colSpan={4} className="admin-empty-state">
                       No students found.
                     </td>
                   </tr>
                 ) : (
                   students.map((student) => (
-                    <tr key={student.id} className="hover:bg-slate-50">
-                      <td className="px-4 py-3 font-medium text-slate-900">{student.name}</td>
-                      <td className="px-4 py-3 text-slate-600">{student.department}</td>
-                      <td className="px-4 py-3 text-slate-600">{student.cgpa}</td>
-                      <td className="px-4 py-3">
+                    <tr key={student.id}>
+                      <td><strong>{student.name}</strong></td>
+                      <td>{student.department}</td>
+                      <td>{student.cgpa}</td>
+                      <td>
                         {student.skills.length > 0 ? (
-                          <div className="flex flex-wrap gap-1">
+                          <div className="admin-table-card__skills">
                             {student.skills.map((skill, idx) => (
                               <span
                                 key={idx}
-                                className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-700"
+                                className="admin-pill admin-pill--resume"
                               >
                                 {skill}
                               </span>
                             ))}
                           </div>
                         ) : (
-                          <span className="text-slate-400">No skills listed</span>
+                          <span className="admin-panel__subtitle">No skills listed</span>
                         )}
                       </td>
                     </tr>

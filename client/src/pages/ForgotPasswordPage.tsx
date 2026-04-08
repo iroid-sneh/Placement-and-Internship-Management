@@ -135,10 +135,10 @@ export function ForgotPasswordPage({ onGoLogin }: ForgotPasswordPageProps) {
           <div
             className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-colors ${
               step === s
-                ? 'bg-teal-600 text-white'
+                ? 'bg-gradient-brand text-white'
                 : (['email', 'otp', 'reset'] as Step[]).indexOf(step) > i
-                ? 'bg-teal-100 text-teal-700'
-                : 'bg-slate-100 text-slate-400'
+                ? 'bg-brand-elevated text-brand-accent'
+                : 'bg-theme-surface text-theme-muted'
             }`}
           >
             {(['email', 'otp', 'reset'] as Step[]).indexOf(step) > i ? (
@@ -151,8 +151,8 @@ export function ForgotPasswordPage({ onGoLogin }: ForgotPasswordPageProps) {
             <div
               className={`h-0.5 w-8 ${
                 (['email', 'otp', 'reset'] as Step[]).indexOf(step) > i
-                  ? 'bg-teal-400'
-                  : 'bg-slate-200'
+                  ? 'bg-brand-accent'
+                  : 'bg-theme-surface'
               }`}
             />
           )}
@@ -162,36 +162,36 @@ export function ForgotPasswordPage({ onGoLogin }: ForgotPasswordPageProps) {
   );
 
   const stepLabels = (
-    <div className="flex items-center justify-center gap-6 text-xs text-slate-500">
-      <span className={step === 'email' ? 'font-semibold text-teal-600' : ''}>Email</span>
-      <span className={step === 'otp' ? 'font-semibold text-teal-600' : ''}>Verify OTP</span>
-      <span className={step === 'reset' ? 'font-semibold text-teal-600' : ''}>New Password</span>
+    <div className="flex items-center justify-center gap-6 text-xs text-theme-muted">
+      <span className={step === 'email' ? 'font-semibold text-brand-primary' : ''}>Email</span>
+      <span className={step === 'otp' ? 'font-semibold text-brand-primary' : ''}>Verify OTP</span>
+      <span className={step === 'reset' ? 'font-semibold text-brand-primary' : ''}>New Password</span>
     </div>
   );
 
   return (
     <div className="flex min-h-screen w-full">
       {/* Left Side - Branding (Fixed) */}
-      <div className="fixed left-0 top-0 hidden h-screen w-1/2 flex-col justify-center bg-slate-900 p-16 text-white lg:p-24 md:flex">
+      <div className="fixed left-0 top-0 hidden h-screen w-1/2 flex-col justify-center bg-theme-base p-16 text-white lg:p-24 md:flex">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1521737604893-d14cc237f11d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center opacity-10"></div>
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900/90 to-slate-800/90"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-theme-base via-theme-surface to-theme-elevated"></div>
 
         <div className="relative z-10">
           <div className="mb-8 flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-teal-500 text-2xl font-bold text-white shadow-lg shadow-teal-500/30">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-brand text-2xl font-bold text-white shadow-brand-icon">
               P
             </div>
             <h1 className="text-3xl font-bold tracking-tight">
-              Place<span className="text-teal-400">Mate</span>
+              Place<span className="text-brand-accent">Mate</span>
             </h1>
           </div>
 
           <h2 className="mb-6 text-4xl font-extrabold leading-tight tracking-tight md:text-5xl">
             Reset your <br />
-            <span className="text-teal-400">password.</span>
+            <span className="text-brand-accent">password.</span>
           </h2>
 
-          <p className="mb-10 text-lg text-slate-300 md:text-xl">
+          <p className="mb-10 text-lg text-theme-secondary md:text-xl">
             Follow the steps to securely reset your account password.
           </p>
 
@@ -202,8 +202,8 @@ export function ForgotPasswordPage({ onGoLogin }: ForgotPasswordPageProps) {
               'Set your new password',
             ].map((feature, i) => (
               <div key={i} className="flex items-center gap-3">
-                <CheckCircle2 className="h-6 w-6 text-teal-400" />
-                <span className="text-slate-200">{feature}</span>
+                <CheckCircle2 className="h-6 w-6 text-brand-accent" />
+                <span className="text-theme-light">{feature}</span>
               </div>
             ))}
           </div>
@@ -211,31 +211,31 @@ export function ForgotPasswordPage({ onGoLogin }: ForgotPasswordPageProps) {
       </div>
 
       {/* Right Side - Form (Scrollable) */}
-      <div className="ml-0 w-full overflow-y-auto bg-white md:ml-[50%] md:w-1/2">
+      <div className="ml-0 w-full overflow-y-auto bg-theme-base md:ml-[50%] md:w-1/2">
         <div className="flex min-h-screen items-center justify-center p-8 md:p-16">
           <div className="w-full max-w-md space-y-6">
             {/* Mobile-only logo */}
             <div className="flex items-center gap-3 md:hidden">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-500 text-xl font-bold text-white shadow-lg shadow-teal-500/30">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-brand text-xl font-bold text-white shadow-brand-icon">
                 P
               </div>
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-                Place<span className="text-teal-600">Mate</span>
+              <h1 className="text-2xl font-bold tracking-tight text-theme-primary">
+                Place<span className="text-brand-accent">Mate</span>
               </h1>
             </div>
 
             <div>
               <button
                 onClick={onGoLogin}
-                className="mb-4 flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-slate-700"
+                className="mb-4 flex items-center gap-1 text-sm font-medium text-theme-muted hover:text-theme-secondary"
               >
                 <ArrowLeft className="h-4 w-4" />
                 Back to login
               </button>
-              <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+              <h2 className="text-3xl font-bold tracking-tight text-theme-primary">
                 Forgot Password
               </h2>
-              <p className="mt-2 text-slate-600">
+              <p className="mt-2 text-theme-secondary">
                 {step === 'email' && 'Enter your email to receive a verification code'}
                 {step === 'otp' && 'Enter the 6-digit OTP sent to your email'}
                 {step === 'reset' && 'Create a new password for your account'}
@@ -247,12 +247,12 @@ export function ForgotPasswordPage({ onGoLogin }: ForgotPasswordPageProps) {
 
             <div className="space-y-4">
               {errorMessage && (
-                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <div className="rounded-lg border border-rose/30 bg-rose-light px-4 py-3 text-sm text-rose-light">
                   {errorMessage}
                 </div>
               )}
               {successMessage && (
-                <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                <div className="rounded-lg border border-emerald/30 bg-emerald-light px-4 py-3 text-sm text-emerald-light">
                   {successMessage}
                 </div>
               )}
@@ -292,10 +292,10 @@ export function ForgotPasswordPage({ onGoLogin }: ForgotPasswordPageProps) {
                   maxLength={6}
                   required
                 />
-                <p className="text-xs text-slate-500">
-                  OTP sent to <span className="font-medium text-slate-700">{email}</span>. Check the server console.
+                <p className="text-xs text-theme-muted">
+                  OTP sent to <span className="font-medium text-theme-primary">{email}</span>. Check the server console.
                 </p>
-                <Button type="submit" className="w-full" size="lg" isLoading={isLoading}>
+                <Button type="submit" className="w-full bg-gradient-brand" size="lg" isLoading={isLoading}>
                   Verify OTP
                 </Button>
                 <div className="text-center">
@@ -303,7 +303,7 @@ export function ForgotPasswordPage({ onGoLogin }: ForgotPasswordPageProps) {
                     type="button"
                     onClick={handleResendOtp}
                     disabled={isLoading}
-                    className="text-sm font-medium text-teal-600 hover:text-teal-500 disabled:opacity-50"
+                    className="text-sm font-medium text-brand-primary hover:text-brand-accent-hover disabled:opacity-50"
                   >
                     Didn't receive OTP? Resend
                   </button>
