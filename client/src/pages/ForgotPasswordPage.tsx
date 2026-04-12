@@ -6,7 +6,6 @@ import {
   Lock,
   KeyRound,
   ArrowLeft,
-  CheckCircle2,
 } from 'lucide-react';
 import {
   forgotPasswordSendOtp,
@@ -43,16 +42,14 @@ export function ForgotPasswordPage({ onGoLogin }: ForgotPasswordPageProps) {
     e.preventDefault();
     setErrorMessage('');
     setSuccessMessage('');
-
     if (!email.trim()) {
       setErrorMessage('Please enter your email address');
       return;
     }
-
     setIsLoading(true);
     try {
       await forgotPasswordSendOtp(email.trim().toLowerCase());
-      setSuccessMessage('OTP has been sent to the server console. Please check and enter it below.');
+      setSuccessMessage('OTP sent to server console');
       setStep('otp');
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Failed to send OTP');
@@ -64,17 +61,13 @@ export function ForgotPasswordPage({ onGoLogin }: ForgotPasswordPageProps) {
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
-    setSuccessMessage('');
-
     if (!otp.trim() || otp.trim().length !== 6) {
       setErrorMessage('Please enter the 6-digit OTP');
       return;
     }
-
     setIsLoading(true);
     try {
       await forgotPasswordVerifyOtp(email.trim().toLowerCase(), otp.trim());
-      setSuccessMessage('OTP verified! You can now set your new password.');
       setStep('reset');
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'OTP verification failed');
@@ -86,26 +79,20 @@ export function ForgotPasswordPage({ onGoLogin }: ForgotPasswordPageProps) {
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
-    setSuccessMessage('');
-
     const passwordError = validatePassword(password);
     if (passwordError) {
       setErrorMessage(passwordError);
       return;
     }
-
     if (password !== confirmPassword) {
       setErrorMessage('Passwords do not match');
       return;
     }
-
     setIsLoading(true);
     try {
       await forgotPasswordReset(email.trim().toLowerCase(), otp.trim(), password, confirmPassword);
-      setSuccessMessage('Password reset successful! Redirecting to login...');
-      setTimeout(() => {
-        onGoLogin();
-      }, 2000);
+      setSuccessMessage('Password reset successful!');
+      setTimeout(() => onGoLogin(), 2000);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Password reset failed');
     } finally {
@@ -119,8 +106,7 @@ export function ForgotPasswordPage({ onGoLogin }: ForgotPasswordPageProps) {
     setIsLoading(true);
     try {
       await forgotPasswordSendOtp(email.trim().toLowerCase());
-      setSuccessMessage('A new OTP has been sent to the server console.');
-      setOtp('');
+      setSuccessMessage('OTP sent to server console');
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Failed to resend OTP');
     } finally {
@@ -128,216 +114,150 @@ export function ForgotPasswordPage({ onGoLogin }: ForgotPasswordPageProps) {
     }
   };
 
-  const stepIndicator = (
-    <div className="flex items-center justify-center gap-2">
-      {(['email', 'otp', 'reset'] as Step[]).map((s, i) => (
-        <React.Fragment key={s}>
-          <div
-            className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-colors ${
-              step === s
-                ? 'bg-gradient-brand text-white'
-                : (['email', 'otp', 'reset'] as Step[]).indexOf(step) > i
-                ? 'bg-brand-elevated text-brand-accent'
-                : 'bg-theme-surface text-theme-muted'
-            }`}
-          >
-            {(['email', 'otp', 'reset'] as Step[]).indexOf(step) > i ? (
-              <CheckCircle2 className="h-4 w-4" />
-            ) : (
-              i + 1
-            )}
-          </div>
-          {i < 2 && (
-            <div
-              className={`h-0.5 w-8 ${
-                (['email', 'otp', 'reset'] as Step[]).indexOf(step) > i
-                  ? 'bg-brand-accent'
-                  : 'bg-theme-surface'
-              }`}
-            />
-          )}
-        </React.Fragment>
-      ))}
-    </div>
-  );
+  const getStepTitle = () => {
+    if (step === 'email') return 'Forgot Password';
+    if (step === 'otp') return 'Verify OTP';
+    return 'Reset Password';
+  };
 
-  const stepLabels = (
-    <div className="flex items-center justify-center gap-6 text-xs text-theme-muted">
-      <span className={step === 'email' ? 'font-semibold text-brand-primary' : ''}>Email</span>
-      <span className={step === 'otp' ? 'font-semibold text-brand-primary' : ''}>Verify OTP</span>
-      <span className={step === 'reset' ? 'font-semibold text-brand-primary' : ''}>New Password</span>
-    </div>
-  );
+  const getStepDesc = () => {
+    if (step === 'email') return 'Enter your email to receive OTP';
+    if (step === 'otp') return 'Enter the OTP sent to your email';
+    return 'Create a new password';
+  };
 
   return (
-    <div className="flex min-h-screen w-full">
-      {/* Left Side - Branding (Fixed) */}
-      <div className="fixed left-0 top-0 hidden h-screen w-1/2 flex-col justify-center bg-theme-base p-16 text-white lg:p-24 md:flex">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1521737604893-d14cc237f11d?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center opacity-10"></div>
-        <div className="absolute inset-0 bg-gradient-to-br from-theme-base via-theme-surface to-theme-elevated"></div>
-
-        <div className="relative z-10">
-          <div className="mb-8 flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-brand text-2xl font-bold text-white shadow-brand-icon">
-              P
-            </div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              Place<span className="text-brand-accent">Mate</span>
+    <div className="auth-page-container">
+      <div className="auth-visual-side">
+        <div className="auth-visual-content">
+          <div className="auth-brand-badge">
+            <span className="auth-brand-icon">P</span>
+            <span className="auth-brand-name">PlaceMate</span>
+          </div>
+          
+          <div className="auth-hero-section">
+            <h1 className="auth-hero-title">
+              Recover Your <br />
+              <span className="auth-hero-highlight">Account</span>
             </h1>
+            <p className="auth-hero-text">
+              No worries! Follow the simple steps to reset your password and get back to your dashboard.
+            </p>
           </div>
 
-          <h2 className="mb-6 text-4xl font-extrabold leading-tight tracking-tight md:text-5xl">
-            Reset your <br />
-            <span className="text-brand-accent">password.</span>
-          </h2>
+          <div className="auth-stats-row">
+            <div className="auth-stat-item">
+              <span className="auth-stat-number">10K+</span>
+              <span className="auth-stat-text">Students</span>
+            </div>
+            <div className="auth-stat-divider"></div>
+            <div className="auth-stat-item">
+              <span className="auth-stat-number">500+</span>
+              <span className="auth-stat-text">Companies</span>
+            </div>
+            <div className="auth-stat-divider"></div>
+            <div className="auth-stat-item">
+              <span className="auth-stat-number">2K+</span>
+              <span className="auth-stat-text">Placements</span>
+            </div>
+          </div>
 
-          <p className="mb-10 text-lg text-theme-secondary md:text-xl">
-            Follow the steps to securely reset your account password.
-          </p>
-
-          <div className="space-y-4">
-            {[
-              'Enter your registered email',
-              'Verify the 6-digit OTP',
-              'Set your new password',
-            ].map((feature, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <CheckCircle2 className="h-6 w-6 text-brand-accent" />
-                <span className="text-theme-light">{feature}</span>
-              </div>
-            ))}
+          <div className="auth-visual-decoration">
+            <div className="auth-circle auth-circle-1"></div>
+            <div className="auth-circle auth-circle-2"></div>
+            <div className="auth-circle auth-circle-3"></div>
           </div>
         </div>
       </div>
 
-      {/* Right Side - Form (Scrollable) */}
-      <div className="ml-0 w-full overflow-y-auto bg-theme-base md:ml-[50%] md:w-1/2">
-        <div className="flex min-h-screen items-center justify-center p-8 md:p-16">
-          <div className="w-full max-w-md space-y-6">
-            {/* Mobile-only logo */}
-            <div className="flex items-center gap-3 md:hidden">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-brand text-xl font-bold text-white shadow-brand-icon">
-                P
-              </div>
-              <h1 className="text-2xl font-bold tracking-tight text-theme-primary">
-                Place<span className="text-brand-accent">Mate</span>
-              </h1>
-            </div>
+      <div className="auth-form-side">
+        <div className="auth-form-container">
+          <button onClick={onGoLogin} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'none', border: 'none', color: '#6b7280', fontSize: '0.875rem', cursor: 'pointer', marginBottom: '1.5rem' }}>
+            <ArrowLeft size={16} />
+            <span>Back to login</span>
+          </button>
 
-            <div>
-              <button
-                onClick={onGoLogin}
-                className="mb-4 flex items-center gap-1 text-sm font-medium text-theme-muted hover:text-theme-secondary"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back to login
-              </button>
-              <h2 className="text-3xl font-bold tracking-tight text-theme-primary">
-                Forgot Password
-              </h2>
-              <p className="mt-2 text-theme-secondary">
-                {step === 'email' && 'Enter your email to receive a verification code'}
-                {step === 'otp' && 'Enter the 6-digit OTP sent to your email'}
-                {step === 'reset' && 'Create a new password for your account'}
-              </p>
-            </div>
+          <div className="auth-form-header-section">
+            <span className="auth-greeting">Account Recovery</span>
+            <h2 className="auth-form-heading">{getStepTitle()}</h2>
+            <p className="auth-form-desc" style={{ marginTop: '0.25rem' }}>{getStepDesc()}</p>
+          </div>
 
-            {stepIndicator}
-            {stepLabels}
+          {errorMessage && <div className="auth-error-box">{errorMessage}</div>}
+          {successMessage && <div style={{ padding: '0.75rem', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', color: '#16a34a', fontSize: '0.875rem', marginBottom: '1rem' }}>{successMessage}</div>}
 
-            <div className="space-y-4">
-              {errorMessage && (
-                <div className="rounded-lg border border-rose/30 bg-rose-light px-4 py-3 text-sm text-rose-light">
-                  {errorMessage}
-                </div>
-              )}
-              {successMessage && (
-                <div className="rounded-lg border border-emerald/30 bg-emerald-light px-4 py-3 text-sm text-emerald-light">
-                  {successMessage}
-                </div>
-              )}
-            </div>
-
-            {/* Step 1: Enter Email */}
-            {step === 'email' && (
-              <form onSubmit={handleSendOtp} className="space-y-6">
+          {step === 'email' && (
+            <form onSubmit={handleSendOtp} className="auth-form-fields">
+              <div className="auth-field-group">
                 <Input
-                  label="Email Address"
+                  label="Email address"
                   type="email"
                   icon={<Mail className="h-4 w-4" />}
-                  placeholder="e.g. john@university.edu"
+                  placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                 />
-                <Button type="submit" className="w-full" size="lg" isLoading={isLoading}>
-                  Send OTP
-                </Button>
-              </form>
-            )}
+              </div>
+              <Button type="submit" className="auth-submit-button" size="lg" isLoading={isLoading}>
+                Send OTP
+              </Button>
+            </form>
+          )}
 
-            {/* Step 2: Enter OTP */}
-            {step === 'otp' && (
-              <form onSubmit={handleVerifyOtp} className="space-y-6">
+          {step === 'otp' && (
+            <form onSubmit={handleVerifyOtp} className="auth-form-fields">
+              <div className="auth-field-group">
                 <Input
-                  label="6-Digit OTP"
+                  label="OTP (6-digit)"
                   type="text"
                   icon={<KeyRound className="h-4 w-4" />}
-                  placeholder="e.g. 123456"
+                  placeholder="Enter OTP"
                   value={otp}
-                  onChange={(e) => {
-                    const val = e.target.value.replace(/\D/g, '').slice(0, 6);
-                    setOtp(val);
-                  }}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   maxLength={6}
                   required
                 />
-                <p className="text-xs text-theme-muted">
-                  OTP sent to <span className="font-medium text-theme-primary">{email}</span>. Check the server console.
-                </p>
-                <Button type="submit" className="w-full bg-gradient-brand" size="lg" isLoading={isLoading}>
-                  Verify OTP
-                </Button>
-                <div className="text-center">
-                  <button
-                    type="button"
-                    onClick={handleResendOtp}
-                    disabled={isLoading}
-                    className="text-sm font-medium text-brand-primary hover:text-brand-accent-hover disabled:opacity-50"
-                  >
-                    Didn't receive OTP? Resend
-                  </button>
-                </div>
-              </form>
-            )}
+              </div>
+              <p style={{ fontSize: '0.8rem', color: '#6b7280', marginBottom: '1rem' }}>OTP sent to {email}. Check server console.</p>
+              <Button type="submit" className="auth-submit-button" size="lg" isLoading={isLoading}>
+                Verify OTP
+              </Button>
+              <button type="button" onClick={handleResendOtp} disabled={isLoading} style={{ background: 'none', border: 'none', color: '#667eea', fontSize: '0.875rem', cursor: 'pointer', marginTop: '0.75rem', width: '100%' }}>
+                Resend OTP
+              </button>
+            </form>
+          )}
 
-            {/* Step 3: Reset Password */}
-            {step === 'reset' && (
-              <form onSubmit={handleResetPassword} className="space-y-6">
+          {step === 'reset' && (
+            <form onSubmit={handleResetPassword} className="auth-form-fields">
+              <div className="auth-field-group">
                 <Input
                   label="New Password"
                   type="password"
                   icon={<Lock className="h-4 w-4" />}
-                  placeholder="Min 8 chars, A-Z, a-z, 0-9, @$!%*#"
+                  placeholder="New password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
+              </div>
+              <div className="auth-field-group">
                 <Input
-                  label="Confirm New Password"
+                  label="Confirm Password"
                   type="password"
                   icon={<Lock className="h-4 w-4" />}
-                  placeholder="Re-enter your new password"
+                  placeholder="Confirm password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                 />
-                <Button type="submit" className="w-full" size="lg" isLoading={isLoading}>
-                  Reset Password
-                </Button>
-              </form>
-            )}
-          </div>
+              </div>
+              <Button type="submit" className="auth-submit-button" size="lg" isLoading={isLoading}>
+                Reset Password
+              </Button>
+            </form>
+          )}
         </div>
       </div>
     </div>

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  Bell,
   MessageSquare,
   Paperclip,
   Send
@@ -70,12 +69,16 @@ export function ChatPage({
   const isAdminOnlyView = userRole === "admin";
 
   useEffect(() => {
-    if (isAdminOnlyView) {
-      return;
-    }
-
     const loadInitialData = async (): Promise<void> => {
       try {
+        if (isAdminOnlyView) {
+          const conversationData = await getConversations("all");
+          setConversations(conversationData);
+          setContacts([]);
+          setSelectedConversationId("");
+          return;
+        }
+
         const [conversationData, contactData] = await Promise.all([
           getConversations("self"),
           getChatContacts()
@@ -98,7 +101,7 @@ export function ChatPage({
   }, [initialConversationId, isAdminOnlyView]);
 
   useEffect(() => {
-    if (!token || isAdminOnlyView) return;
+    if (!token) return;
 
     const socket = getChatSocket(token);
     socketRef.current = socket;
@@ -180,14 +183,9 @@ export function ChatPage({
       socket.off("messageRead", handleMessageRead);
       socket.off("notificationCreated");
     };
-  }, [isAdminOnlyView, selectedConversationId, token, user?.id, userRole]);
+  }, [selectedConversationId, token, user?.id, userRole]);
 
   useEffect(() => {
-    if (isAdminOnlyView) {
-      setMessages([]);
-      return;
-    }
-
     if (!selectedConversationId) {
       setMessages([]);
       return;
@@ -362,10 +360,84 @@ export function ChatPage({
           : [])
       ];
 
+  // Admin only sees Quick Announcement — no thread panel, no Messages heading
+  if (isAdminOnlyView) {
+    return (
+      <DashboardLayout
+        userRole={userRole}
+        currentPath="chat"
+        onNavigate={onNavigate}
+        onLogout={onLogout}
+        user={{ name: user?.name || "User", email: user?.email || "" }}
+        breadcrumbs={[{ label: "Quick Announcement" }]}
+      >
+        <div className="chat-admin-announcement-page">
+          <div className="chat-admin-announcement-page__header">
+            <h1 className="chat-admin-announcement-page__title">Quick Announcement</h1>
+            <p className="chat-admin-announcement-page__subtitle">
+              Broadcast a notification message to students, companies, or all platform users instantly.
+            </p>
+          </div>
+
+          {errorMessage && (
+            <div className="chat-admin-announcement-page__error">{errorMessage}</div>
+          )}
+
+          <div className="chat-admin-announcement-page__card">
+            <div className="chat-admin-announcement-page__field">
+              <label className="chat-admin-announcement-page__label">Announcement Title</label>
+              <Input
+                value={announcementTitle}
+                onChange={(event) => setAnnouncementTitle(event.target.value)}
+                placeholder="e.g. Campus Drive Update"
+              />
+            </div>
+
+            <div className="chat-admin-announcement-page__field">
+              <label className="chat-admin-announcement-page__label">Target Audience</label>
+              <select
+                value={announcementTarget}
+                onChange={(event) =>
+                  setAnnouncementTarget(event.target.value as "student" | "company" | "all")
+                }
+                className="chat-admin-announcement-page__select"
+              >
+                <option value="all">All Users</option>
+                <option value="student">Students Only</option>
+                <option value="company">Companies Only</option>
+              </select>
+            </div>
+
+            <div className="chat-admin-announcement-page__field">
+              <label className="chat-admin-announcement-page__label">Message</label>
+              <textarea
+                value={announcementMessage}
+                onChange={(event) => setAnnouncementMessage(event.target.value)}
+                rows={5}
+                placeholder="Write the announcement message here..."
+                className="chat-admin-announcement-page__textarea"
+              />
+            </div>
+
+            <div className="chat-admin-announcement-page__actions">
+              <Button onClick={() => void handleAnnouncement()}>
+                Send Announcement
+              </Button>
+            </div>
+
+            {announcementStatus && (
+              <p className="chat-admin-announcement-page__status">{announcementStatus}</p>
+            )}
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout
       userRole={userRole}
-      currentPath={isAdminOnlyView ? "chat" : selectedConversationId ? `chat/${selectedConversationId}` : "chat"}
+      currentPath={selectedConversationId ? `chat/${selectedConversationId}` : "chat"}
       onNavigate={onNavigate}
       onLogout={onLogout}
       user={{
@@ -375,211 +447,94 @@ export function ChatPage({
       breadcrumbs={chatBreadcrumbs}
     >
       <div className="chat-page">
-        {!isAdminOnlyView && (
-          <div className="chat-workspace">
-            <section className="chat-panel chat-panel--conversation">
-              <div className="chat-panel__header">
-                <div className="chat-panel__title-row">
-                  <MessageSquare className="chat-icon" />
-                  <h1 className="chat-panel__title">Conversations</h1>
-                </div>
-                <p className="chat-panel__subtitle">
-                  Continue existing chats or start a new conversation.
-                </p>
+        <div className="chat-workspace">
+          <section className="chat-panel chat-panel--conversation">
+            <div className="chat-panel__header">
+              <div className="chat-panel__title-row">
+                <MessageSquare className="chat-icon" />
+                <h1 className="chat-panel__title">
+                  Messages
+                </h1>
               </div>
-
-              <div className="chat-panel__body chat-panel__body--conversation">
-                <div className="chat-start-row">
-                  <select
-                    value={selectedContactId}
-                    onChange={(event) => setSelectedContactId(event.target.value)}
-                    className="chat-start-row__select h-10 rounded-lg border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.05)] px-3 text-sm text-[#f1f5f9] focus:border-[#6366f1] focus:outline-none focus:ring-2 focus:ring-[rgba(99,102,241,0.2)]"
-                  >
-                    <option value="">Select a contact</option>
-                    {contacts.map((contact) => (
-                      <option key={contact.userId} value={contact.userId}>
-                        {contact.name} ({contact.role})
-                      </option>
-                    ))}
-                  </select>
-                  <Button onClick={() => void handleStartConversation()} size="sm" className="!h-10">
-                    Open
-                  </Button>
-                </div>
-
-                <div className="chat-conversation-list">
-                  {conversations.length === 0 && (
-                    <div className="chat-empty">
-                      No conversations yet.
-                    </div>
-                  )}
-
-                  {conversations.map((conversation) => (
-                    <button
-                      key={conversation._id}
-                      onClick={() => handlePickConversation(conversation._id)}
-                      className={`chat-conversation-card ${
-                        selectedConversationId === conversation._id
-                          ? "chat-conversation-card--active"
-                          : ""
-                      }`}
-                    >
-                      <div className="chat-conversation-card__top">
-                        <div className="min-w-0">
-                          <p className="chat-conversation-card__title">
-                            {conversation.counterpart?.name || "Admin View"}
-                          </p>
-                          <p className="chat-conversation-card__meta">
-                            {conversation.counterpart?.role || "conversation"}
-                          </p>
-                        </div>
-                        {conversation.unreadCount > 0 && (
-                          <span className="chat-unread-badge">
-                            {conversation.unreadCount}
-                          </span>
-                        )}
-                      </div>
-                      <p className="chat-conversation-card__preview">
-                        {conversation.lastMessage.content || "No messages yet"}
-                      </p>
-                      <p className="chat-conversation-card__time">
-                        {dateLabel(conversation.lastMessage.timestamp)}
-                      </p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </section>
-
-            <section className="chat-panel chat-panel--thread">
-              <div className="chat-panel__header">
-                <div className="chat-panel__title-row">
-                  <h2 className="chat-panel__title">
-                    {selectedConversation?.counterpart?.name || "Select a conversation"}
-                  </h2>
-                </div>
-                <p className="chat-panel__subtitle">
-                  {selectedConversation?.counterpart?.email || "Real-time Socket.IO chat"}
-                </p>
-              </div>
-
-              {errorMessage && (
-                <div className="chat-panel__error">
-                  {errorMessage}
-                </div>
-              )}
-
-              <div className="chat-panel__body chat-panel__body--thread">
-                <div className="chat-thread">
-                  <div className="chat-thread__messages">
-                    {loadingMessages && (
-                      <div className="chat-panel__subtitle">Loading conversation...</div>
-                    )}
-
-                    {!loadingMessages && selectedConversationId === "" && (
-                      <div className="chat-empty chat-empty--center">
-                        Choose a conversation to start chatting.
-                      </div>
-                    )}
-
-                    {messages.map((message) => {
-                      const isOwnMessage = message.sender._id === user?.id;
-                      const isReadByOther = message.readBy.some((readerId) => readerId !== user?.id);
-
-                      return (
-                        <div
-                          key={message._id}
-                          className={`chat-message-row ${
-                            isOwnMessage ? "chat-message-row--own" : "chat-message-row--other"
-                          }`}
-                        >
-                          <div
-                            className={`chat-message-bubble ${
-                              isOwnMessage
-                                ? "chat-message-bubble--own"
-                                : "chat-message-bubble--other"
-                            }`}
-                          >
-                            {!isOwnMessage && (
-                              <p className="chat-message-bubble__sender">
-                                {message.sender.name}
-                              </p>
-                            )}
-                            {message.content && (
-                              <p className="chat-message-bubble__content">{message.content}</p>
-                            )}
-                            {message.attachments.length > 0 && (
-                              <div className="chat-message-bubble__attachments">
-                                {message.attachments.map((attachment) => (
-                                  <a
-                                    key={`${message._id}-${attachment.url}`}
-                                    href={attachment.url}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="chat-message-bubble__attachment"
-                                  >
-                                    <Paperclip className="h-3 w-3" />
-                                    <span>{attachment.name || attachment.url}</span>
-                                  </a>
-                                ))}
-                              </div>
-                            )}
-                            <div className="chat-message-bubble__meta">
-                              <span>{timeLabel(message.createdAt)}</span>
-                              {isOwnMessage && <span>{isReadByOther ? "Seen" : "Sent"}</span>}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                    {typingUsers.length > 0 && (
-                      <div className="chat-typing">
-                        {typingUsers.join(", ")} typing...
-                      </div>
-                    )}
-                    <div ref={messagesEndRef} />
-                  </div>
-
-                  <div className="chat-composer">
-                    <div className="chat-composer__row">
-                      <div className="chat-composer__input-container">
-                        <textarea
-                          value={draft}
-                          onChange={(event) => handleDraftChange(event.target.value)}
-                          rows={2}
-                          maxLength={2000}
-                          placeholder="Type your message..."
-                          className="chat-composer__input rounded-xl border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.05)] text-sm text-[#f1f5f9] placeholder:text-[#64748b] focus:border-[#6366f1] focus:outline-none focus:ring-2 focus:ring-[rgba(99,102,241,0.2)]"
-                        />
-                      </div>
-                      <div className="chat-composer__button">
-                        <Button
-                          onClick={() => void handleSendMessage()}
-                          isLoading={sendingMessage}
-                          disabled={!selectedConversationId}
-                          icon={<Send className="h-4 w-4" />}
-                        >
-                          Send
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-          </div>
-        )}
-
-        {isAdminOnlyView && (
-          <section className="chat-admin">
-            <div className="chat-admin__header">
-              <Bell className="chat-admin__header-icon h-5 w-5" />
-              <h3 className="chat-admin__title">Announcement Center</h3>
+              <p className="chat-panel__subtitle">
+                Continue existing chats or start a new conversation.
+              </p>
             </div>
-            <p className="chat-admin__subtitle">
-              Send a system notification to students, companies, or everyone.
-            </p>
+
+            <div className="chat-panel__body chat-panel__body--conversation">
+              <div className="chat-start-row">
+                <select
+                  value={selectedContactId}
+                  onChange={(event) => setSelectedContactId(event.target.value)}
+                  className="chat-start-row__select chat-start-row__select--light"
+                >
+                  <option value="">Select a contact</option>
+                  {contacts.map((contact) => (
+                    <option key={contact.userId} value={contact.userId}>
+                      {contact.name} ({contact.role})
+                    </option>
+                  ))}
+                </select>
+                <Button onClick={() => void handleStartConversation()} size="sm" className="!h-10">
+                  Open
+                </Button>
+              </div>
+
+              <div className="chat-conversation-list">
+                {conversations.length === 0 && (
+                  <div className="chat-empty">
+                    No conversations yet.
+                  </div>
+                )}
+
+                {conversations.map((conversation) => (
+                  <button
+                    key={conversation._id}
+                    onClick={() => handlePickConversation(conversation._id)}
+                    className={`chat-conversation-card ${
+                      selectedConversationId === conversation._id
+                        ? "chat-conversation-card--active"
+                        : ""
+                    }`}
+                  >
+                    <div className="chat-conversation-card__top">
+                      <div className="min-w-0">
+                        <p className="chat-conversation-card__title">
+                          {conversation.counterpart?.name || "Conversation"}
+                        </p>
+                        <p className="chat-conversation-card__meta">
+                          {conversation.counterpart?.role || "conversation"}
+                        </p>
+                      </div>
+                      {conversation.unreadCount > 0 && (
+                        <span className="chat-unread-badge">
+                          {conversation.unreadCount}
+                        </span>
+                      )}
+                    </div>
+                    <p className="chat-conversation-card__preview">
+                      {conversation.lastMessage.content || "No messages yet"}
+                    </p>
+                    <p className="chat-conversation-card__time">
+                      {dateLabel(conversation.lastMessage.timestamp)}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section className="chat-panel chat-panel--thread">
+            <div className="chat-panel__header">
+              <div className="chat-panel__title-row">
+                <h2 className="chat-panel__title">
+                  {selectedConversation?.counterpart?.name || "Select a thread"}
+                </h2>
+              </div>
+              <p className="chat-panel__subtitle">
+                {selectedConversation?.counterpart?.email || "Real-time Socket.IO chat"}
+              </p>
+            </div>
 
             {errorMessage && (
               <div className="chat-panel__error">
@@ -587,46 +542,106 @@ export function ChatPage({
               </div>
             )}
 
-            <div className="chat-admin__form">
-              <div className="chat-admin__grid">
-                <div className="chat-admin__field">
-                  <Input
-                    label="Title"
-                    value={announcementTitle}
-                    onChange={(event) => setAnnouncementTitle(event.target.value)}
-                  />
-                </div>
-                <div className="chat-admin__field">
-                  <label className="chat-admin__label">Audience</label>
-                  <select
-                    value={announcementTarget}
-                    onChange={(event) =>
-                      setAnnouncementTarget(event.target.value as "student" | "company" | "all")
-                    }
-                    className="h-11 rounded-lg border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.05)] px-3 text-sm text-[#f1f5f9] focus:border-[#6366f1] focus:outline-none focus:ring-2 focus:ring-[rgba(99,102,241,0.2)]"
-                  >
-                    <option value="all">All users</option>
-                    <option value="student">Students</option>
-                    <option value="company">Companies</option>
-                  </select>
-                </div>
-              </div>
+            <div className="chat-panel__body chat-panel__body--thread">
+              <div className="chat-thread">
+                <div className="chat-thread__messages">
+                  {loadingMessages && (
+                    <div className="chat-panel__subtitle">Loading conversation...</div>
+                  )}
 
-              <textarea
-                value={announcementMessage}
-                onChange={(event) => setAnnouncementMessage(event.target.value)}
-                rows={4}
-                placeholder="Write the announcement message..."
-                className="chat-admin__textarea rounded-xl border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.05)] px-4 py-3 text-sm text-[#f1f5f9] placeholder:text-[#64748b] focus:border-[#6366f1] focus:outline-none focus:ring-2 focus:ring-[rgba(99,102,241,0.2)]"
-              />
+                  {!loadingMessages && selectedConversationId === "" && (
+                    <div className="chat-empty chat-empty--center">
+                      Choose a conversation to start chatting.
+                    </div>
+                  )}
 
-              <div className="chat-admin__actions">
-                <p className="chat-admin__status">{announcementStatus}</p>
-                <Button onClick={() => void handleAnnouncement()}>Send Announcement</Button>
+                  {messages.map((message) => {
+                    const isOwnMessage = message.sender._id === user?.id;
+                    const isReadByOther = message.readBy.some((readerId) => readerId !== user?.id);
+
+                    return (
+                      <div
+                        key={message._id}
+                        className={`chat-message-row ${
+                          isOwnMessage ? "chat-message-row--own" : "chat-message-row--other"
+                        }`}
+                      >
+                        <div
+                          className={`chat-message-bubble ${
+                            isOwnMessage
+                              ? "chat-message-bubble--own"
+                              : "chat-message-bubble--other"
+                          }`}
+                        >
+                          {!isOwnMessage && (
+                            <p className="chat-message-bubble__sender">
+                              {message.sender.name}
+                            </p>
+                          )}
+                          {message.content && (
+                            <p className="chat-message-bubble__content">{message.content}</p>
+                          )}
+                          {message.attachments.length > 0 && (
+                            <div className="chat-message-bubble__attachments">
+                              {message.attachments.map((attachment) => (
+                                <a
+                                  key={`${message._id}-${attachment.url}`}
+                                  href={attachment.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="chat-message-bubble__attachment"
+                                >
+                                  <Paperclip className="h-3 w-3" />
+                                  <span>{attachment.name || attachment.url}</span>
+                                </a>
+                              ))}
+                            </div>
+                          )}
+                          <div className="chat-message-bubble__meta">
+                            <span>{timeLabel(message.createdAt)}</span>
+                            {isOwnMessage && <span>{isReadByOther ? "Seen" : "Sent"}</span>}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {typingUsers.length > 0 && (
+                    <div className="chat-typing">
+                      {typingUsers.join(", ")} typing...
+                    </div>
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+
+                <div className="chat-composer">
+                  <div className="chat-composer__row">
+                    <div className="chat-composer__input-container">
+                      <textarea
+                        value={draft}
+                        onChange={(event) => handleDraftChange(event.target.value)}
+                        rows={2}
+                        maxLength={2000}
+                        placeholder="Type your message..."
+                        className="chat-composer__input chat-composer__input--light"
+                      />
+                    </div>
+                    <div className="chat-composer__button">
+                      <Button
+                        onClick={() => void handleSendMessage()}
+                        isLoading={sendingMessage}
+                        disabled={!selectedConversationId}
+                        icon={<Send className="h-4 w-4" />}
+                      >
+                        Send
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
-        )}
+        </div>
       </div>
     </DashboardLayout>
   );

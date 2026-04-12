@@ -52,6 +52,17 @@ export function DashboardLayout({
   breadcrumbs = []
 }: DashboardLayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const shellClassName =
+    userRole === 'admin'
+      ? 'dashboard-layout dashboard-layout--admin flex h-screen w-full overflow-hidden'
+      : 'dashboard-layout flex h-screen w-full overflow-hidden';
+  const mobilePanelClassName =
+    userRole === 'admin'
+      ? 'relative flex w-full max-w-xs flex-1 flex-col dashboard-layout__mobile-panel'
+      : 'relative flex w-full max-w-xs flex-1 flex-col dashboard-layout__mobile-panel';
+  const mobileHeaderClassName = 'dashboard-layout__mobile-header md:hidden';
+  const desktopHeaderClassName = 'dashboard-layout__header hidden md:flex';
+  const mainClassName = 'dashboard-layout__main';
 
   const computedBreadcrumbs =
     breadcrumbs.length > 0
@@ -73,9 +84,11 @@ export function DashboardLayout({
   const notifFetchFn = getNotifFetch(userRole);
   const notifMarkReadFn = getNotifMarkRead(userRole);
   const notifMarkAllReadFn = getNotifMarkAllRead(userRole);
+  const currentSectionLabel =
+    computedBreadcrumbs[computedBreadcrumbs.length - 1]?.label || 'Dashboard';
 
   return (
-    <div className="flex h-screen w-full bg-[#0a0a0f] overflow-hidden">
+    <div className={shellClassName}>
       {/* Desktop Sidebar */}
       <div className="hidden md:block md:flex-shrink-0">
         <Sidebar
@@ -93,7 +106,7 @@ export function DashboardLayout({
           className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
           onClick={() => setIsMobileMenuOpen(false)} />
 
-          <div className="relative flex w-full max-w-xs flex-1 flex-col bg-[#0d0d14] pt-5 pb-4">
+          <div className={mobilePanelClassName}>
             <div className="absolute top-0 right-0 -mr-12 pt-2">
               <button
               className="ml-1 flex h-10 w-10 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
@@ -117,8 +130,10 @@ export function DashboardLayout({
       {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Mobile Header */}
-        <div className="flex h-16 items-center justify-between border-b border-[#6366f1]/10 bg-[#12121a] px-4 shadow-sm md:hidden">
-          <div className="font-display font-bold text-lg text-theme-primary">PlaceMate</div>
+        <div className={mobileHeaderClassName}>
+          <div className="font-display font-bold text-lg text-theme-primary">
+            {currentSectionLabel}
+          </div>
           <div className="flex items-center gap-2">
             <NotificationBell
               fetchNotifications={notifFetchFn}
@@ -128,14 +143,14 @@ export function DashboardLayout({
             />
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="-mr-2 inline-flex items-center justify-center rounded-md p-2 text-[#64748b] hover:bg-[#1a1a24] hover:text-[#f1f5f9] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#6366f1]">
+              className="dashboard-layout__menu-button">
               <Menu className="h-6 w-6" />
             </button>
           </div>
         </div>
 
         {/* Desktop Header / Breadcrumbs */}
-        <header className="hidden md:flex h-16 items-center justify-between border-b border-[#6366f1]/10 bg-[#12121a] px-8 shadow-sm">
+        <header className={desktopHeaderClassName}>
           <div className="flex items-center">
             <Breadcrumb items={computedBreadcrumbs} onNavigate={onNavigate} />
           </div>
@@ -150,8 +165,8 @@ export function DashboardLayout({
         </header>
 
         {/* Main Scrollable Area */}
-        <main className="flex-1 overflow-y-auto bg-[#0a0a0f] p-4 md:p-8">
-          <div className="mx-auto max-w-7xl">{children}</div>
+        <main className={mainClassName}>
+          <div style={{ width: '100%' }}>{children}</div>
         </main>
       </div>
     </div>

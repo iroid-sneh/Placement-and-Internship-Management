@@ -77,7 +77,7 @@
   background: var(--shared-card);
   border: 1px solid var(--shared-border);
   border-radius: 1rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--theme-shadow-md);
 }
 
 .company-card--padded {
@@ -157,6 +157,11 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+}
+
+.company-form-section {
+  border-top: 1px solid var(--shared-border);
+  padding-top: 1.5rem;
 }
 
 .company-field label,
@@ -300,7 +305,7 @@
   border: 1px solid var(--theme-error-light);
   border-radius: 1rem;
   padding: 1.5rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--theme-shadow-md);
 }
 
 .company-danger-row {
@@ -321,7 +326,7 @@
   border: 1px solid var(--shared-border);
   background: var(--shared-card);
   padding: 1.25rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--theme-shadow-md);
 }
 
 .company-interview-card__top {
@@ -378,7 +383,7 @@
 }
 
 .company-icon-button:hover {
-  background: var(--shared-card);
+  background: var(--theme-bg-surface);
   color: var(--theme-text-secondary);
 }
 
@@ -441,10 +446,10 @@
   overflow: hidden;
   border-radius: 1.75rem;
   border: 1px solid var(--shared-border-strong);
-  background: linear-gradient(135deg, var(--theme-bg-base) 0%, var(--theme-bg-surface) 55%, #164e63 100%);
-  color: #fff;
+  background: linear-gradient(135deg, #f8fbff 0%, #eef3fb 56%, #d6f3ef 100%);
+  color: var(--theme-text-primary);
   padding: 1.75rem;
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--theme-shadow-lg);
 }
 
 .company-hero__content {
@@ -461,14 +466,14 @@
   display: inline-flex;
   width: fit-content;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--theme-primary-border);
+  background: var(--theme-primary-light);
   padding: 0.35rem 0.85rem;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #67e8f9;
+  color: var(--theme-primary);
   margin-bottom: 0.5rem;
   align-items: center;
 }
@@ -489,15 +494,15 @@
 
 .company-button--hero {
   height: 3rem;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--theme-primary-border);
+  background: var(--theme-gradient-primary);
   color: #fff;
-  box-shadow: none;
+  box-shadow: var(--theme-shadow-sm);
   backdrop-filter: blur(10px);
 }
 
 .company-button--hero:hover {
-  background: rgba(255, 255, 255, 0.16);
+  background: linear-gradient(135deg, var(--theme-primary-hover) 0%, var(--theme-primary) 100%);
 }
 
 .company-table-avatar {
@@ -591,7 +596,7 @@
   background: var(--shared-card);
   border: 1px solid var(--shared-border);
   border-radius: 1rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--theme-shadow-md);
 }
 
 .company-kanban-column__header {
@@ -641,11 +646,12 @@
   border: 1px solid var(--shared-border);
   background: var(--shared-card);
   padding: 0.875rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--theme-shadow-sm);
 }
 
 .company-applicant-card:hover {
-  border-color: var(--theme-primary-light);
+  border-color: var(--theme-primary-border);
+  background: var(--theme-bg-surface);
 }
 
 .company-applicant-card__top {

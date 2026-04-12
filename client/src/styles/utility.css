@@ -727,31 +727,31 @@
 }
 
 .bg-white {
-  background: #12121a;
+  background: #ffffff;
 }
 
 .bg-slate-50 {
-  background: #12121a;
+  background: #f8fafc;
 }
 
 .bg-slate-50\/80 {
-  background: rgba(18, 18, 26, 0.8);
+  background: rgba(248, 250, 252, 0.8);
 }
 
 .bg-slate-100 {
-  background: #1a1a24;
+  background: #f1f5f9;
 }
 
 .bg-slate-200 {
-  background: #1e293b;
+  background: #e2e8f0;
 }
 
 .bg-slate-800 {
-  background: #0f172a;
+  background: #1e293b;
 }
 
 .bg-slate-900 {
-  background: #0a0a0f;
+  background: #0f172a;
 }
 
 .bg-slate-950 {
@@ -1023,19 +1023,19 @@
 }
 
 .shadow-sm {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
 }
 
 .shadow-xl {
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
 }
 
 .shadow-2xl {
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.14);
 }
 
 .shadow-lg {
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.1);
 }
 
 .shadow-teal-500\/30 {
@@ -1096,11 +1096,11 @@
 }
 
 .hover\:bg-slate-50:hover {
-  background: #1a1a24;
+  background: #f8fafc;
 }
 
 .hover\:bg-slate-100:hover {
-  background: #12121a;
+  background: #f1f5f9;
 }
 
 .hover\:bg-white\/15:hover {
@@ -1156,7 +1156,7 @@
 }
 
 .disabled\:bg-slate-50:disabled {
-  background: #1a1a24;
+  background: #f8fafc;
 }
 
 .disabled\:text-slate-500:disabled {
@@ -1217,31 +1217,31 @@
 
 /* Dark Theme Utility Classes */
 .bg-theme-base {
-  background: #0a0a0f;
+  background: var(--theme-bg-base);
 }
 
 .bg-theme-surface {
-  background: #12121a;
+  background: var(--theme-bg-surface);
 }
 
 .bg-theme-elevated {
-  background: #1a1a24;
+  background: var(--theme-bg-elevated);
 }
 
 .bg-theme-sidebar {
-  background: #0d0d14;
+  background: var(--theme-bg-sidebar);
 }
 
 .text-theme-primary {
-  color: #f1f5f9;
+  color: var(--theme-text-primary);
 }
 
 .text-theme-secondary {
-  color: #94a3b8;
+  color: var(--theme-text-secondary);
 }
 
 .text-theme-muted {
-  color: #64748b;
+  color: var(--theme-text-tertiary);
 }
 
 .text-theme-accent {
@@ -1265,11 +1265,11 @@
 }
 
 .border-theme {
-  border-color: rgba(255, 255, 255, 0.08);
+  border-color: var(--theme-border);
 }
 
 .border-theme-strong {
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: var(--theme-border-hover);
 }
 
 .shadow-theme {
@@ -1519,11 +1519,11 @@
 
 /* Hover states */
 .hover\:bg-theme-surface:hover {
-  background: #12121a;
+  background: var(--theme-bg-surface);
 }
 
 .hover\:bg-theme-elevated:hover {
-  background: #1a1a24;
+  background: var(--theme-bg-elevated);
 }
 
 .hover\:border-theme-strong:hover {
@@ -1560,43 +1560,43 @@
 
 /* Additional dark theme colors - using exact hex values from design */
 .bg-brand {
-  background: #0a0a0f;
+  background: var(--theme-bg-base);
 }
 
 .bg-brand-surface {
-  background: #12121a;
+  background: var(--theme-bg-surface);
 }
 
 .bg-brand-elevated {
-  background: #1a1a24;
+  background: var(--theme-bg-elevated);
 }
 
 .bg-brand-sidebar {
-  background: #0d0d14;
+  background: var(--theme-bg-sidebar);
 }
 
 .text-brand-primary {
-  color: #f1f5f9;
+  color: var(--theme-primary);
 }
 
 .text-brand-secondary {
-  color: #94a3b8;
+  color: var(--theme-text-secondary);
 }
 
 .text-brand-muted {
-  color: #64748b;
+  color: var(--theme-text-tertiary);
 }
 
 .text-brand-accent {
-  color: #a5b4fc;
+  color: var(--theme-primary);
 }
 
 .text-brand-accent-hover {
-  color: #818cf8;
+  color: var(--theme-primary-hover);
 }
 
 .text-brand-light {
-  color: #cbd5e1;
+  color: var(--theme-text-secondary);
 }
 
 .text-brand-white {
@@ -1605,15 +1605,15 @@
 
 /* Brand borders */
 .border-brand {
-  border-color: rgba(255, 255, 255, 0.08);
+  border-color: var(--theme-border);
 }
 
 .border-brand-light {
-  border-color: rgba(255, 255, 255, 0.06);
+  border-color: var(--theme-border-light);
 }
 
 .border-brand-accent {
-  border-color: rgba(99, 102, 241, 0.3);
+  border-color: var(--theme-primary-border);
 }
 
 /* Brand gradients */
@@ -1622,11 +1622,11 @@
 }
 
 .bg-gradient-brand-light {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%);
+  background: linear-gradient(135deg, var(--theme-primary-light) 0%, transparent 100%);
 }
 
 .bg-gradient-hero {
-  background: linear-gradient(180deg, #0d0d14 0%, #12121a 50%, #1a1a24 100%);
+  background: linear-gradient(180deg, #f8fbff 0%, #eef3fb 50%, #f6f8fc 100%);
 }
 
 /* Brand shadows */
@@ -1648,19 +1648,19 @@
 
 /* Hover states */
 .hover\:text-brand-accent:hover {
-  color: #a5b4fc;
+  color: var(--theme-primary);
 }
 
 .hover\:text-brand-accent-hover:hover {
-  color: #818cf8;
+  color: var(--theme-primary-hover);
 }
 
 .hover\:bg-brand-elevated:hover {
-  background: #1a1a24;
+  background: var(--theme-bg-elevated);
 }
 
 .hover\:bg-brand-surface:hover {
-  background: #12121a;
+  background: var(--theme-bg-surface);
 }
 
 .hover\:bg-gradient-brand-light:hover {

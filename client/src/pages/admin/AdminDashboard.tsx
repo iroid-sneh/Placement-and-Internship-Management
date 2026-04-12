@@ -301,14 +301,14 @@ export function AdminDashboard({ onNavigate, onLogout }: AdminDashboardProps) {
       breadcrumbs={[{ label: 'Dashboard' }]}
     >
       <div className="admin-page">
-        <div className="admin-hero admin-hero--teal">
+        <div className="admin-hero admin-hero--light">
           <div className="admin-hero__row">
             <div className="admin-hero__body">
               <span className="admin-hero__eyebrow">Admin Dashboard</span>
               <h1 className="admin-hero__title">Placement Overview</h1>
               <p className="admin-hero__subtitle">
-                Monitor applications, interviews, placements, and hiring momentum from one
-                well-structured workspace.
+                Monitor applications, shortlists, interviews, and placement outcomes from one
+                calm, high-clarity workspace built for fast admin review.
               </p>
             </div>
             <div className="admin-hero__stats admin-grid admin-grid--two">

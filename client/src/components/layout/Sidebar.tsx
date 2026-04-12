@@ -148,6 +148,7 @@ export function Sidebar({
     }
   };
   const navItems = getNavItems();
+  const isSettingsActive = currentPath === 'settings' || currentPath.startsWith('settings/');
   return (
     <div className="shared-sidebar">
       {/* Logo Area */}
@@ -213,7 +214,7 @@ export function Sidebar({
         <button
           type="button"
           onClick={() => onNavigate('settings')}
-          className="shared-sidebar__footer-button">
+          className={`shared-sidebar__footer-button ${isSettingsActive ? 'shared-sidebar__footer-button--active' : ''}`}>
 
           <Settings className="shared-sidebar__footer-icon h-5 w-5" />
           Settings

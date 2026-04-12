@@ -11,6 +11,9 @@ export function Input({
   className = '',
   ...props
 }: InputProps) {
+  const inferredPlaceholder =
+    props.placeholder ?? (label && !props.disabled ? `Enter ${label.toLowerCase()}` : undefined);
+
   return (
     <div className="student-input-group">
       {label &&
@@ -25,6 +28,7 @@ export function Input({
           </div>
         }
         <input
+          placeholder={inferredPlaceholder}
           className={`student-input ${icon ? 'student-input--with-icon' : ''} ${className}`}
           {...props} />
 

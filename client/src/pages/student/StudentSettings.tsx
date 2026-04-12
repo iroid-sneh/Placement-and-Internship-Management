@@ -159,9 +159,9 @@ export function StudentSettings({ onNavigate, onLogout }: StudentSettingsProps) 
   return (
     <DashboardLayout userRole="student" currentPath="settings" onNavigate={onNavigate} onLogout={onLogout} user={{ name: user?.name || 'Student', email: user?.email || '' }} breadcrumbs={[{ label: 'Settings' }]}>
       <div className="student-page student-page--narrow">
-        <div>
+        <div className="student-card student-card--padded">
           <h1 className="student-page__title">Settings</h1>
-          <p className="student-page__subtitle">Manage your account and preferences.</p>
+          <p className="student-page__subtitle">Manage your account, alerts, and job preferences in one place.</p>
         </div>
 
         {successMessage && <div className="student-alert student-alert--success">{successMessage}</div>}
@@ -172,9 +172,9 @@ export function StudentSettings({ onNavigate, onLogout }: StudentSettingsProps) 
           <form onSubmit={handleChangePassword} className="student-form">
             <h3 className="student-card__section-label">Change Password</h3>
             <div className="student-grid student-grid--settings">
-              <Input label="Current Password" type="password" icon={<Lock className="h-4 w-4" />} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
-              <Input label="New Password" type="password" icon={<Lock className="h-4 w-4" />} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-              <Input label="Confirm New Password" type="password" icon={<Lock className="h-4 w-4" />} value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} />
+              <Input label="Current Password" type="password" icon={<Lock className="h-4 w-4" />} placeholder="Enter current password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+              <Input label="New Password" type="password" icon={<Lock className="h-4 w-4" />} placeholder="Enter new password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+              <Input label="Confirm New Password" type="password" icon={<Lock className="h-4 w-4" />} placeholder="Re-enter new password" value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} />
             </div>
             <Button type="submit" isLoading={isChangingPassword} icon={<Lock className="h-4 w-4" />}>Change Password</Button>
           </form>
@@ -183,9 +183,9 @@ export function StudentSettings({ onNavigate, onLogout }: StudentSettingsProps) 
             <h3 className="student-card__section-label">Update Email</h3>
             <form onSubmit={handleUpdateEmail} className="student-form">
               <div className="student-grid student-grid--settings">
-                <Input label="Current Email" type="email" icon={<Mail className="h-4 w-4" />} value={currentEmail} disabled />
-                <Input label="New Email" type="email" icon={<Mail className="h-4 w-4" />} value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
-                <Input label="Password" type="password" icon={<Lock className="h-4 w-4" />} value={emailPassword} onChange={(e) => setEmailPassword(e.target.value)} />
+                <Input label="Current Email" type="email" icon={<Mail className="h-4 w-4" />} placeholder="Current account email" value={currentEmail} disabled />
+                <Input label="New Email" type="email" icon={<Mail className="h-4 w-4" />} placeholder="Enter new email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
+                <Input label="Password" type="password" icon={<Lock className="h-4 w-4" />} placeholder="Enter password to confirm" value={emailPassword} onChange={(e) => setEmailPassword(e.target.value)} />
               </div>
               <Button type="submit" isLoading={isUpdatingEmail} icon={<Mail className="h-4 w-4" />}>Update Email</Button>
             </form>

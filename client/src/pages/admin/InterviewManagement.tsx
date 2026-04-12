@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { DataTable } from '../../components/ui/DataTable';
 import { Button } from '../../components/ui/Button';
@@ -28,11 +28,9 @@ interface InterviewManagementProps {
 export function InterviewManagement({ onNavigate, onLogout }: InterviewManagementProps) {
   const { user } = useAuth();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'table' | 'calendar'>('table');
   const [applications, setApplications] = useState<Application[]>([]);
   const [selectedApplicationId, setSelectedApplicationId] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [weekOffset, setWeekOffset] = useState(0);
 
   const loadApplications = async (): Promise<void> => {
     try {
@@ -125,56 +123,6 @@ export function InterviewManagement({ onNavigate, onLogout }: InterviewManagemen
     }
   ];
 
-  const getWeekDates = (offset: number) => {
-    const now = new Date();
-    const monday = new Date(now);
-    monday.setDate(now.getDate() - now.getDay() + 1 + offset * 7);
-    return Array.from({ length: 5 }, (_, index) => {
-      const date = new Date(monday);
-      date.setDate(monday.getDate() + index);
-      return date;
-    });
-  };
-
-  const weekDates = getWeekDates(weekOffset);
-  const calendarDays = weekDates.map((date) =>
-    date.toLocaleDateString('en-US', { weekday: 'short' })
-  );
-  const calendarDateLabels = weekDates.map((date) =>
-    date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-  );
-  const timeSlots = [
-    '9:00 AM',
-    '10:00 AM',
-    '11:00 AM',
-    '12:00 PM',
-    '1:00 PM',
-    '2:00 PM',
-    '3:00 PM',
-    '4:00 PM'
-  ];
-
-  const getInterviewsForSlot = (dayIndex: number, timeSlot: string) =>
-    interviews.filter((interview) => {
-      const interviewDate = new Date(
-        applications.find((application) => application._id === interview.id)?.interviewDate || ''
-      );
-      if (Number.isNaN(interviewDate.getTime())) return false;
-
-      const slotDate = weekDates[dayIndex];
-      const parsedSlotHour =
-        timeSlot === '12:00 PM'
-          ? 12
-          : parseInt(timeSlot.split(':')[0], 10) + (timeSlot.includes('PM') ? 12 : 0);
-
-      return (
-        interviewDate.getFullYear() === slotDate.getFullYear() &&
-        interviewDate.getMonth() === slotDate.getMonth() &&
-        interviewDate.getDate() === slotDate.getDate() &&
-        interviewDate.getHours() === parsedSlotHour
-      );
-    });
-
   const handleScheduleInterview = async (data: ScheduleInterviewData) => {
     if (!selectedApplicationId) {
       throw new Error('Please select an application');
@@ -211,46 +159,20 @@ export function InterviewManagement({ onNavigate, onLogout }: InterviewManagemen
               <span className="admin-hero__eyebrow">Interview Management</span>
               <h1 className="admin-hero__title">Interview Schedule Hub</h1>
               <p className="admin-hero__subtitle">
-                Coordinate upcoming interviews, switch between table and calendar views, and keep
-                hiring timelines visible at a glance.
+                Coordinate upcoming interviews and keep hiring timelines visible in a focused,
+                table-first workspace.
               </p>
             </div>
-            <div className="admin-actions-row">
-              <div className="admin-hero-switch">
-                <button
-                  type="button"
-                  onClick={() => setViewMode('table')}
-                  className={
-                    viewMode === 'table'
-                      ? 'admin-hero-switch__button admin-hero-switch__button--active'
-                      : 'admin-hero-switch__button'
-                  }
-                >
-                  Table
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode('calendar')}
-                  className={
-                    viewMode === 'calendar'
-                      ? 'admin-hero-switch__button admin-hero-switch__button--active'
-                      : 'admin-hero-switch__button'
-                  }
-                >
-                  Calendar
-                </button>
-              </div>
-              <Button
-                className="company-secondary-button"
-                icon={<Calendar className="h-4 w-4" />}
-                onClick={() => {
-                  setSelectedApplicationId('');
-                  setIsAddModalOpen(true);
-                }}
-              >
-                Schedule Interview
-              </Button>
-            </div>
+            <Button
+              className="company-secondary-button"
+              icon={<Calendar className="h-4 w-4" />}
+              onClick={() => {
+                setSelectedApplicationId('');
+                setIsAddModalOpen(true);
+              }}
+            >
+              Schedule Interview
+            </Button>
           </div>
         </div>
 
@@ -292,98 +214,40 @@ export function InterviewManagement({ onNavigate, onLogout }: InterviewManagemen
           </div>
         </div>
 
-        {viewMode === 'table' ? (
-          <DataTable
-            title="Interview Schedule"
-            data={interviews}
-            columns={columns}
-            keyField="id"
-            actions={(item) => (
-              <DropdownMenu
-                items={[
-                  {
-                    label: 'Mark Result Pending',
-                    icon: <CheckCircle2 className="h-4 w-4" />,
-                    onClick: async () => {
-                      await updateAdminApplicationStatus(item.id, 'Pending Decision');
-                      await loadApplications();
-                    }
-                  },
-                  {
-                    label: 'Cancel Interview',
-                    icon: <Trash className="h-4 w-4" />,
-                    variant: 'danger',
-                    onClick: async () => {
-                      await updateAdminApplicationStatus(item.id, 'Shortlisted');
-                      await loadApplications();
-                    }
+        <DataTable
+          title="Interview Schedule"
+          data={interviews}
+          columns={columns}
+          keyField="id"
+          actions={(item) => (
+            <DropdownMenu
+              items={[
+                {
+                  label: 'Mark Result Pending',
+                  icon: <CheckCircle2 className="h-4 w-4" />,
+                  onClick: async () => {
+                    await updateAdminApplicationStatus(item.id, 'Pending Decision');
+                    await loadApplications();
                   }
-                ]}
-                trigger={
-                  <button className="company-icon-button" type="button">
-                    <MoreHorizontal className="h-5 w-5" />
-                  </button>
+                },
+                {
+                  label: 'Cancel Interview',
+                  icon: <Trash className="h-4 w-4" />,
+                  variant: 'danger',
+                  onClick: async () => {
+                    await updateAdminApplicationStatus(item.id, 'Shortlisted');
+                    await loadApplications();
+                  }
                 }
-              />
-            )}
-          />
-        ) : (
-          <div className="admin-calendar">
-            <div className="admin-calendar__header">
-              <h3 className="admin-calendar__title">
-                {weekDates[0].toLocaleDateString('en-US', { month: 'long', day: 'numeric' })} -{' '}
-                {weekDates[4].toLocaleDateString('en-US', {
-                  month: 'long',
-                  day: 'numeric',
-                  year: 'numeric'
-                })}
-              </h3>
-              <div className="admin-calendar__actions">
-                <Button variant="outline" size="sm" onClick={() => setWeekOffset((prev) => prev - 1)}>
-                  Previous
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => setWeekOffset(0)}>
-                  Today
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => setWeekOffset((prev) => prev + 1)}>
-                  Next
-                </Button>
-              </div>
-            </div>
-            <div className="admin-calendar__scroll">
-              <div className="admin-calendar__grid">
-                <div className="admin-calendar__head" />
-                {calendarDays.map((day, index) => (
-                  <div key={`${day}-${index}`} className="admin-calendar__head">
-                    <p className="admin-calendar__head-day">{day}</p>
-                    <p className="admin-calendar__head-date">{calendarDateLabels[index]}</p>
-                  </div>
-                ))}
-
-                {timeSlots.map((time) => (
-                  <Fragment key={time}>
-                    <div className="admin-calendar__time">{time}</div>
-                    {calendarDays.map((day, dayIndex) => {
-                      const slotInterviews = getInterviewsForSlot(dayIndex, time);
-                      return (
-                        <div key={`${time}-${day}-${dayIndex}`} className="admin-calendar__cell">
-                          {slotInterviews.map((interview) => (
-                            <div key={interview.id} className="admin-calendar__event">
-                              <p className="admin-calendar__event-title">{interview.student}</p>
-                              <p className="admin-calendar__event-copy">
-                                {interview.company} - {interview.role}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      );
-                    })}
-                  </Fragment>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
+              ]}
+              trigger={
+                <button className="company-icon-button" type="button">
+                  <MoreHorizontal className="h-5 w-5" />
+                </button>
+              }
+            />
+          )}
+        />
 
         <Modal
           isOpen={isAddModalOpen && !selectedApplicationId}

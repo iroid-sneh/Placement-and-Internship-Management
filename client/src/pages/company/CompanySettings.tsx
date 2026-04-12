@@ -259,9 +259,9 @@ export function CompanySettings({ onNavigate, onLogout }: CompanySettingsProps) 
       breadcrumbs={[{ label: 'Settings' }]}
     >
       <div className="company-page">
-        <div>
+        <div className="company-card company-card--padded">
           <h1 className="company-page__title">Settings</h1>
-          <p className="company-page__subtitle">Manage your account and preferences.</p>
+          <p className="company-page__subtitle">Manage your company account, notifications, and interview workflow from one clear workspace.</p>
         </div>
 
         {successMessage && (
@@ -320,7 +320,7 @@ export function CompanySettings({ onNavigate, onLogout }: CompanySettingsProps) 
             </Button>
           </form>
 
-          <div className="company-card company-card--padded">
+          <div className="company-form-section">
             <h3 className="company-card__section-label">
               Update Email
             </h3>
@@ -330,6 +330,7 @@ export function CompanySettings({ onNavigate, onLogout }: CompanySettingsProps) 
                   label="Current Email"
                   type="email"
                   icon={<Mail className="h-4 w-4" />}
+                  placeholder="Current account email"
                   value={currentEmail}
                   disabled
                 />

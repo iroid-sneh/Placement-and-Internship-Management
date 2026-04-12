@@ -251,7 +251,7 @@ export function JobManagement({ onNavigate, onLogout }: JobManagementProps) {
               </div>
               <div>
                 <p className="admin-stat-card__label">Open Jobs</p>
-                <p className="text-2xl font-bold text-slate-900">
+                <p className="admin-stat-card__value">
                   {jobs.filter((job) => job.status === 'Open').length}
                 </p>
               </div>
@@ -275,7 +275,7 @@ export function JobManagement({ onNavigate, onLogout }: JobManagementProps) {
               </div>
               <div>
                 <p className="admin-stat-card__label">Internships</p>
-                <p className="text-2xl font-bold text-slate-900">
+                <p className="admin-stat-card__value">
                   {jobs.filter((job) => job.type === 'Internship').length}
                 </p>
               </div>

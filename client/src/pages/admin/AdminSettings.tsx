@@ -6,13 +6,11 @@ import { useAuth } from '../../context/AuthContext';
 import {
   changeAdminPassword,
   getAdminSettings,
-  updateAdminEmail,
   updateAdminSettings
 } from '../../services/api/admin';
 import {
   Bell,
   Lock,
-  Mail,
   Save,
   Settings2,
   Shield,
@@ -35,17 +33,11 @@ export function AdminSettings({ onNavigate, onLogout }: AdminSettingsProps) {
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
-  const [currentEmail, setCurrentEmail] = useState('');
-  const [newEmail, setNewEmail] = useState('');
-  const [emailPassword, setEmailPassword] = useState('');
-  const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
-
   const [newStudentAlerts, setNewStudentAlerts] = useState(true);
   const [companyApprovals, setCompanyApprovals] = useState(true);
   const [reportReadyAlerts, setReportReadyAlerts] = useState(true);
   const [isSavingNotifications, setIsSavingNotifications] = useState(false);
 
-  const [darkMode, setDarkMode] = useState(false);
   const [autoCloseExpiredJobs, setAutoCloseExpiredJobs] = useState(true);
   const [weeklyReportDigest, setWeeklyReportDigest] = useState(true);
   const [isSavingPreferences, setIsSavingPreferences] = useState(false);
@@ -54,11 +46,9 @@ export function AdminSettings({ onNavigate, onLogout }: AdminSettingsProps) {
     const loadSettings = async () => {
       try {
         const settings = await getAdminSettings();
-        setCurrentEmail(settings.email || user?.email || '');
         setNewStudentAlerts(settings.notifications.newStudentAlerts);
         setCompanyApprovals(settings.notifications.companyApprovals);
         setReportReadyAlerts(settings.notifications.reportReadyAlerts);
-        setDarkMode(settings.preferences.darkMode);
         setAutoCloseExpiredJobs(settings.preferences.autoCloseExpiredJobs);
         setWeeklyReportDigest(settings.preferences.weeklyReportDigest);
       } catch (error) {
@@ -115,34 +105,6 @@ export function AdminSettings({ onNavigate, onLogout }: AdminSettingsProps) {
     }
   };
 
-  const handleUpdateEmail = async (event: FormEvent) => {
-    event.preventDefault();
-    if (!newEmail || !emailPassword) {
-      showError('New email and password are required');
-      return;
-    }
-
-    setIsUpdatingEmail(true);
-    try {
-      const result = await updateAdminEmail(newEmail, emailPassword);
-      setCurrentEmail(result.email);
-      setNewEmail('');
-      setEmailPassword('');
-
-      const storedUser = localStorage.getItem('auth_user');
-      if (storedUser) {
-        const parsedUser = JSON.parse(storedUser) as Record<string, unknown>;
-        localStorage.setItem('auth_user', JSON.stringify({ ...parsedUser, email: result.email }));
-      }
-
-      showSuccess('Email updated successfully');
-    } catch (error) {
-      showError(error instanceof Error ? error.message : 'Failed to update email');
-    } finally {
-      setIsUpdatingEmail(false);
-    }
-  };
-
   const handleSaveNotifications = async () => {
     setIsSavingNotifications(true);
     try {
@@ -166,7 +128,7 @@ export function AdminSettings({ onNavigate, onLogout }: AdminSettingsProps) {
     try {
       await updateAdminSettings({
         preferences: {
-          darkMode,
+          darkMode: false,
           autoCloseExpiredJobs,
           weeklyReportDigest
         }
@@ -234,30 +196,14 @@ export function AdminSettings({ onNavigate, onLogout }: AdminSettingsProps) {
               Change Password
             </h3>
             <div className="admin-grid admin-grid--three">
-              <Input label="Current Password" type="password" icon={<Lock className="h-4 w-4" />} value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
-              <Input label="New Password" type="password" icon={<Lock className="h-4 w-4" />} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-              <Input label="Confirm New Password" type="password" icon={<Lock className="h-4 w-4" />} value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} />
+              <Input label="Current Password" type="password" icon={<Lock className="h-4 w-4" />} placeholder="Enter current password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+              <Input label="New Password" type="password" icon={<Lock className="h-4 w-4" />} placeholder="Enter new password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+              <Input label="Confirm New Password" type="password" icon={<Lock className="h-4 w-4" />} placeholder="Re-enter new password" value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} />
             </div>
             <Button type="submit" isLoading={isChangingPassword} icon={<Lock className="h-4 w-4" />}>
               Change Password
             </Button>
           </form>
-
-          <div className="admin-form admin-form--section-divider">
-            <h3 className="admin-field__label">
-              Update Email
-            </h3>
-            <form onSubmit={handleUpdateEmail} className="admin-form">
-              <div className="admin-grid admin-grid--three">
-                <Input label="Current Email" type="email" icon={<Mail className="h-4 w-4" />} value={currentEmail} disabled />
-                <Input label="New Email" type="email" icon={<Mail className="h-4 w-4" />} value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
-                <Input label="Password" type="password" icon={<Lock className="h-4 w-4" />} value={emailPassword} onChange={(e) => setEmailPassword(e.target.value)} />
-              </div>
-              <Button type="submit" isLoading={isUpdatingEmail} icon={<Mail className="h-4 w-4" />}>
-                Update Email
-              </Button>
-            </form>
-          </div>
         </div>
 
         <div className="admin-panel">
@@ -281,7 +227,6 @@ export function AdminSettings({ onNavigate, onLogout }: AdminSettingsProps) {
             Platform Preferences
           </h2>
           <div className="admin-toggle-group">
-            <ToggleSwitch label="Dark Mode Preference" description="Save a visual preference for future admin theme support." checked={darkMode} onChange={setDarkMode} />
             <ToggleSwitch label="Auto Close Expired Jobs" description="Keep stale job postings cleaned up automatically." checked={autoCloseExpiredJobs} onChange={setAutoCloseExpiredJobs} />
             <ToggleSwitch label="Weekly Report Digest" description="Store a recurring reporting preference for the admin workspace." checked={weeklyReportDigest} onChange={setWeeklyReportDigest} />
           </div>
